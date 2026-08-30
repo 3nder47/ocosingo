@@ -341,6 +341,12 @@ input{font:inherit;color:inherit}
 .tile .info .p{font-size:16px}
 .tile .low{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;padding:3px 7px;border-radius:999px;background:var(--mango);color:#1a1200;text-transform:uppercase;letter-spacing:.04em}
 
+/* encabezado tipo "reproductor": foto desenfocada de fondo + portada nítida */
+.gal-wrap{position:relative;margin:-10px -18px 14px;padding:14px 18px 18px;overflow:hidden;isolation:isolate}
+.gal-bg{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(38px) saturate(1.7) brightness(.95);transform:scale(1.25);z-index:-2}
+.gal-fade{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,0) 35%,var(--bg) 100%)}
+.gal-wrap .gal{box-shadow:0 24px 48px -20px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.15);margin:0}
+.gal-wrap+.prod.compact{margin-top:-2px}
 /* galería en hoja de venta */
 .gal{position:relative;margin:-4px 0 12px;border-radius:18px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
 .gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -910,9 +916,10 @@ function pintarVenta(){
   if(state.paso===1){
     document.getElementById('venta-titulo').textContent='Registrar venta';
     const fotos=[p.imagen,...(p.extras||[])].filter(Boolean);
+    const gal=`<div class="gal"><div class="gal-track" id="gal" onscroll="galDots(this)">${(fotos.length?fotos:['']).map(u=>thumb(p,'',u)).join('')}</div>
+        ${fotos.length>1?`<div class="gal-dots" id="gal-dots">${fotos.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div><span class="badge">${fotos.length} fotos</span>`:''}</div>`;
     body.innerHTML=`
-      <div class="gal"><div class="gal-track" id="gal" onscroll="galDots(this)">${(fotos.length?fotos:[''] ).map(u=>thumb(p,'',u)).join('')}</div>
-        ${fotos.length>1?`<div class="gal-dots" id="gal-dots">${fotos.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div><span class="badge">${fotos.length} fotos</span>`:''}</div>
+      ${fotos.length?`<div class="gal-wrap"><div class="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-fade"></div>${gal}</div>`:gal}
       <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}</div><span class="p num">$${money(p.precio)}</span></div>
       <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
@@ -943,7 +950,7 @@ function pintarVenta(){
     setupHold();
   }
 }
-function galDots(t){const i=Math.round(t.scrollLeft/t.clientWidth);document.querySelectorAll('#gal-dots i').forEach((d,k)=>d.classList.toggle('on',k===i));}
+function galDots(t){const i=Math.round(t.scrollLeft/t.clientWidth);document.querySelectorAll('#gal-dots i').forEach((d,k)=>d.classList.toggle('on',k===i));const bg=document.querySelector('.gal-bg'),img=t.children[i]&&t.children[i].querySelector('img');if(bg&&img)bg.style.backgroundImage=`url('${img.src}')`;}
 function pintarCalc(){const c=document.getElementById('calc');if(!c||!state.vendedor)return;c.innerHTML=`<span>Ganancia estimada</span><b class="num" id="calc-v"></b>`;tick(document.getElementById('calc-v'),gananciaEst(),{dur:350});}
 function guardarInputs(){state.cobro=document.getElementById('cobro')?.value||'';state.gastos=document.getElementById('gastos')?.value||'';}
 function setVend(v){buzz();guardarInputs();state.vendedor=v;pintarVenta();}
