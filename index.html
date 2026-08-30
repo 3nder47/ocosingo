@@ -627,6 +627,7 @@ input{font:inherit;color:inherit}
         <input id="search" type="search" placeholder="Buscar producto" autocomplete="off">
         <button class="view-toggle" id="toggle" onclick="toggleVista()" aria-label="Cambiar vista"></button>
       </div>
+      <div class="cats" id="duenos" style="margin-bottom:2px"></div>
       <div class="cats" id="cats"></div>
       <div class="cat-strips" id="cat-strips"></div>
       <div id="catalogo-list"></div>
@@ -721,7 +722,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
-const APP_VERSION='6.1';const APP_BUILD='30 Aug 2026 16:06';
+const APP_VERSION='6.2';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
@@ -826,7 +827,7 @@ function thumb(p,cls='',src){
 }
 function vacio(illu,titulo,texto){return`<div class="empty">${ILLU[illu]||''}<b>${titulo}</b>${texto||''}</div>`;}
 
-let state={usuario:null,vista:'dashboard',filtro:'todo',pin:'',producto:null,vendedor:null,metodo:null,catalogo:[],filtrado:[],ventas:[],busy:false,cat:'Todas',grid:true,paso:1,dirty:false,recientes:[],topMes:[],detalle:[],operacion:null,npN:1};
+let state={usuario:null,vista:'dashboard',filtro:'todo',pin:'',producto:null,vendedor:null,metodo:null,catalogo:[],filtrado:[],ventas:[],busy:false,cat:'Todas',dueno:'todos',grid:true,paso:1,dirty:false,recientes:[],topMes:[],detalle:[],operacion:null,npN:1};
 
 document.addEventListener('DOMContentLoaded',()=>{
   buildKeypad();
@@ -1244,11 +1245,23 @@ function cargarCatalogo(){
     if(!m.stale)listo();
   },()=>{l.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');listo();});
 }
+function renderDuenos(){
+  const w=document.getElementById('duenos');if(!w)return;
+  const hayIrene=state.catalogo.some(p=>p.origen==='Irene'),hayAlex=state.catalogo.some(p=>p.origen!=='Irene');
+  if(!hayIrene||!hayAlex){w.innerHTML='';if(state.dueno!=='todos')state.dueno='todos';return;}
+  const yo=state.usuario;
+  const ops=[['todos','Todo'],['Irene',yo==='Irene'?'Mi mercancía':'De Irene'],['Alex',yo==='Irene'?'De Alex':(yo==='Alex'?'Mi mercancía':'De Alex')]];
+  w.innerHTML=ops.map(([v,l])=>`<button class="cat ${state.dueno===v?'on':''}" onclick="setDueno('${v}')">${l}</button>`).join('');
+}
+function setDueno(v){buzz();state.dueno=v;renderDuenos();renderCats();renderCatalogo();}
+function filtroDueno(p){return state.dueno==='todos'||(state.dueno==='Irene'?p.origen==='Irene':p.origen!=='Irene');}
 function renderCats(){
-  const counts={};state.catalogo.forEach(p=>counts[p.categoria]=(counts[p.categoria]||0)+p.stock);
+  renderDuenos();
+  const base=state.catalogo.filter(filtroDueno);
+  const counts={};base.forEach(p=>counts[p.categoria]=(counts[p.categoria]||0)+p.stock);
   const cats=['Todas',...Object.keys(counts).sort()];
   if(!cats.includes(state.cat))state.cat='Todas';
-  document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${esc(c)}<span class="n">${c==='Todas'?state.catalogo.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
+  document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${esc(c)}<span class="n">${c==='Todas'?base.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
 }
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
 function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
@@ -1258,8 +1271,9 @@ function miniCard(p,tag){
 function renderStrips(q){
   const w=document.getElementById('cat-strips');if(!w)return;
   if(q||state.cat!=='Todas'||!state.catalogo.length){w.innerHTML='';w.dataset.firma='';return;}
-  const bajos=state.catalogo.filter(p=>p.stock<=2).sort((a,b)=>a.stock-b.stock||b.precio-a.precio);
-  const altos=[...state.catalogo].sort((a,b)=>b.stock-a.stock).slice(0,8);
+  const baseD=state.catalogo.filter(filtroDueno);
+  const bajos=baseD.filter(p=>p.stock<=2).sort((a,b)=>a.stock-b.stock||b.precio-a.precio);
+  const altos=[...baseD].sort((a,b)=>b.stock-a.stock).slice(0,8);
   const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),altos.map(p=>p.descripcion+p.stock)]);
   if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   w.innerHTML=(bajos.length?`<div class="section-title">Por agotarse <span class="hint">${bajos.length} producto${bajos.length===1?'':'s'}</span></div>
@@ -1275,7 +1289,7 @@ function venderProducto(desc){
 function renderCatalogo(){
   const q=document.getElementById('search').value.trim().toLowerCase();
   renderStrips(q);
-  state.filtrado=state.catalogo.filter(p=>(state.cat==='Todas'||p.categoria===state.cat)&&(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)));
+  state.filtrado=state.catalogo.filter(p=>filtroDueno(p)&&(state.cat==='Todas'||p.categoria===state.cat)&&(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)));
   const l=document.getElementById('catalogo-list');
   if(!state.filtrado.length){l.innerHTML=q?vacio('search','Nada con ese nombre','Prueba con otra palabra.'):vacio('box','Sin stock','Todo está vendido.');return;}
   if(state.grid){
@@ -1312,7 +1326,7 @@ function renderQuick(){
       ${thumb(p)}<div class="t"><b>${esc(p.descripcion)}${tagIrene(p)}</b><small>${esc(p.categoria)} · ${p.stock} disp.</small></div>
       <div class="v pos num">$${money(p.precio)}</div></div>`;
   if(q){
-    quickLista=state.catalogo.filter(p=>p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)).sort((a,b)=>b.stock-a.stock).slice(0,30);
+    quickLista=state.catalogo.filter(p=>(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q))).sort((a,b)=>b.stock-a.stock).slice(0,30);
     if(!quickLista.length){l.innerHTML=vacio('search','Nada con ese nombre');return;}
     l.innerHTML=`<div class="quick-hint">Resultados</div><div class="group stagger">${quickLista.map(fila).join('')}</div>`;return;
   }
