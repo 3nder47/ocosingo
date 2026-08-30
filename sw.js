@@ -2,8 +2,8 @@
 // - App shell (HTML, manifest, íconos): cache-first, se actualiza al cambiar CACHE.
 // - Fuentes de Google: stale-while-revalidate.
 // - API de Apps Script: no se intercepta; el respaldo offline lo maneja localStorage en index.html.
-const CACHE = 'ocosingo-v1';
-const SHELL = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const CACHE = 'ocosingo-v2';
+const SHELL = ['./', './index.html', './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
