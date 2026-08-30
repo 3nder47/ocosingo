@@ -428,6 +428,7 @@ const API_TOKEN=(window.OC_CONFIG||{}).API_TOKEN||'';
 if(!API_URL||!API_TOKEN)console.error('Falta config.js con OC_CONFIG.API_URL y API_TOKEN');
 
 async function api(accion,params={},body=null){
+  if(!API_URL||!API_TOKEN){const e=new Error('Falta config.js en el repo (URL y token)');e.api=true;throw e;}
   const url=new URL(API_URL);
   const opts={redirect:'follow'};
   if(body){
