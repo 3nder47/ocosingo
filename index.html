@@ -328,6 +328,8 @@ input{font:inherit;color:inherit}
 /* miniaturas de producto */
 .thumb{width:46px;height:46px;border-radius:12px;flex-shrink:0;overflow:hidden;position:relative;display:grid;place-items:center;font-weight:800;font-size:16px;color:#fff;background:var(--ph,var(--selva));letter-spacing:-.03em}
 .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s;border-radius:inherit}
+.thumb{clip-path:inset(0 round var(--thumb-r,12px));-webkit-clip-path:inset(0 round var(--thumb-r,12px))}
+.thumb.lg{--thumb-r:16px}.tile .thumb,.topc .thumb,.mini .thumb,.lgc.foto .thumb{--thumb-r:0px}.gal-track .thumb{--thumb-r:20px}.success .thumb.hero-img{--thumb-r:28px}.vrow .thumb{--thumb-r:11px}
 .thumb{-webkit-mask-image:-webkit-radial-gradient(#fff,#000);isolation:isolate}
 .thumb img.ok{opacity:1}
 .thumb.lg{width:64px;height:64px;border-radius:16px;font-size:22px}
@@ -680,7 +682,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
-const APP_VERSION='5.2';const APP_BUILD='30 Aug 2026 16:06';
+const APP_VERSION='5.2.1';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
