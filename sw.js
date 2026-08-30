@@ -2,7 +2,7 @@
 // - App shell (HTML, manifest, íconos): cache-first, se actualiza al cambiar CACHE.
 // - Fuentes de Google: stale-while-revalidate.
 // - API de Apps Script: no se intercepta; el respaldo offline lo maneja localStorage en index.html.
-const CACHE = 'ocosingo-v2';
+const CACHE = 'ocosingo-v3';
 const SHELL = ['./', './index.html', './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
@@ -26,7 +26,7 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       caches.open(CACHE).then(async c => {
         const hit = await c.match(e.request);
-        const net = fetch(e.request).then(r => { if (r.ok || r.type === 'opaque') c.put(e.request, r.clone()); return r; }).catch(() => hit);
+        const net = fetch(e.request).then(r => { if (r.ok || r.type === 'opaque') { const copia = r.clone(); c.put(e.request, copia); } return r; }).catch(() => hit);
         return hit || net;
       })
     );
@@ -37,7 +37,7 @@ self.addEventListener('fetch', e => {
   if (url.origin === self.location.origin) {
     e.respondWith(
       fetch(e.request).then(r => {
-        if (r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
+        if (r.ok) { const copia = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copia)); }
         return r;
       }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
     );
