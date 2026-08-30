@@ -483,6 +483,8 @@ input{font:inherit;color:inherit}
 .logros-title{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
 .logros-title .section-title{margin:0;padding:0}
 .logros-title small{font-size:11.5px;font-weight:600;color:var(--muted)}
+.ver{margin-top:14px;text-align:center;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
+.ver button{font-size:12px;font-weight:700;color:var(--selva);background:var(--selva-soft);padding:6px 12px;border-radius:999px}
 /* estados vacíos con ilustración */
 .empty svg{width:64px;height:64px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin:0 auto 12px;display:block}
 
@@ -586,6 +588,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
+const APP_VERSION='4.8';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
@@ -654,12 +657,15 @@ const ILLU = {
 };
 const HELP = {
   hoy:'Ventas de hoy pendientes de transferir.',
-  gIrene:'Ganancia neta de Irene en ventas no transferidas.',
-  gAlex:'Ganancia de Alex en ventas no transferidas.',
-  moto:'Gastos de motomandado en ventas no transferidas.',
+  tAlex:'Ventas hechas por Alex que Irene cobró en efectivo y aún no transfiere: precio + cobro extra − motomandado.',
+  tCosto:'Ventas de Irene o Mamá aún no liquidadas (en efectivo o a su cuenta): a Alex solo se le transfiere el costo del producto.',
+  tMoto:'En ventas de Alex que el cliente pagó por transferencia, Irene puso el motomandado de su bolsa. Se descuenta de lo que transfiere.',
+  gIrene:'Lo que Irene se queda de sus ventas pendientes: precio + cobro extra − costo − motomandado. No se transfiere.',
+  gMama:'Lo que Mamá se queda de sus ventas pendientes: precio + cobro extra − costo − motomandado. No se transfiere.',
+  moto:'Lo gastado en motomandado en las ventas de este mes, transferidas o no. Es un gasto, no dinero por transferir.',
   totalMes:'Total vendido este mes, incluidas las transferidas. La línea muestra los últimos 7 días.',
   artMes:'Artículos vendidos este mes, transferidos o no.',
-  pend:'Número de ventas pendientes de transferir.'
+  pend:'Número de ventas pendientes de liquidar.'
 };
 const CAT_ICONS=[
   [/aud[ií]fono|auricular|earbud|tws/,'<svg viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="13" width="4" height="7" rx="2"/><rect x="17" y="13" width="4" height="7" rx="2"/></svg>'],
@@ -797,6 +803,15 @@ function entrarRecordado(){
   const app=document.getElementById('app');app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
   setUsuario(u);cargarDashboard();return true;
 }
+async function buscarActualizacion(){
+  toast('Buscando versión nueva…');
+  try{
+    const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.unregister();
+    const keys=await caches.keys();for(const k of keys)if(k.startsWith('ocosingo-')&&!k.includes('img'))await caches.delete(k);
+  }catch(e){}
+  try{const r=await fetch('index.html',{cache:'reload'});const t=await r.text();const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]===APP_VERSION){toast('Ya tienes la última versión (v'+APP_VERSION+'). Si acabas de subir cambios, GitHub tarda unos minutos.');return;}}catch(e){}
+  location.reload();
+}
 function cerrarSesion(){
   try{localStorage.removeItem('oc:usuario');}catch(e){}
   cerrarUsuarios();state.usuario=null;state.ventas=[];state.ventFirma='';
@@ -868,7 +883,7 @@ function armarDashboard(){
   document.getElementById('view-dashboard').innerHTML=`
     <div class="hero" id="hero">
       <div class="hero-main">
-        <div class="lbl">${esAlex?'Por recibir de Irene':'Por transferir a Alex'}</div>
+        <div class="lbl" onclick="toast('Suma de las filas de abajo: tus ventas en efectivo + costo de lo que vendieron Irene y Mamá − motomandado que puso Irene.')">${esAlex?'Por recibir de Irene':'Por transferir a Alex'}</div>
         <div class="val num" id="h-val">$0.00</div>
         <div class="sub"><span class="chip" id="h-pend">—</span><span class="chip" id="h-hoy">Hoy $0.00</span></div>
       </div>
@@ -877,16 +892,22 @@ function armarDashboard(){
         <div class="ring-txt"><b id="h-pct">0%</b><small id="h-ringlbl">de tu<br>mejor mes</small></div>
       </div>
     </div>
-    <div class="section-title">Pendiente de transferir</div>
+    <div class="section-title">Cómo se forma ese monto</div>
     <div class="group">
-      ${fila('user','Ganancia Irene','v-girene','pos','gIrene')}
-      ${fila('user','Ganancia Alex','v-galex','pos','gAlex')}
-      ${fila('moto','Motomandado','v-moto','neg','moto','mango')}
+      ${fila('user','Ventas de Alex en efectivo','v-talex','','tAlex','grey','precio + extra − moto')}
+      ${fila('box','Costo de lo que vendieron Irene y Mamá','v-tcosto','','tCosto','grey','solo el costo se transfiere')}
+      <div id="row-tmoto">${fila('moto','Motomandado que puso Irene','v-tmoto','neg','tMoto','mango','se descuenta')}</div>
+    </div>
+    <div class="section-title">Se lo quedan</div>
+    <div class="group">
+      ${fila('user','Ganancia de Irene','v-girene','pos','gIrene','','de sus ventas pendientes · no se transfiere')}
+      <div id="row-gmama">${fila('user','Ganancia de Mamá','v-gmama','pos','gMama','','de sus ventas pendientes · no se transfiere')}</div>
     </div>
     <div class="section-title">Este mes</div>
     <div class="group">
       ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','Incluye transferidos')}
+      ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','Gasto en envíos · no es por transferir')}
     </div>
     <div class="section-title">Historial</div>
     <div class="chart-card">
@@ -917,7 +938,10 @@ function renderDashboard(d,meses,m){
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} pendiente${d.totalVentas===1?'':'s'}`;
   $('h-hoy').textContent='Hoy $'+money(d.ventasHoy);
   renderRing(d,meses);
-  tick($('v-girene'),d.gananciaIrene);tick($('v-galex'),d.gananciaAlex);tick($('v-moto'),d.gastoMotomandado);
+  tick($('v-talex'),d.deAlexEfectivo||0);tick($('v-tcosto'),d.costoFamilia||0);
+  $('row-tmoto').style.display=(d.motoPagadoIrene||0)>0?'':'none';tick($('v-tmoto'),d.motoPagadoIrene||0);
+  tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
+  tick($('v-moto'),d.gastoMotomandado);
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
   renderSpark(d.ventasSemana||[]);
   renderTop();
@@ -1310,7 +1334,8 @@ function abrirUsuarios(){
   document.getElementById('user-list').innerHTML=u.map(([n,d])=>`
     <button class="user ${state.usuario===n?'on':''}" onclick="cambiarUsuario('${n}')" style="width:100%;text-align:left">
       <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('')+
-    `<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>`;
+    `<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>
+     <div class="ver">Kiosko v${APP_VERSION} · ${APP_BUILD}<button onclick="buscarActualizacion()">Buscar actualización</button></div>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }
 function cambiarUsuario(u){buzz();try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('dashboard');}
