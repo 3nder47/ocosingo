@@ -369,6 +369,12 @@ input{font:inherit;color:inherit}
 .topc .ti b{display:block;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topc .ti small{display:block;font-size:11px;font-weight:700;color:var(--selva);margin-top:2px}
 
+.topc{transition:transform .15s var(--ease)}
+.topc:active{transform:scale(.96)}
+.topc.out{opacity:.55}
+.topc .ti em{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:3px}
+.topc.out .ti em{color:var(--danger)}
+.section-title .hint{float:right;text-transform:none;letter-spacing:0;font-weight:600;font-size:11.5px;opacity:.8}
 /* éxito con foto */
 .success .thumb.hero-img{width:120px;height:120px;border-radius:28px;font-size:44px;animation:pop .5s var(--ease)}
 .success .badge-ok{width:44px;height:44px;border-radius:50%;background:var(--selva);display:grid;place-items:center;margin:-30px 0 0 80px;border:4px solid var(--bg);animation:pop .5s .15s var(--ease) both}
@@ -735,10 +741,16 @@ function armarDashboard(){
 }
 function renderTop(){
   const w=document.getElementById('top-wrap');if(!w)return;
-  const t=state.topMes||[];const firma=JSON.stringify(t);if(w.dataset.firma===firma)return;w.dataset.firma=firma;
+  const t=state.topMes||[];const firma=JSON.stringify(t)+'|'+t.map(p=>(state.catalogo.find(x=>x.descripcion===p.descripcion)||{}).stock||0).join(',');if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   if(!t.length){w.innerHTML='';return;}
-  w.innerHTML=`<div class="section-title">Lo más vendido del mes</div><div class="top3 stagger">${t.map((p,i)=>`
-    <div class="topc"><span class="rank ${i===0?'gold':''}">${i+1}</span>${thumb(p)}<div class="ti"><b>${esc(p.descripcion)}</b><small>×${p.cantidad} · $${money(p.total).replace(/\.00$/,'')}</small></div></div>`).join('')}</div>`;
+  w.innerHTML=`<div class="section-title">Lo más vendido del mes <span class="hint">Toca para vender otro</span></div><div class="top3 stagger">${t.map((p,i)=>{
+    const cat=state.catalogo.find(x=>x.descripcion===p.descripcion);const st=cat?cat.stock:0;
+    return`<button class="topc ${st?'':'out'}" onclick="venderTop(${i})"><span class="rank ${i===0?'gold':''}">${i+1}</span>${thumb(p)}<div class="ti"><b>${esc(p.descripcion)}</b><small>×${p.cantidad} · $${money(p.total).replace(/\.00$/,'')}</small><em>${st?st+' en stock':'Agotado'}</em></div></button>`}).join('')}</div>`;
+}
+function venderTop(i){
+  const p=state.topMes[i];const cat=state.catalogo.find(x=>x.descripcion===p.descripcion);
+  if(!cat){buzz([10,30]);toast('Sin stock de '+p.descripcion,'err');return;}
+  buzz(12);state.producto=cat;state.vendedor=state.usuario;state.metodo=null;state.paso=1;abrirVenta();
 }
 function renderDashboard(d,meses,m){
   const hero=document.getElementById('hero');
