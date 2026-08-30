@@ -549,7 +549,7 @@ function validarPin(){
     state.busy=false;
     if(res.valido){entrar(res.vendedor);}
     else{fallo('PIN incorrecto');}
-  }).catch(err=>{state.busy=false;fallo(err.api?err.message:'Sin conexión, intenta de nuevo');});
+  }).catch(err=>{state.busy=false;fallo(err.api?err.message:'Sin conexión ('+(err&&err.message||err)+')');});
 }
 function fallo(msg){
   const d=document.getElementById('dots');d.classList.add('shake');setTimeout(()=>d.classList.remove('shake'),400);
