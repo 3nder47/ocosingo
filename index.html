@@ -6,13 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F2F3F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C0E15" media="(prefers-color-scheme: dark)">
-<title>Ocosingo</title>
+<title>Kiosko</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Ocosingo">
+<meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -162,6 +162,8 @@ input{font:inherit;color:inherit}
 .sheet{width:100%;max-width:640px;background:var(--bg);border-radius:26px 26px 0 0;padding:10px 18px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;animation:up .38s var(--ease)}
 @keyframes up{from{transform:translateY(100%)}}
 .handle{width:38px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 14px}
+.sheet.drag{transition:none}
+.sheet.snap{transition:transform .28s var(--ease)}
 .sheet h3{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-bottom:14px}
 .prod{background:var(--card);border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:var(--shadow)}
 .prod b{font-size:15px;font-weight:700}
@@ -325,7 +327,8 @@ input{font:inherit;color:inherit}
 
 /* miniaturas de producto */
 .thumb{width:46px;height:46px;border-radius:12px;flex-shrink:0;overflow:hidden;position:relative;display:grid;place-items:center;font-weight:800;font-size:16px;color:#fff;background:var(--ph,var(--selva));letter-spacing:-.03em}
-.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s;border-radius:inherit}
+.thumb{-webkit-mask-image:-webkit-radial-gradient(#fff,#000);isolation:isolate}
 .thumb img.ok{opacity:1}
 .thumb.lg{width:64px;height:64px;border-radius:16px;font-size:22px}
 .thumb.sm{width:36px;height:36px;border-radius:10px}
@@ -354,8 +357,8 @@ input{font:inherit;color:inherit}
 .gal-wrap .gal-track .thumb{aspect-ratio:5/4}
 .gal-wrap+.prod.compact{margin-top:0}
 /* galería en hoja de venta */
-.gal{position:relative;margin:-4px 0 12px;border-radius:20px;overflow:hidden;background:transparent;box-shadow:var(--shadow);-webkit-mask-image:-webkit-radial-gradient(#fff,#000);isolation:isolate}
-.gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-radius:inherit}
+.gal{position:relative;margin:-4px 0 12px;border-radius:20px;overflow:hidden;background:transparent;box-shadow:var(--shadow);clip-path:inset(0 round 20px);-webkit-clip-path:inset(0 round 20px)}
+.gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-radius:20px;background:transparent}
 .gal-track::-webkit-scrollbar{display:none}
 .gal-track .thumb{flex:0 0 100%;width:100%;height:auto;aspect-ratio:4/3;border-radius:20px;font-size:40px;scroll-snap-align:start}
 .gal-track .thumb .ph{width:28%;height:28%}
@@ -465,8 +468,8 @@ input{font:inherit;color:inherit}
 <!-- LOGIN -->
 <div id="login">
   <div class="brand">
-    <div class="brand-mark">Oc</div>
-    <h1>Tienda Ocosingo</h1>
+    <div class="brand-mark">Ki</div>
+    <h1>Kiosko</h1>
     <p>Ingresa tu PIN</p>
   </div>
   <div class="pin-dots" id="dots"><span></span><span></span><span></span><span></span></div>
@@ -546,7 +549,7 @@ input{font:inherit;color:inherit}
     <div id="quick-list"></div>
   </div>
 </div>
-<div id="ptr" class="ptr">Oc</div>
+<div id="ptr" class="ptr">Ki</div>
 <div id="success" class="success hidden"></div>
 <div id="toast" class="toast hidden"></div>
 
@@ -663,8 +666,37 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.querySelectorAll('#filtros button').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.filtro=b.dataset.f;renderVentas();
   }));
   setupPullToRefresh();
+  setupSwipeSheets();
   entrarRecordado();
 });
+
+/* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
+function setupSwipeSheets(){
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios()};
+  document.querySelectorAll('.overlay .sheet').forEach(sh=>{
+    const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
+    sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
+    sh.addEventListener('touchmove',e=>{
+      if(y0===null)return;
+      const t=e.touches[0],ddy=t.clientY-y0,ddx=t.clientX-x0;
+      if(!decidido){if(Math.abs(ddy)<8&&Math.abs(ddx)<8)return;decidido=true;activo=ddy>0&&Math.abs(ddy)>Math.abs(ddx)*1.2;if(activo){sh.classList.add('drag');sh.classList.remove('snap');}}
+      if(!activo)return;
+      dy=Math.max(0,ddy);
+      sh.style.transform=`translateY(${dy*0.85}px)`;
+      sh.parentElement.style.background=`rgba(15,18,34,${Math.max(.05,.4-dy/600)})`;
+      if(dy>110&&!sh.dataset.armed){sh.dataset.armed='1';buzz(10);}
+      if(dy<=110)delete sh.dataset.armed;
+    },{passive:true});
+    const fin=()=>{
+      if(y0===null)return;y0=null;
+      if(!activo)return;
+      sh.classList.remove('drag');sh.classList.add('snap');delete sh.dataset.armed;
+      if(dy>110){buzz(18);sh.style.transform='translateY(110%)';setTimeout(()=>{cierres[id]();sh.style.transform='';sh.parentElement.style.background='';sh.classList.remove('snap');},220);}
+      else{sh.style.transform='';sh.parentElement.style.background='';setTimeout(()=>sh.classList.remove('snap'),300);}
+    };
+    sh.addEventListener('touchend',fin);sh.addEventListener('touchcancel',fin);
+  });
+}
 
 const buzz=(ms=8)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 
@@ -823,7 +855,7 @@ function armarDashboard(){
     <div class="section-title">Este mes</div>
     <div class="group">
       ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
-      ${fila('box','Artículos vendidos','v-art','','artMes','grey')}
+      ${fila('box','Artículos vendidos','v-art','','artMes','grey','Incluye transferidos')}
     </div>
     <div class="section-title">Historial</div>
     <div class="chart-card">
@@ -1210,7 +1242,7 @@ function renderVentas(){
 
 /* ---------- USUARIO ---------- */
 function abrirUsuarios(){
-  const u=[['Irene','Ventas en Ocosingo'],['Mamá','Ventas ocasionales'],['Alex','Administrador']];
+  const u=[['Irene','Vendedora principal'],['Mamá','Ventas ocasionales'],['Alex','Administrador']];
   document.getElementById('user-list').innerHTML=u.map(([n,d])=>`
     <button class="user ${state.usuario===n?'on':''}" onclick="cambiarUsuario('${n}')" style="width:100%;text-align:left">
       <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('')+
