@@ -341,12 +341,16 @@ input{font:inherit;color:inherit}
 .tile .info .p{font-size:16px}
 .tile .low{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;padding:3px 7px;border-radius:999px;background:var(--mango);color:#1a1200;text-transform:uppercase;letter-spacing:.04em}
 
-/* encabezado tipo "reproductor": foto desenfocada de fondo + portada nítida */
-.gal-wrap{position:relative;margin:-10px -18px 14px;padding:14px 18px 18px;overflow:hidden;isolation:isolate}
-.gal-bg{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(38px) saturate(1.7) brightness(.95);transform:scale(1.25);z-index:-2}
-.gal-fade{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,0) 35%,var(--bg) 100%)}
-.gal-wrap .gal{box-shadow:0 24px 48px -20px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.15);margin:0}
-.gal-wrap+.prod.compact{margin-top:-2px}
+/* encabezado tipo "reproductor": la foto desenfocada envuelve la portada */
+.gal-wrap{position:relative;margin:-10px -18px 16px;padding:10px 30px 26px;overflow:hidden;isolation:isolate;border-radius:26px 26px 0 0}
+.gal-bg{position:absolute;inset:-50px;background-size:cover;background-position:center;filter:blur(26px) saturate(1.9);transform:scale(1.2);z-index:-3}
+.gal-tint{position:absolute;inset:0;z-index:-2;background:radial-gradient(110% 70% at 50% 15%,var(--tint,transparent) 0%,transparent 75%);opacity:.75;transition:opacity .4s}
+.gal-fade{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.32) 0%,rgba(0,0,0,.08) 45%,rgba(0,0,0,0) 70%,var(--bg) 100%)}
+.gal-wrap .handle{background:rgba(255,255,255,.55);margin-bottom:12px}
+.gal-wrap h3{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.45);margin-bottom:16px}
+.gal-wrap .gal{margin:0;border-radius:20px;box-shadow:0 30px 50px -22px rgba(0,0,0,.7),0 4px 12px rgba(0,0,0,.25)}
+.gal-wrap .gal-track .thumb{aspect-ratio:5/4}
+.gal-wrap+.prod.compact{margin-top:0}
 /* galería en hoja de venta */
 .gal{position:relative;margin:-4px 0 12px;border-radius:18px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
 .gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -930,8 +934,10 @@ function pintarVenta(){
     const fotos=[p.imagen,...(p.extras||[])].filter(Boolean);
     const gal=`<div class="gal"><div class="gal-track" id="gal" onscroll="galDots(this)">${(fotos.length?fotos:['']).map(u=>thumb(p,'',u)).join('')}</div>
         ${fotos.length>1?`<div class="gal-dots" id="gal-dots">${fotos.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div><span class="badge">${fotos.length} fotos</span>`:''}</div>`;
+    const outer=document.getElementById('venta-titulo');
+    outer.style.display=fotos.length?'none':'';outer.previousElementSibling.style.display=fotos.length?'none':'';
     body.innerHTML=`
-      ${fotos.length?`<div class="gal-wrap"><div class="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-fade"></div>${gal}</div>`:gal}
+      ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
       <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}</div><span class="p num">$${money(p.precio)}</span></div>
       <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
@@ -941,10 +947,10 @@ function pintarVenta(){
       <div class="field"><label>Cobro extra</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="field"><label>Motomandado / gastos</label><div class="money"><span>$</span><input id="gastos" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.gastos||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="calc" id="calc"></div>`;
-    pintarCalc();
+    pintarCalc();if(fotos.length)tintDesde(fotos[0],document.getElementById('gal-wrap'));
     foot.innerHTML=`<button class="btn primary" id="btn-next" onclick="revisar()" ${state.vendedor&&state.metodo?'':'disabled'}>Revisar venta</button><button class="btn ghost" onclick="cerrarVenta()">Cancelar</button>`;
   }else{
-    document.getElementById('venta-titulo').textContent='¿Confirmar venta?';
+    const outer=document.getElementById('venta-titulo');outer.style.display='';outer.previousElementSibling.style.display='';outer.textContent='¿Confirmar venta?';
     const extra=Number(state.cobro)||0,g=Number(state.gastos)||0;
     const r=(a,b,cls='')=>`<div class="row ${cls}"><div class="t"><b>${a}</b></div><div class="v num">${b}</div></div>`;
     body.innerHTML=`<div class="review">
@@ -962,13 +968,29 @@ function pintarVenta(){
     setupHold();
   }
 }
-function galDots(t){const i=Math.round(t.scrollLeft/t.clientWidth);document.querySelectorAll('#gal-dots i').forEach((d,k)=>d.classList.toggle('on',k===i));const bg=document.querySelector('.gal-bg'),img=t.children[i]&&t.children[i].querySelector('img');if(bg&&img)bg.style.backgroundImage=`url('${img.src}')`;}
+function galDots(t){const i=Math.round(t.scrollLeft/t.clientWidth);document.querySelectorAll('#gal-dots i').forEach((d,k)=>d.classList.toggle('on',k===i));const bg=document.getElementById('gal-bg'),img=t.children[i]&&t.children[i].querySelector('img');if(bg&&img&&bg.dataset.src!==img.src){bg.dataset.src=img.src;bg.style.backgroundImage=`url('${img.src}')`;tintDesde(img.src,document.getElementById('gal-wrap'));}}
+/* Color dominante de la foto (si el servidor permite leerla desde canvas); si no, no pasa nada. */
+const tintCache={};
+function tintDesde(url,el){
+  if(!el)return;
+  if(tintCache[url]){el.style.setProperty('--tint',tintCache[url]);return;}
+  try{
+    const im=new Image();im.crossOrigin='anonymous';
+    im.onload=()=>{try{
+      const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');x.drawImage(im,0,0,24,24);
+      const d=x.getImageData(0,0,24,24).data;let r=0,g=0,b=0,n=0;
+      for(let i=0;i<d.length;i+=4){const R=d[i],G=d[i+1],B=d[i+2],mx=Math.max(R,G,B),mn=Math.min(R,G,B);const sat=mx?(mx-mn)/mx:0,lum=mx/255;const w=0.05+sat*sat*2*(lum>0.12?1:0.2);r+=R*w;g+=G*w;b+=B*w;n+=w;}
+      if(!n)return;const col=`rgb(${r/n|0},${g/n|0},${b/n|0})`;tintCache[url]=col;if(document.body.contains(el))el.style.setProperty('--tint',col);
+    }catch(e){}};
+    im.src=url;
+  }catch(e){}
+}
 function pintarCalc(){const c=document.getElementById('calc');if(!c||!state.vendedor)return;c.innerHTML=`<span>Ganancia estimada</span><b class="num" id="calc-v"></b>`;tick(document.getElementById('calc-v'),gananciaEst(),{dur:350});}
 function guardarInputs(){state.cobro=document.getElementById('cobro')?.value||'';state.gastos=document.getElementById('gastos')?.value||'';}
 function setVend(v){buzz();guardarInputs();state.vendedor=v;pintarVenta();}
 function setMetodo(m){buzz();guardarInputs();state.metodo=m;pintarVenta();}
 function revisar(){if(!state.vendedor||!state.metodo)return;buzz(12);guardarInputs();state.paso=2;pintarVenta();document.querySelector('#sheet-venta .sheet').scrollTo({top:0});}
-function cerrarVenta(){document.getElementById('sheet-venta').classList.add('hidden');state.cobro='';state.gastos='';state.paso=1;}
+function cerrarVenta(){const o=document.getElementById('venta-titulo');o.style.display='';o.previousElementSibling.style.display='';document.getElementById('sheet-venta').classList.add('hidden');state.cobro='';state.gastos='';state.paso=1;}
 function setupHold(){
   const b=document.getElementById('hold');let t,tics=[];
   const down=e=>{e.preventDefault();if(b.disabled)return;buzz(15);b.classList.add('go');
