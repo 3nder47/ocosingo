@@ -485,6 +485,25 @@ input{font:inherit;color:inherit}
 .logros-title small{font-size:11.5px;font-weight:600;color:var(--muted)}
 .ver{margin-top:14px;text-align:center;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
 .ver button{font-size:12px;font-weight:700;color:var(--selva);background:var(--selva-soft);padding:6px 12px;border-radius:999px}
+/* hojas de detalle */
+.group.wrap .row .t b{white-space:normal;line-height:1.25}
+.comp{display:flex;height:14px;border-radius:99px;overflow:hidden;margin:6px 0 10px;background:var(--card-2)}
+.comp i{display:block;height:100%;transition:width .8s var(--ease)}
+.comp .a{background:var(--selva)}.comp .b{background:var(--ink)}.comp .c{background:var(--mango)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px}
+.leg span::before{content:'';display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--selva)}
+.leg .b::before{background:var(--ink)}.leg .c::before{background:var(--mango)}
+.det-total{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:16px;background:var(--ink);color:var(--bg);font-weight:800;margin:6px 0 12px}
+.det-total b{font-size:22px;letter-spacing:-.03em}
+.det-total small{display:block;font-size:11.5px;font-weight:600;opacity:.75}
+.det-sub{display:flex;justify-content:space-between;align-items:center;padding:10px 4px 6px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.det-sub b{color:var(--ink);font-size:13px;letter-spacing:0;text-transform:none}
+.vend-head{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);margin:8px 0}
+.vend-head .avatar{width:38px;height:38px;font-size:15px}
+.vend-head .vh{flex:1;min-width:0}.vend-head .vh b{display:block;font-size:15px}.vend-head .vh small{font-size:12px;font-weight:600;color:var(--muted)}
+.vend-head .vt{text-align:right}.vend-head .vt b{display:block;font-size:16px;letter-spacing:-.02em}.vend-head .vt small{font-size:11.5px;font-weight:700;color:var(--selva)}
+.det-btn{display:flex;gap:10px;margin:4px 0 14px}
+.det-btn .btn{flex:1;min-height:46px;font-size:14px}
 /* estados vacíos con ilustración */
 .empty svg{width:64px;height:64px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin:0 auto 12px;display:block}
 
@@ -571,6 +590,13 @@ input{font:inherit;color:inherit}
   </div>
 </div>
 
+<div id="sheet-detalle" class="overlay hidden" onclick="if(event.target===this)cerrarDetalle()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h3 id="detalle-titulo">Detalle</h3>
+    <div id="detalle-body"></div>
+  </div>
+</div>
 <div id="sheet-quick" class="overlay hidden" onclick="if(event.target===this)cerrarQuick()">
   <div class="sheet">
     <div class="handle"></div>
@@ -588,7 +614,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
-const APP_VERSION='4.8';const APP_BUILD='30 Aug 2026 16:06';
+const APP_VERSION='4.9';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
@@ -657,7 +683,7 @@ const ILLU = {
 };
 const HELP = {
   hoy:'Ventas de hoy pendientes de transferir.',
-  tAlex:'Ventas hechas por Alex que Irene cobró en efectivo y aún no transfiere: precio + cobro extra − motomandado.',
+  tAlex:'Ganancia de Alex en sus ventas que Irene cobró en efectivo y aún no transfiere: precio + cobro extra − motomandado (el costo lo puso Alex, así que todo eso es suyo).',
   tCosto:'Ventas de Irene o Mamá aún no liquidadas (en efectivo o a su cuenta): a Alex solo se le transfiere el costo del producto.',
   tMoto:'En ventas de Alex que el cliente pagó por transferencia, Irene puso el motomandado de su bolsa. Se descuenta de lo que transfiere.',
   gIrene:'Lo que Irene se queda de sus ventas pendientes: precio + cobro extra − costo − motomandado. No se transfiere.',
@@ -691,7 +717,7 @@ function thumb(p,cls='',src){
 }
 function vacio(illu,titulo,texto){return`<div class="empty">${ILLU[illu]||''}<b>${titulo}</b>${texto||''}</div>`;}
 
-let state={usuario:null,vista:'dashboard',filtro:'todo',pin:'',producto:null,vendedor:null,metodo:null,catalogo:[],filtrado:[],ventas:[],busy:false,cat:'Todas',grid:true,paso:1,dirty:false,recientes:[],topMes:[]};
+let state={usuario:null,vista:'dashboard',filtro:'todo',pin:'',producto:null,vendedor:null,metodo:null,catalogo:[],filtrado:[],ventas:[],busy:false,cat:'Todas',grid:true,paso:1,dirty:false,recientes:[],topMes:[],detalle:[]};
 
 document.addEventListener('DOMContentLoaded',()=>{
   buildKeypad();
@@ -709,7 +735,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -874,6 +900,7 @@ function cargarDashboard(){
     if(Array.isArray(d.catalogo)){state.catalogo=d.catalogo;}      // precarga para "+"
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
     if(Array.isArray(d.topMes))state.topMes=d.topMes;
+    if(Array.isArray(d.detalle))state.detalle=d.detalle;
     renderDashboard(d.dashboard,d.ventasMes||[],m);
     if(!m.stale)listo();
   },()=>{el.innerHTML=vacio('wifi','No se pudo cargar','Revisa tu conexión y desliza hacia abajo para reintentar.');listo();});
@@ -884,7 +911,7 @@ function armarDashboard(){
     <div class="hero" id="hero">
       <div class="hero-main">
         <div class="lbl" onclick="toast('Suma de las filas de abajo: tus ventas en efectivo + costo de lo que vendieron Irene y Mamá − motomandado que puso Irene.')">${esAlex?'Por recibir de Irene':'Por transferir a Alex'}</div>
-        <div class="val num" id="h-val">$0.00</div>
+        <div class="val num tap" id="h-val" onclick="abrirDetalle('transferencia')">$0.00</div>
         <div class="sub"><span class="chip" id="h-pend">—</span><span class="chip" id="h-hoy">Hoy $0.00</span></div>
       </div>
       <div class="ring" id="h-ringbox" onclick="toast(ringHelp)">
@@ -892,21 +919,21 @@ function armarDashboard(){
         <div class="ring-txt"><b id="h-pct">0%</b><small id="h-ringlbl">de tu<br>mejor mes</small></div>
       </div>
     </div>
-    <div class="section-title">Cómo se forma ese monto</div>
-    <div class="group">
-      ${fila('user','Ventas de Alex en efectivo','v-talex','','tAlex','grey','precio + extra − moto')}
-      ${fila('box','Costo de lo que vendieron Irene y Mamá','v-tcosto','','tCosto','grey','solo el costo se transfiere')}
+    <div class="section-title">Cómo se forma ese monto <span class="hint">Toca el monto para el detalle</span></div>
+    <div class="group wrap">
+      ${fila('user','Ganancia de Alex','v-talex','','tAlex','grey','sus ventas cobradas en efectivo · precio + extra − moto')}
+      ${fila('box','Costo de lo vendido por Irene y Mamá','v-tcosto','','tCosto','grey','ellas se quedan su ganancia; a Alex va el costo')}
       <div id="row-tmoto">${fila('moto','Motomandado que puso Irene','v-tmoto','neg','tMoto','mango','se descuenta')}</div>
     </div>
     <div class="section-title">Se lo quedan</div>
-    <div class="group">
+    <div class="group wrap">
       ${fila('user','Ganancia de Irene','v-girene','pos','gIrene','','de sus ventas pendientes · no se transfiere')}
       <div id="row-gmama">${fila('user','Ganancia de Mamá','v-gmama','pos','gMama','','de sus ventas pendientes · no se transfiere')}</div>
     </div>
     <div class="section-title">Este mes</div>
     <div class="group">
-      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
-      ${fila('box','Artículos vendidos','v-art','','artMes','grey','Incluye transferidos')}
+      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>','','mes')}
+      ${fila('box','Artículos vendidos','v-art','','artMes','grey','Incluye transferidos','','mes')}
       ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','Gasto en envíos · no es por transferir')}
     </div>
     <div class="section-title">Historial</div>
@@ -968,8 +995,8 @@ function renderRing(d,meses){
   $('h-ring').style.strokeDashoffset=213.6*(1-Math.min(1,pct));
   tick($('h-pct'),Math.min(999,pct*100),{prefix:'',fmt:x=>Math.round(x)+'%'});
 }
-function fila(ico,label,id,cls,help,tone='',sub='',extra=''){
-  return `<div class="row tap" onclick="toast(HELP.${help})">
+function fila(ico,label,id,cls,help,tone='',sub='',extra='',detalle=''){
+  return `<div class="row tap" onclick="${detalle?`abrirDetalle('${detalle}')`:`toast(HELP.${help})`}">
     <div class="ico ${tone}">${ICONS[ico]}</div>
     <div class="t"><b>${label}</b>${sub?`<small>${sub}</small>`:''}</div>${extra}
     <div class="v ${cls} num" id="${id}">—</div></div>`;
@@ -1326,6 +1353,56 @@ function renderVentas(){
         <div class="meta"><span class="status ${ok?'selva':'mango'}">${ok?'Transferido':'Pendiente'}</span><span>${hh}</span><span>${x.id}</span>${x.gastoExt?`<span>moto $${money(x.gastoExt)}</span>`:''}</div>
         <div class="gain num">+$${money(x.ganancia)}</div>
       </div>`}).join('')}</div>`}).join('');
+}
+
+/* ---------- HOJAS DE DETALLE ---------- */
+function aporte(v){ // cuánto aporta una venta pendiente a "por transferir" y por qué
+  const efectivo=v.metodoPago==='Efectivo a Irene';
+  if(v.vendedor==='Alex')return efectivo?{tipo:'a',monto:v.precio+v.cobroExtra-v.gastoExt}:{tipo:'c',monto:-v.gastoExt};
+  return{tipo:'b',monto:v.costoFinal};
+}
+function filaVenta(v,monto,sub){
+  return`<div class="row plain">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small></div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${money(Math.abs(monto))}</div></div>`;
+}
+function abrirDetalle(tipo){
+  buzz();const body=document.getElementById('detalle-body'),t=document.getElementById('detalle-titulo');
+  const L=state.detalle||[];
+  if(tipo==='transferencia'){
+    const pend=L.filter(v=>v.estatusTransferencia==='No transferido');
+    const g={a:[],b:[],c:[]};pend.forEach(v=>{const x=aporte(v);if(x.monto||x.tipo!=='c')g[x.tipo].push({v,monto:x.monto});});
+    const sum=k=>g[k].reduce((s,x)=>s+x.monto,0);const A=sum('a'),B=sum('b'),C=-sum('c'),T=A+B-C,base=A+B+C||1;
+    const esAlex=state.usuario==='Alex';
+    t.textContent=esAlex?'Por recibir de Irene':'Por transferir a Alex';
+    const grupo=(k,titulo,sub,fn)=>g[k].length?`<div class="det-sub">${titulo}<b>${k==='c'?'−':''}$${money(Math.abs(sum(k)))}</b></div><div class="group">${g[k].map(x=>filaVenta(x.v,x.monto,fn(x.v))).join('')}</div>`:'';
+    body.innerHTML=`
+      <div class="det-total"><div><small>${pend.length} venta${pend.length===1?'':'s'} pendiente${pend.length===1?'':'s'}</small>Total</div><b class="num">$${money(T)}</b></div>
+      <div class="comp"><i class="a" style="width:${A/base*100}%"></i><i class="b" style="width:${B/base*100}%"></i><i class="c" style="width:${C/base*100}%"></i></div>
+      <div class="leg"><span>Ganancia de Alex</span><span class="b">Costo de lo de Irene y Mamá</span>${C?'<span class="c">Moto que puso Irene</span>':''}</div>
+      <div class="det-btn"><button class="btn primary" onclick="copiarResumen()">Copiar resumen</button><button class="btn ghost" onclick="cerrarDetalle()">Cerrar</button></div>
+      ${grupo('a','Ventas de Alex en efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)} · precio $${money(v.precio+v.cobroExtra)}${v.gastoExt?' − moto $'+money(v.gastoExt):''}`)}
+      ${grupo('b','Costo de lo vendido por Irene y Mamá','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)} · vendido en $${money(v.precio+v.cobroExtra)}, se queda $${money(v.ganancia)}`)}
+      ${grupo('c','Moto que puso Irene (se descuenta)','',v=>`Venta de Alex por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
+      ${pend.length?'':vacio('leaf','Nada pendiente','Todo está liquidado.')}`;
+    state._resumen={A,B,C,T,n:pend.length,g};
+  }else{
+    const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);
+    const mes=L.filter(v=>v.fechaTimestamp>=m0.getTime()).sort((a,b)=>b.fechaTimestamp-a.fechaTimestamp);
+    t.textContent='Ventas de '+mesActualNombre();
+    const por={};mes.forEach(v=>{(por[v.vendedor]=por[v.vendedor]||[]).push(v);});
+    const tot=mes.reduce((s,v)=>s+v.precio+v.cobroExtra,0);
+    body.innerHTML=`<div class="det-total"><div><small>${mes.length} artículo${mes.length===1?'':'s'} · transferidos y pendientes</small>Total vendido</div><b class="num">$${money(tot)}</b></div>`+
+      (['Irene','Alex','Mamá'].filter(u=>por[u]).map(u=>{const l=por[u],tv=l.reduce((s,v)=>s+v.precio+v.cobroExtra,0),tg=l.reduce((s,v)=>s+v.ganancia,0);return`
+        <div class="vend-head"><div class="avatar ${claseUsuario(u)}">${u[0]}</div><div class="vh"><b>${u}</b><small>${l.length} artículo${l.length===1?'':'s'}</small></div><div class="vt"><b class="num">$${money(tv)}</b><small>+$${money(tg)} ganancia</small></div></div>
+        <div class="group">${l.map(v=>filaVenta(v,v.precio+v.cobroExtra,`${diaLabel(v.fechaTimestamp)} · ${v.estatusTransferencia==='Transferido'?'liquidada':'pendiente'} · +$${money(v.ganancia)}`)).join('')}</div>`;}).join('')||vacio('leaf','Sin ventas este mes'));
+  }
+  document.getElementById('sheet-detalle').classList.remove('hidden');document.querySelector('#sheet-detalle .sheet').scrollTo({top:0});
+}
+function cerrarDetalle(){document.getElementById('sheet-detalle').classList.add('hidden');}
+function copiarResumen(){
+  const r=state._resumen;if(!r)return;
+  const lin=(k,tit)=>r.g[k].length?`\n${tit}:\n`+r.g[k].map(x=>`• ${x.v.descripcion} (${x.v.vendedor}) ${x.monto<0?'−':''}$${money(Math.abs(x.monto))}`).join('\n'):'';
+  const txt=`Kiosko · ${formatDate(new Date())}\nPor transferir a Alex: $${money(r.T)} (${r.n} ventas)`+lin('a','Ventas de Alex en efectivo')+lin('b','Costo de lo vendido por Irene y Mamá')+lin('c','Moto que puso Irene (se descuenta)');
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{buzz(12);toast('Resumen copiado, pégalo en WhatsApp');}).catch(()=>toast('No se pudo copiar','err'));
 }
 
 /* ---------- USUARIO ---------- */
