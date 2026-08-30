@@ -456,12 +456,16 @@ input{font:inherit;color:inherit}
 /* tarjetas de logros (Mis ventas) */
 .logros{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;margin:8px -2px 6px;scrollbar-width:none}
 .logros::-webkit-scrollbar{display:none}
-.lgc{flex:0 0 78%;max-width:300px;scroll-snap-align:start;border-radius:22px;padding:16px 18px 15px;position:relative;overflow:hidden;color:#fff;min-height:140px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 14px 30px -16px rgba(0,0,0,.35)}
+.lgc{flex:0 0 84%;max-width:320px;scroll-snap-align:start;border-radius:22px;padding:16px 18px 15px;position:relative;overflow:hidden;color:#fff;min-height:140px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 14px 30px -16px rgba(0,0,0,.35)}
 .lgc::before{content:'';position:absolute;width:160px;height:160px;border-radius:50%;right:-50px;top:-60px;background:rgba(255,255,255,.14)}
 .lgc::after{content:'';position:absolute;width:90px;height:90px;border-radius:50%;left:-30px;bottom:-40px;background:rgba(255,255,255,.1)}
 .lgc .k{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.85;position:relative;z-index:1}
 .lgc .n{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.05;margin:4px 0 2px;position:relative;z-index:1}
 .lgc .d{font-size:12.5px;font-weight:600;opacity:.9;position:relative;z-index:1;line-height:1.35}
+.lgc .d.big{font-size:15.5px;line-height:1.4;opacity:1;font-weight:600}
+.lgc .d.big b{font-weight:800}
+.lgc .d.big b.num{font-size:26px;letter-spacing:-.03em;line-height:1;display:inline-block;vertical-align:-2px;margin:0 2px}
+.lgc .up{margin:8px 0 0;display:inline-flex}
 .lgc .d b{font-weight:800}
 .lgc .up{display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,.22);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-left:6px;vertical-align:middle}
 .lgc .ic{position:absolute;top:14px;right:16px;width:30px;height:30px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.9;z-index:1}
@@ -1247,19 +1251,31 @@ const LG_ICONS={
   rocket:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3c4 2 6 6 6 10l-3 3H9l-3-3c0-4 2-8 6-10z"/><circle cx="12" cy="10" r="2"/><path d="M9 16l-2 5M15 16l2 5"/></svg>',
   sun:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>'
 };
+const MESES_LARGO={Ene:'enero',Feb:'febrero',Mar:'marzo',Abr:'abril',May:'mayo',Jun:'junio',Jul:'julio',Ago:'agosto',Sep:'septiembre',Oct:'octubre',Nov:'noviembre',Dic:'diciembre'};
+function mesLargo(label){if(!label)return'';const [m,y]=String(label).split(' ');return (MESES_LARGO[m]||m.toLowerCase())+(y?' '+y:'');}
+function mesActualNombre(){return MESES_LARGO[['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][new Date().getMonth()]];}
+const pz=n=>`${n} pieza${n===1?'':'s'}`;
 function renderLogros(L){
   const w=document.getElementById('logros');if(!w)return;
   const firma=JSON.stringify(L)+state.usuario;if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   if(!L||!L.total||!L.total.cantidad){w.innerHTML='';return;}
-  const c=[];
-  const mp=L.mesPasado,ma=L.mesActual;
-  if(mp)c.push(`<div class="lgc mango">${LG_ICONS.cal}<div class="k">Mes pasado · ${esc(mp.label)}</div><div class="n num" data-v="${mp.ganancia}">$0</div><div class="d"><b>${mp.cantidad}</b> pieza${mp.cantidad===1?'':'s'} vendida${mp.cantidad===1?'':'s'}${ma&&ma.ganancia>mp.ganancia?`<span class="up">▲ ya lo superaste</span>`:''}</div></div>`);
-  if(L.mejorMes)c.push(`<div class="lgc selva">${LG_ICONS.trophy}<div class="k">Tu mejor mes · ${esc(L.mejorMes.label)}</div><div class="n num" data-v="${L.mejorMes.ganancia}">$0</div><div class="d"><b>${L.mejorMes.cantidad}</b> piezas · tu récord personal</div></div>`);
-  if(L.topProducto)c.push(`<div class="lgc foto">${thumb(L.topProducto)}<div class="ft"><div class="k">Lo que más has vendido</div><div class="n">${esc(L.topProducto.descripcion)}</div><div class="d"><b>${L.topProducto.cantidad}</b> veces desde que empezaste</div></div></div>`);
-  c.push(`<div class="lgc tinta">${LG_ICONS.rocket}<div class="k">Desde ${esc(L.total.desde||'el inicio')}</div><div class="n num" data-v="${L.total.cantidad}" data-int="1">0</div><div class="d">piezas vendidas · <b>$${money(L.total.ganancia)}</b> de ganancia en <b>${L.total.meses}</b> mes${L.total.meses===1?'':'es'}</div></div>`);
-  if(L.esteMes&&L.esteMes.diasConVenta)c.push(`<div class="lgc lila">${LG_ICONS.sun}<div class="k">Este mes</div><div class="n num" data-v="${L.esteMes.diasConVenta}" data-int="1">0</div><div class="d">día${L.esteMes.diasConVenta===1?'':'s'} con venta · tu mejor día fue el <b>${L.esteMes.mejorDia}</b> con <b>$${money(L.esteMes.mejorDiaTotal)}</b></div></div>`);
-  w.innerHTML=`<div class="logros-title"><div class="section-title">Tus logros</div><small>Desliza →</small></div><div class="logros stagger">${c.join('')}</div>`;
-  w.querySelectorAll('.n.num[data-v]').forEach(el=>tick(el,Number(el.dataset.v),el.dataset.int?{prefix:'',fmt:entero,dur:900}:{dur:900}));
+  const c=[],mp=L.mesPasado,ma=L.mesActual,mesA=mesActualNombre();
+  const card=(cls,ico,k,cuerpo,ayuda)=>`<div class="lgc ${cls} tap" onclick="toast(${JSON.stringify(ayuda)})">${ico||''}<div class="k">${k}</div><div class="d big">${cuerpo}</div></div>`;
+  if(mp)c.push(card('mango',LG_ICONS.cal,'Mes pasado',
+    `En <b>${mesLargo(mp.label).split(' ')[0]}</b> ganaste <b class="num" data-v="${mp.ganancia}">$0</b> con ${pz(mp.cantidad)}.${ma?(ma.ganancia>mp.ganancia?`<span class="up">▲ En ${mesA} ya lo superaste</span>`:`<br>En ${mesA} llevas <b>$${money(ma.ganancia)}</b>.`):''}`,
+    `Tu ganancia del mes anterior, sumando todas tus ventas de ese mes (transferidas o no). Se compara con lo que llevas este mes.`));
+  if(L.mejorMes)c.push(card('selva',LG_ICONS.trophy,'Tu récord',
+    `Tu mejor mes fue <b>${mesLargo(L.mejorMes.label)}</b>: <b class="num" data-v="${L.mejorMes.ganancia}">$0</b> de ganancia con ${pz(L.mejorMes.cantidad)}.`,
+    `El mes en que más ganancia has tenido desde que empezaste a vender.`));
+  if(L.topProducto)c.push(`<div class="lgc foto tap" onclick="toast('El producto que más veces has vendido en todo tu historial.')">${thumb(L.topProducto)}<div class="ft"><div class="k">Tu producto estrella</div><div class="n">${esc(L.topProducto.descripcion)}</div><div class="d">Lo has vendido <b>${L.topProducto.cantidad} veces</b> desde que empezaste.</div></div></div>`);
+  c.push(card('tinta',LG_ICONS.rocket,'Tu trayectoria',
+    `Vendes desde <b>${mesLargo(L.total.desde)||'el inicio'}</b>. Llevas <b class="num" data-v="${L.total.cantidad}" data-int="1">0</b> piezas vendidas y <b>$${money(L.total.ganancia)}</b> de ganancia en ${L.total.meses} mes${L.total.meses===1?'':'es'}.`,
+    `Todo lo que has vendido y ganado desde tu primera venta registrada.`));
+  if(L.esteMes&&L.esteMes.diasConVenta)c.push(card('lila',LG_ICONS.sun,'Este mes',
+    `En ${mesA} has vendido en <b class="num" data-v="${L.esteMes.diasConVenta}" data-int="1">0</b> día${L.esteMes.diasConVenta===1?'':'s'} distinto${L.esteMes.diasConVenta===1?'':'s'}. Tu mejor día fue el <b>${L.esteMes.mejorDia} de ${mesA}</b>, con <b>$${money(L.esteMes.mejorDiaTotal)}</b> en ventas.`,
+    `Cuántos días de este mes registraste al menos una venta, y el día con mayor monto vendido (precio + cobro extra, sin restar costos).`));
+  w.innerHTML=`<div class="logros-title"><div class="section-title">Tus logros</div><small>Desliza → · toca para saber más</small></div><div class="logros stagger">${c.join('')}</div>`;
+  w.querySelectorAll('.num[data-v]').forEach(el=>tick(el,Number(el.dataset.v),el.dataset.int?{prefix:'',fmt:entero,dur:900}:{dur:900}));
 }
 function diaLabel(ts){
   const d=new Date(ts),h=new Date();h.setHours(0,0,0,0);
