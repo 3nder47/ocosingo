@@ -298,7 +298,7 @@ input{font:inherit;color:inherit}
 @keyframes draw2{to{stroke-dashoffset:0}}
 
 /* barras del historial */
-.bar{transform-origin:bottom;transform-box:fill-box;animation:grow .7s var(--ease) both;fill:var(--selva);opacity:.35;rx:4}
+.bar{transform-origin:bottom;transform-box:fill-box;animation:grow .7s var(--ease) both;fill:var(--selva);opacity:1;rx:4}
 .bar.cur{opacity:1}
 .bar.hit{opacity:.75}
 @keyframes grow{from{transform:scaleY(0)}}
@@ -505,6 +505,59 @@ input{font:inherit;color:inherit}
 .vend-head .vt{text-align:right}.vend-head .vt b{display:block;font-size:16px;letter-spacing:-.02em}.vend-head .vt small{font-size:11.5px;font-weight:700;color:var(--selva)}
 .det-btn{display:flex;gap:10px;margin:4px 0 14px}
 .det-btn .btn{flex:1;min-height:46px;font-size:14px}
+/* ===== v5 visual ===== */
+.toast{max-width:min(92vw,420px);text-align:center;border-radius:18px;line-height:1.35;white-space:normal}
+/* hero fintech */
+.hero .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hero .trend{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.16);margin-top:10px}
+.hero .trend.down{background:rgba(229,72,77,.35)}
+.hero .hspark{width:96px;height:44px;flex-shrink:0;margin-top:4px}
+.hero .hspark path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:300;stroke-dashoffset:300;animation:draw2 1.2s var(--ease) .3s forwards}
+.hero .hspark .fill{fill:url(#hg);stroke:none;opacity:.35;animation:none}
+.hero .hspark circle{fill:#fff}
+.hero .actions{display:flex;gap:8px;margin-top:16px;position:relative;z-index:1}
+.hero .actions button{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.12);color:#fff;font-size:11.5px;font-weight:700;transition:transform .15s var(--ease),background .15s}
+.hero .actions button:active{transform:scale(.95);background:rgba(255,255,255,.22)}
+.hero .actions button.main{background:#fff;color:var(--hero-a)}
+.hero .actions svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hero .ring{width:auto;height:auto}
+/* dona de composición */
+.donut-card{display:flex;align-items:center;gap:16px;padding:16px;border-radius:20px;background:var(--card);box-shadow:var(--shadow)}
+.donut{width:112px;height:112px;flex-shrink:0;position:relative}
+.donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+.donut circle{fill:none;stroke-width:14;transition:stroke-dasharray 1s var(--ease)}
+.donut .bg{stroke:var(--card-2)}
+.donut .s1{stroke:var(--selva)}.donut .s2{stroke:var(--ink)}.donut .s3{stroke:var(--mango)}
+.donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.donut .ctr b{font-size:15px;letter-spacing:-.03em}.donut .ctr small{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.dleg{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px}
+.dleg .it{display:flex;align-items:center;gap:10px}
+.dleg .sw{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.dleg .it .t{flex:1;min-width:0;font-size:12.5px;font-weight:700;line-height:1.2}
+.dleg .it .t small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.dleg .it .v{font-size:14px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.dleg .it.neg .v{color:var(--danger)}
+/* fórmula en fichas */
+.formula{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 4px}
+.formula .f{display:inline-flex;flex-direction:column;align-items:center;padding:7px 10px;border-radius:12px;background:var(--card-2);font-weight:800;font-size:13px;line-height:1}
+.formula .f small{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.formula .op{font-size:16px;font-weight:800;color:var(--muted)}
+.formula .f.res{background:var(--selva-soft);color:var(--selva-ink)}
+.formula .f.res small{color:var(--selva-ink);opacity:.8}
+.formula .f.neg{background:var(--mango-soft);color:#8A5A00}
+.formula.mini{margin:4px 0 0;gap:4px}
+.formula.mini .f{padding:4px 7px;font-size:11.5px;border-radius:8px}
+.formula.mini .f small{display:none}
+.formula.mini .op{font-size:12px}
+.exp-p{font-size:14px;line-height:1.45;color:var(--ink);margin:2px 0 8px}
+.exp-p b{font-weight:800}
+.exp-ej{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:14px}
+/* pestañas del historial */
+.chart-tabs{display:flex;gap:4px;background:var(--card-2);border-radius:10px;padding:3px}
+.chart-tabs button{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted)}
+.chart-tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.bar{fill:url(#barg)}
+.bar.cur{fill:url(#bargc)}
 /* estados vacíos con ilustración */
 .empty svg{width:64px;height:64px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin:0 auto 12px;display:block}
 
@@ -591,6 +644,14 @@ input{font:inherit;color:inherit}
   </div>
 </div>
 
+<div id="sheet-exp" class="overlay hidden" onclick="if(event.target===this)cerrarExp()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h3 id="exp-titulo">Explicación</h3>
+    <div id="exp-body"></div>
+    <button class="btn ghost" onclick="cerrarExp()">Entendido</button>
+  </div>
+</div>
 <div id="sheet-detalle" class="overlay hidden" onclick="if(event.target===this)cerrarDetalle()">
   <div class="sheet">
     <div class="handle"></div>
@@ -615,7 +676,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
-const APP_VERSION='4.9.1';const APP_BUILD='30 Aug 2026 16:06';
+const APP_VERSION='5.0';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
@@ -736,7 +797,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -908,23 +969,39 @@ function cargarDashboard(){
 }
 function armarDashboard(){
   const esAlex=state.usuario==='Alex';
+  const I=(d)=>`<svg viewBox="0 0 24 24">${d}</svg>`;
   document.getElementById('view-dashboard').innerHTML=`
     <div class="hero" id="hero">
-      <div class="hero-main">
-        <div class="lbl" onclick="toast('Suma de las filas de abajo: tus ventas en efectivo + costo de lo que vendieron Irene y Mamá − motomandado que puso Irene.')">${esAlex?'Por recibir de Irene':'Por transferir a Alex'}</div>
-        <div class="val num tap" id="h-val" onclick="abrirDetalle('transferencia')">$0.00</div>
-        <div class="sub"><span class="chip" id="h-pend">—</span><span class="chip" id="h-hoy">Hoy $0.00</span></div>
+      <div class="top">
+        <div class="hero-main">
+          <div class="lbl tap" onclick="explicar('hero')">${esAlex?'Por recibir de Irene':'Por transferir a Alex'} ›</div>
+          <div class="val num tap" id="h-val" onclick="abrirDetalle('transferencia')">$0.00</div>
+          <div class="trend" id="h-trend">—</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div class="ring" id="h-ringbox" onclick="explicar('ring')" style="width:78px;height:78px">
+            <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="h-ring" cx="40" cy="40" r="34"/></svg>
+            <div class="ring-txt"><b id="h-pct">0%</b><small id="h-ringlbl">de tu<br>mejor mes</small></div>
+          </div>
+        </div>
       </div>
-      <div class="ring" id="h-ringbox" onclick="toast(ringHelp)">
-        <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="h-ring" cx="40" cy="40" r="34"/></svg>
-        <div class="ring-txt"><b id="h-pct">0%</b><small id="h-ringlbl">de tu<br>mejor mes</small></div>
+      <div class="sub"><span class="chip" id="h-pend">—</span><span class="chip tap" id="h-hoy" onclick="explicar('hoy')">Hoy $0.00</span></div>
+      <div class="actions">
+        <button class="main" onclick="abrirQuick()">${I('<path d="M12 5v14M5 12h14"/>')}Vender</button>
+        <button onclick="abrirDetalle('transferencia')">${I('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>')}Ver cuenta</button>
+        <button onclick="abrirDetalle('transferencia',true)">${I('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>')}Copiar</button>
+        <button onclick="abrirDetalle('mes')">${I('<path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/>')}Este mes</button>
       </div>
     </div>
-    <div class="section-title">Cómo se forma ese monto <span class="hint">Toca el monto para el detalle</span></div>
-    <div class="group wrap">
-      ${fila('user','Ganancia de Alex','v-talex','','tAlex','grey','sus ventas cobradas en efectivo · precio + extra − moto')}
-      ${fila('box','Costo de lo vendido por Irene y Mamá','v-tcosto','','tCosto','grey','ellas se quedan su ganancia; a Alex va el costo')}
-      <div id="row-tmoto">${fila('moto','Motomandado que puso Irene','v-tmoto','neg','tMoto','mango','se descuenta')}</div>
+    <div class="section-title">Cómo se forma ese monto <span class="hint">Toca para el detalle</span></div>
+    <div class="donut-card tap" id="donut-card" onclick="abrirDetalle('transferencia')">
+      <div class="donut"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="40"/><circle class="s1" id="d1" cx="50" cy="50" r="40" stroke-dasharray="0 251.3"/><circle class="s2" id="d2" cx="50" cy="50" r="40" stroke-dasharray="0 251.3"/><circle class="s3" id="d3" cx="50" cy="50" r="40" stroke-dasharray="0 251.3"/></svg>
+        <div class="ctr"><b class="num" id="d-tot">$0</b><small>total</small></div></div>
+      <div class="dleg">
+        <div class="it" onclick="event.stopPropagation();explicar('tAlex')"><span class="sw" style="background:var(--selva)"></span><div class="t">Ganancia de Alex<small>sus ventas en efectivo</small></div><div class="v num" id="v-talex">$0</div></div>
+        <div class="it" onclick="event.stopPropagation();explicar('tCosto')"><span class="sw" style="background:var(--ink)"></span><div class="t">Costo de lo de Irene y Mamá<small>ellas se quedan la ganancia</small></div><div class="v num" id="v-tcosto">$0</div></div>
+        <div class="it neg" id="row-tmoto" onclick="event.stopPropagation();explicar('tMoto')"><span class="sw" style="background:var(--mango)"></span><div class="t">Moto que puso Irene<small>se descuenta</small></div><div class="v num" id="v-tmoto">$0</div></div>
+      </div>
     </div>
     <div class="section-title">Se lo quedan</div>
     <div class="group wrap">
@@ -939,14 +1016,16 @@ function armarDashboard(){
     </div>
     <div class="section-title">Historial</div>
     <div class="chart-card">
-      <div class="chart-head"><b>Ventas por mes</b><span>Últimos 12</span></div>
+      <div class="chart-head"><b>Ventas</b><div class="chart-tabs"><button class="${state.chartTab!=='semana'?'on':''}" onclick="setChartTab('mes')">12 meses</button><button class="${state.chartTab==='semana'?'on':''}" onclick="setChartTab('semana')">7 días</button></div></div>
       <div class="chart" id="chart"><div class="sk" style="height:100%"></div></div>
     </div>
     <div id="top-wrap"></div>`;
 }
+function setChartTab(t){buzz();state.chartTab=t;const c=document.getElementById('chart');if(c)c.dataset.firma='';document.querySelectorAll('.chart-tabs button').forEach((b,i)=>b.classList.toggle('on',(i===0)!==(t==='semana')));renderDashboard(state._dash,state._meses,{stale:true});}
 function renderTop(){
   const w=document.getElementById('top-wrap');if(!w)return;
-  const t=state.topMes||[];const firma=JSON.stringify(t)+'|'+t.map(p=>(state.catalogo.find(x=>x.descripcion===p.descripcion)||{}).stock||0).join(',');if(w.dataset.firma===firma)return;w.dataset.firma=firma;
+  const t=state.topMes||[];const firma=JSON.stringify(t)+'|'+t.map(p=>(state.catalogo.find(x=>x.descripcion===p.descripcion)||{}).stock||0).join(',');
+  if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   if(!t.length){w.innerHTML='';return;}
   w.innerHTML=`<div class="section-title">Lo más vendido del mes <span class="hint">Toca para vender otro</span></div><div class="top3 stagger">${t.map((p,i)=>{
     const cat=state.catalogo.find(x=>x.descripcion===p.descripcion);const st=cat?cat.stock:0;
@@ -961,19 +1040,29 @@ function renderDashboard(d,meses,m){
   const hero=document.getElementById('hero');
   if(!hero||hero.dataset.user!==state.usuario){armarDashboard();document.getElementById('hero').dataset.user=state.usuario;}
   else if(!m.stale){const h=document.getElementById('hero');h.classList.remove('refresh');void h.offsetWidth;h.classList.add('refresh');}
-  const $=id=>document.getElementById(id);
+  const $=id=>document.getElementById(id);state._dash=d;state._meses=meses;
   tick($('h-val'),d.porTransferir);
+  // tendencia: ventas de este mes vs mes anterior
+  const prev=meses.length>1?meses[meses.length-2]:null,tr=$('h-trend');
+  if(prev&&prev.total>0){const p=(d.ventasTotalesMes-prev.total)/prev.total*100;tr.className='trend'+(p<0?' down':'');tr.textContent=`${p>=0?'▲':'▼'} ${Math.abs(Math.round(p))}% vs ${mesLargo(prev.label).split(' ')[0]}`;}
+  else tr.textContent=`$${money(d.ventasTotalesMes)} vendidos este mes`;
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} pendiente${d.totalVentas===1?'':'s'}`;
   $('h-hoy').textContent='Hoy $'+money(d.ventasHoy);
   renderRing(d,meses);
   tick($('v-talex'),d.deAlexEfectivo||0);tick($('v-tcosto'),d.costoFamilia||0);
-  $('row-tmoto').style.display=(d.motoPagadoIrene||0)>0?'':'none';tick($('v-tmoto'),d.motoPagadoIrene||0);
+  $('row-tmoto').style.display=(d.motoPagadoIrene||0)>0?'':'none';tick($('v-tmoto'),d.motoPagadoIrene||0);tick($('d-tot'),d.porTransferir);
+  {const A=d.deAlexEfectivo||0,B=d.costoFamilia||0,C=d.motoPagadoIrene||0,base=(A+B+C)||1,L=251.3,gap=A&&B?3:0;let off=0;
+   [[A,'d1'],[B,'d2'],[C,'d3']].forEach(([v,id])=>{const len=Math.max(0,v/base*L-gap);const el=$(id);el.setAttribute('stroke-dasharray',`${len} ${L-len}`);el.setAttribute('stroke-dashoffset',-off);off+=v/base*L;});}
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
   tick($('v-moto'),d.gastoMotomandado);
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
   renderSpark(d.ventasSemana||[]);
   renderTop();
   const c=$('chart');
+  if(state.chartTab==='semana'){
+    const D=['dom','lun','mar','mié','jue','vie','sáb'],hoy=new Date(),sem=(d.ventasSemana||[]).map((t,i)=>{const f=new Date(hoy);f.setDate(hoy.getDate()-(6-i));return{label:(i===6?'hoy':D[f.getDay()])+' ',cantidad:0,total:t};});
+    const firma='s'+JSON.stringify(sem);if(c.dataset.firma!==firma){c.dataset.firma=firma;renderChart(sem,true);}return;
+  }
   if(!meses.length){c.innerHTML=vacio('leaf','Sin ventas registradas aún');return;}
   const firma=JSON.stringify(meses);
   if(c.dataset.firma!==firma){c.dataset.firma=firma;renderChart(meses);}
@@ -997,7 +1086,7 @@ function renderRing(d,meses){
   tick($('h-pct'),Math.min(999,pct*100),{prefix:'',fmt:x=>Math.round(x)+'%'});
 }
 function fila(ico,label,id,cls,help,tone='',sub='',extra='',detalle=''){
-  return `<div class="row tap" onclick="${detalle?`abrirDetalle('${detalle}')`:`toast(HELP.${help})`}">
+  return `<div class="row tap" onclick="${detalle?`abrirDetalle('${detalle}')`:`explicar('${help}')`}">
     <div class="ico ${tone}">${ICONS[ico]}</div>
     <div class="t"><b>${label}</b>${sub?`<small>${sub}</small>`:''}</div>${extra}
     <div class="v ${cls} num" id="${id}">—</div></div>`;
@@ -1013,16 +1102,16 @@ function renderSpark(v){
 }
 
 /* ---------- CHART: barras ---------- */
-function renderChart(data){
+function renderChart(data,semana){
   const c=document.getElementById('chart');c.innerHTML='';
   const W=c.offsetWidth||320,H=190,P={t:22,r:6,b:26,l:6};
   const cw=W-P.l-P.r,ch=H-P.t-P.b,max=Math.max(...data.map(d=>d.total),100);
   const n=data.length,slot=cw/n,bw=Math.min(28,slot*.62);
   const bars=data.map((d,i)=>({x:P.l+i*slot+(slot-bw)/2,y:P.t+ch-(d.total/max)*ch,h:(d.total/max)*ch,d}));
-  const step=n>6?2:1;
-  let svg=`<svg viewBox="0 0 ${W} ${H}">`;
+  const step=(n>6&&!semana)?2:1;
+  let svg=`<svg viewBox="0 0 ${W} ${H}"><defs><linearGradient id="barg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--selva)" stop-opacity=".55"/><stop offset="1" stop-color="var(--selva)" stop-opacity=".2"/></linearGradient><linearGradient id="bargc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--selva)"/><stop offset="1" stop-color="var(--hero-a)"/></linearGradient></defs>`;
   bars.forEach((b,i)=>{
-    svg+=`<rect class="bar ${i===n-1?'cur':''}" data-i="${i}" x="${b.x}" y="${b.y}" width="${bw}" height="${Math.max(b.h,2)}" style="animation-delay:${i*45}ms"/>`;
+    svg+=`<rect class="bar ${i===n-1?'cur':''}" data-i="${i}" x="${b.x}" y="${b.y}" width="${bw}" height="${Math.max(b.h,2)}" rx="${Math.min(6,bw/2)}" style="animation-delay:${i*45}ms"/>`;
     if((n-1-i)%step===0)svg+=`<text x="${b.x+bw/2}" y="${H-6}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--muted)">${b.d.label.split(' ')[0]}</text>`;
   });
   const last=bars[n-1];
@@ -1033,7 +1122,7 @@ function renderChart(data){
     const r=c.getBoundingClientRect(),x=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
     const b=bars.reduce((a,q)=>Math.abs(q.x+bw/2-x)<Math.abs(a.x+bw/2-x)?q:a);
     if(hit)hit.classList.remove('hit');hit=c.querySelector(`.bar[data-i="${bars.indexOf(b)}"]`);hit.classList.add('hit');
-    tip.textContent=`${b.d.label} · $${money(b.d.total)} · ${b.d.cantidad} art.`;
+    tip.textContent=`${b.d.label.trim()} · $${money(b.d.total)}${b.d.cantidad?` · ${b.d.cantidad} art.`:''}`;
     tip.style.left=Math.max(90,Math.min(W-90,b.x+bw/2))+'px';tip.style.top='0px';tip.classList.add('on');
   };
   const hide=()=>{tip.classList.remove('on');if(hit){hit.classList.remove('hit');hit=null;}};
@@ -1356,16 +1445,62 @@ function renderVentas(){
       </div>`}).join('')}</div>`}).join('');
 }
 
+/* ---------- EXPLICACIONES VISUALES ---------- */
+const ficha=(v,lbl,cls='')=>`<span class="f ${cls}">${v}${lbl?`<small>${lbl}</small>`:''}</span>`;
+const op=o=>`<span class="op">${o}</span>`;
+function formulaVenta(v,mini){ // fichas con números reales de una venta
+  const $=x=>'$'+money(x);const partes=[ficha($(v.precio),'precio')];
+  if(v.cobroExtra)partes.push(op('+'),ficha($(v.cobroExtra),'extra'));
+  if(v.vendedor!=='Alex')partes.push(op('−'),ficha($(v.costoFinal),'costo','neg'));
+  if(v.gastoExt)partes.push(op('−'),ficha($(v.gastoExt),'moto','neg'));
+  partes.push(op('='),ficha($(v.ganancia),'ganancia','res'));
+  return`<div class="formula ${mini?'mini':''}">${partes.join('')}</div>`;
+}
+function ejemploVenta(f){return(state.detalle||[]).find(f)||null;}
+const EXPLICA={
+  tAlex:{t:'Ganancia de Alex',p:'Cuando <b>Alex</b> vende y el cliente paga en efectivo, Irene guarda ese dinero. Alex puso el costo del producto, así que <b>todo lo que queda después del moto es suyo</b> y se le transfiere.',
+    f:()=>[ficha('precio','lo que pagó el cliente'),op('+'),ficha('extra','cobro extra'),op('−'),ficha('moto','envío','neg'),op('='),ficha('a Alex','se transfiere','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'},
+  tCosto:{t:'Costo de lo vendido por Irene y Mamá',p:'Cuando vende <b>Irene o Mamá</b>, ellas se quedan la ganancia. A Alex solo le regresan <b>el costo del producto</b>, que fue lo que él invirtió.',
+    f:()=>[ficha('precio','lo que pagó el cliente'),op('−'),ficha('ganancia','se la queda ella','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('costo','se transfiere a Alex','res')],ej:v=>v.vendedor!=='Alex'},
+  tMoto:{t:'Moto que puso Irene',p:'Si el cliente le pagó a <b>Alex por transferencia</b>, Irene pagó el envío de su bolsa. Ese monto <b>se le descuenta</b> a Alex en la siguiente transferencia.',
+    f:()=>[ficha('$0','Irene ya no cobra nada'),op('−'),ficha('moto','lo puso Irene','neg'),op('='),ficha('−moto','se descuenta','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago!=='Efectivo a Irene'},
+  gIrene:{t:'Ganancia de Irene',p:'Lo que Irene <b>se queda</b> de sus ventas que aún no liquida. No se transfiere: es suyo.',
+    f:()=>[ficha('precio'),op('+'),ficha('extra'),op('−'),ficha('costo','a Alex','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('ganancia','de Irene','res')],ej:v=>v.vendedor==='Irene'},
+  gMama:{t:'Ganancia de Mamá',p:'Igual que Irene: Mamá <b>se queda</b> la ganancia de lo que vende y a Alex le regresa el costo.',
+    f:()=>[ficha('precio'),op('+'),ficha('extra'),op('−'),ficha('costo','a Alex','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('ganancia','de Mamá','res')],ej:v=>v.vendedor==='Mamá'},
+  hoy:{t:'Hoy',p:'Suma de las ventas registradas <b>hoy</b> que aún no se transfieren (precio + extra).',f:null},
+  moto:{t:'Motomandado del mes',p:'Todo lo gastado en envíos este mes, transferido o no. <b>Es un gasto</b>, no dinero por transferir.',f:null},
+  totalMes:{t:'Ventas del mes',p:'Todo lo vendido este mes (precio + extra), incluidas las ya transferidas. La línea muestra los últimos 7 días. <b>Toca la fila para ver la lista.</b>',f:null},
+  artMes:{t:'Artículos vendidos',p:'Cuántas piezas se vendieron este mes, transferidas o no.',f:null},
+  ring:{t:'Anillo del récord',p:'Compara las ventas de este mes con tu <b>mejor mes</b> anterior. Cuando lo superas, se pone naranja y dice "¡nuevo récord!".',f:null},
+  hero:{t:'Por transferir a Alex',p:'Es la suma de: ganancia de Alex en sus ventas en efectivo <b>+</b> costo de lo que vendieron Irene y Mamá <b>−</b> moto que puso Irene. <b>Toca el monto</b> para ver venta por venta.',f:()=>[ficha('ganancia Alex','efectivo'),op('+'),ficha('costo','Irene y Mamá'),op('−'),ficha('moto','puso Irene','neg'),op('='),ficha('total','por transferir','res')]}
+};
+function explicar(k){
+  const e=EXPLICA[k];if(!e){return;}buzz();
+  document.getElementById('exp-titulo').textContent=e.t;
+  const ej=e.ej?ejemploVenta(e.ej):null;
+  document.getElementById('exp-body').innerHTML=`<p class="exp-p">${e.p}</p>${e.f?`<div class="formula">${e.f().join('')}</div>`:''}${ej?`<div class="exp-ej">Ejemplo real · ${esc(ej.descripcion)}</div>${formulaVenta(ej)}`:''}`;
+  document.getElementById('sheet-exp').classList.remove('hidden');
+}
+function cerrarExp(){document.getElementById('sheet-exp').classList.add('hidden');}
+
 /* ---------- HOJAS DE DETALLE ---------- */
 function aporte(v){ // cuánto aporta una venta pendiente a "por transferir" y por qué
   const efectivo=v.metodoPago==='Efectivo a Irene';
   if(v.vendedor==='Alex')return efectivo?{tipo:'a',monto:v.precio+v.cobroExtra-v.gastoExt}:{tipo:'c',monto:-v.gastoExt};
   return{tipo:'b',monto:v.costoFinal};
 }
-function filaVenta(v,monto,sub){
-  return`<div class="row plain">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small></div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${money(Math.abs(monto))}</div></div>`;
+function filaVenta(v,monto,sub,fichas){
+  return`<div class="row plain" style="align-items:flex-start">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small>${fichas||''}</div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${money(Math.abs(monto))}</div></div>`;
 }
-function abrirDetalle(tipo){
+function fichasAporte(v){ // qué se transfiere de esta venta, en fichas
+  const $=x=>'$'+money(x),p=[];
+  if(v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'){p.push(ficha($(v.precio+v.cobroExtra)));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));p.push(op('='),ficha($(v.precio+v.cobroExtra-v.gastoExt),'','res'));}
+  else if(v.vendedor==='Alex'){p.push(ficha('ya pagado a Alex'),op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
+  else{p.push(ficha($(v.precio+v.cobroExtra)),op('−'),ficha($(v.ganancia)+' suya','','neg'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));p.push(op('='),ficha($(v.costoFinal)+' costo','','res'));}
+  return`<div class="formula mini">${p.join('')}</div>`;
+}
+function abrirDetalle(tipo,copiar){
   buzz();const body=document.getElementById('detalle-body'),t=document.getElementById('detalle-titulo');
   const L=state.detalle||[];
   if(tipo==='transferencia'){
@@ -1374,17 +1509,18 @@ function abrirDetalle(tipo){
     const sum=k=>g[k].reduce((s,x)=>s+x.monto,0);const A=sum('a'),B=sum('b'),C=-sum('c'),T=A+B-C,base=A+B+C||1;
     const esAlex=state.usuario==='Alex';
     t.textContent=esAlex?'Por recibir de Irene':'Por transferir a Alex';
-    const grupo=(k,titulo,sub,fn)=>g[k].length?`<div class="det-sub">${titulo}<b>${k==='c'?'−':''}$${money(Math.abs(sum(k)))}</b></div><div class="group">${g[k].map(x=>filaVenta(x.v,x.monto,fn(x.v))).join('')}</div>`:'';
+    const grupo=(k,titulo,sub,fn)=>g[k].length?`<div class="det-sub">${titulo}<b>${k==='c'?'−':''}$${money(Math.abs(sum(k)))}</b></div><div class="group">${g[k].map(x=>filaVenta(x.v,x.monto,fn(x.v),fichasAporte(x.v))).join('')}</div>`:'';
     body.innerHTML=`
       <div class="det-total"><div><small>${pend.length} venta${pend.length===1?'':'s'} pendiente${pend.length===1?'':'s'}</small>Total</div><b class="num">$${money(T)}</b></div>
       <div class="comp"><i class="a" style="width:${A/base*100}%"></i><i class="b" style="width:${B/base*100}%"></i><i class="c" style="width:${C/base*100}%"></i></div>
       <div class="leg"><span>Ganancia de Alex</span><span class="b">Costo de lo de Irene y Mamá</span>${C?'<span class="c">Moto que puso Irene</span>':''}</div>
       <div class="det-btn"><button class="btn primary" onclick="copiarResumen()">Copiar resumen</button><button class="btn ghost" onclick="cerrarDetalle()">Cerrar</button></div>
-      ${grupo('a','Ventas de Alex en efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)} · precio $${money(v.precio+v.cobroExtra)}${v.gastoExt?' − moto $'+money(v.gastoExt):''}`)}
-      ${grupo('b','Costo de lo vendido por Irene y Mamá','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)} · vendido en $${money(v.precio+v.cobroExtra)}, se queda $${money(v.ganancia)}`)}
-      ${grupo('c','Moto que puso Irene (se descuenta)','',v=>`Venta de Alex por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
+      ${grupo('a','Ganancia de Alex · efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
+      ${grupo('b','Costo de lo vendido por Irene y Mamá','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
+      ${grupo('c','Moto que puso Irene · se descuenta','',v=>`Alex · pagado por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
       ${pend.length?'':vacio('leaf','Nada pendiente','Todo está liquidado.')}`;
     state._resumen={A,B,C,T,n:pend.length,g};
+    if(copiar){copiarResumen();return;}
   }else{
     const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);
     const mes=L.filter(v=>v.fechaTimestamp>=m0.getTime()).sort((a,b)=>b.fechaTimestamp-a.fechaTimestamp);
