@@ -1022,8 +1022,19 @@ function tintDesde(url,el){
 }
 function pintarCalc(){const c=document.getElementById('calc');if(!c||!state.vendedor)return;c.innerHTML=`<span>Ganancia estimada</span><b class="num" id="calc-v"></b>`;tick(document.getElementById('calc-v'),gananciaEst(),{dur:350});}
 function guardarInputs(){state.cobro=document.getElementById('cobro')?.value||'';state.gastos=document.getElementById('gastos')?.value||'';}
-function setVend(v){buzz();guardarInputs();state.vendedor=v;pintarVenta();}
-function setMetodo(m){buzz();guardarInputs();state.metodo=m;pintarVenta();}
+/* Cambios de vendedor / método: solo actualizan lo afectado, sin reconstruir la hoja (evita reflash de la galería). */
+function setVend(v){buzz();state.vendedor=v;refrescarOpciones();}
+function setMetodo(m){buzz();state.metodo=m;refrescarOpciones();}
+function refrescarOpciones(){
+  document.querySelectorAll('#venta-body .opts').forEach((g,gi)=>{
+    g.querySelectorAll('.opt').forEach(b=>{
+      const val=gi===0?b.textContent.trim():(b.textContent.trim()==='Transferencia'?'Transferencia directa a Alex':'Efectivo a Irene');
+      b.classList.toggle('on',gi===0?state.vendedor===val:state.metodo===val);
+    });
+  });
+  pintarCalc();
+  const n=document.getElementById('btn-next');if(n)n.disabled=!(state.vendedor&&state.metodo);
+}
 function revisar(){if(!state.vendedor||!state.metodo)return;buzz(12);guardarInputs();state.paso=2;pintarVenta();document.querySelector('#sheet-venta .sheet').scrollTo({top:0});}
 function cerrarVenta(){const o=document.getElementById('venta-titulo');o.style.display='';o.previousElementSibling.style.display='';document.getElementById('sheet-venta').classList.add('hidden');state.cobro='';state.gastos='';state.paso=1;}
 function setupHold(){
