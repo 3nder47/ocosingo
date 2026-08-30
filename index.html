@@ -541,16 +541,18 @@ input{font:inherit;color:inherit}
 .dleg .it.neg .v{color:var(--danger)}
 /* fórmula en fichas */
 .formula{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 4px}
-.formula .f{display:inline-flex;flex-direction:column;align-items:center;padding:7px 10px;border-radius:12px;background:var(--card-2);font-weight:800;font-size:13px;line-height:1}
-.formula .f small{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.formula .f{display:inline-flex;flex-direction:column;align-items:center;padding:7px 9px;border-radius:12px;background:var(--card-2);font-weight:800;font-size:13px;line-height:1}
+.formula .f small{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-top:4px;white-space:nowrap}
 .formula .op{font-size:16px;font-weight:800;color:var(--muted)}
 .formula .f.res{background:var(--selva-soft);color:var(--selva-ink)}
 .formula .f.res small{color:var(--selva-ink);opacity:.8}
 .formula .f.neg{background:var(--mango-soft);color:#8A5A00}
-.formula.mini{margin:4px 0 0;gap:4px}
+.formula.mini{margin:4px 0 0;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.formula.mini .f{white-space:nowrap}
 .formula.mini .f{padding:4px 7px;font-size:11.5px;border-radius:8px}
 .formula.mini .f small{display:none}
 .formula.mini .op{font-size:12px}
+#sheet-exp{z-index:45}
 .exp-p{font-size:14px;line-height:1.45;color:var(--ink);margin:2px 0 8px}
 .exp-p b{font-weight:800}
 .exp-ej{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:14px}
@@ -678,7 +680,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
-const APP_VERSION='5.1';const APP_BUILD='30 Aug 2026 16:06';
+const APP_VERSION='5.2';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
@@ -1445,9 +1447,9 @@ function formulaVenta(v,mini){ // fichas con números reales de una venta
 function ejemploVenta(f){return(state.detalle||[]).find(f)||null;}
 const EXPLICA={
   tAlex:{t:'Ganancia de Alex',p:'Cuando <b>Alex</b> vende y el cliente paga en efectivo, Irene guarda ese dinero. Alex puso el costo del producto, así que <b>todo lo que queda después del moto es suyo</b> y se le transfiere.',
-    f:()=>[ficha('precio','lo que pagó el cliente'),op('+'),ficha('extra','cobro extra'),op('−'),ficha('moto','envío','neg'),op('='),ficha('a Alex','se transfiere','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'},
+    f:()=>[ficha('precio','pagó el cliente'),op('+'),ficha('extra'),op('−'),ficha('moto','envío','neg'),op('='),ficha('a Alex','se transfiere','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'},
   tCosto:{t:'Costo de lo vendido por Irene y Mamá',p:'Cuando vende <b>Irene o Mamá</b>, ellas se quedan la ganancia. A Alex solo le regresan <b>el costo del producto</b>, que fue lo que él invirtió.',
-    f:()=>[ficha('precio','lo que pagó el cliente'),op('−'),ficha('ganancia','se la queda ella','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('costo','se transfiere a Alex','res')],ej:v=>v.vendedor!=='Alex'},
+    f:()=>[ficha('precio','pagó el cliente'),op('−'),ficha('ganancia','de ella','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('costo','a Alex','res')],ej:v=>v.vendedor!=='Alex'},
   tMoto:{t:'Moto que puso Irene',p:'Si el cliente le pagó a <b>Alex por transferencia</b>, Irene pagó el envío de su bolsa. Ese monto <b>se le descuenta</b> a Alex en la siguiente transferencia.',
     f:()=>[ficha('$0','Irene ya no cobra nada'),op('−'),ficha('moto','lo puso Irene','neg'),op('='),ficha('−moto','se descuenta','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago!=='Efectivo a Irene'},
   gIrene:{t:'Ganancia de Irene',p:'Lo que Irene <b>se queda</b> de sus ventas que aún no liquida. No se transfiere: es suyo.',
@@ -1481,9 +1483,9 @@ function filaVenta(v,monto,sub,fichas){
 }
 function fichasAporte(v){ // qué se transfiere de esta venta, en fichas
   const $=x=>'$'+money(x),p=[];
-  if(v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'){p.push(ficha($(v.precio+v.cobroExtra)));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));p.push(op('='),ficha($(v.precio+v.cobroExtra-v.gastoExt),'','res'));}
+  if(v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'){p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
   else if(v.vendedor==='Alex'){p.push(ficha('ya pagado a Alex'),op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
-  else{p.push(ficha($(v.precio+v.cobroExtra)),op('−'),ficha($(v.ganancia)+' suya','','neg'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));p.push(op('='),ficha($(v.costoFinal)+' costo','','res'));}
+  else{p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'),op('−'),ficha($(v.ganancia)+' suya','','neg'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
   return`<div class="formula mini">${p.join('')}</div>`;
 }
 function donutHTML(A,B,C,T){
