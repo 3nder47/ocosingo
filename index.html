@@ -286,7 +286,7 @@ input{font:inherit;color:inherit}
 @keyframes blink{50%{opacity:.5}}
 
 /* sparkline en fila */
-.spark{width:72px;height:26px;flex-shrink:0;margin-right:4px}
+.spark{width:56px;height:22px;flex-shrink:0;margin-right:2px}
 .spark path{fill:none;stroke:var(--selva);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:200;stroke-dashoffset:200;animation:draw2 1s var(--ease) .2s forwards}
 .spark circle{fill:var(--selva)}
 @keyframes draw2{to{stroke-dashoffset:0}}
@@ -639,7 +639,7 @@ function armarDashboard(){
     </div>
     <div class="section-title">Este mes</div>
     <div class="group">
-      ${fila('sum','Ventas totales','v-total','','totalMes','grey','Incluye transferidas','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
+      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey')}
     </div>
     <div class="section-title">Historial</div>
@@ -735,7 +735,7 @@ function renderCats(){
   document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${esc(c)}<span class="n">${c==='Todas'?state.catalogo.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
 }
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
-function stockDots(n){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}<small>${n}</small></div>`;}
+function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
 function renderCatalogo(){
   const q=document.getElementById('search').value.trim().toLowerCase();
   state.filtrado=state.catalogo.filter(p=>(state.cat==='Todas'||p.categoria===state.cat)&&(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)));
@@ -792,7 +792,7 @@ function abrirVenta(){
 }
 function stockLinea(p){
   const n=Number(p.stock)||0,low=n<=1;
-  return`<div class="stock-line ${low?'low':''}">${stockDots(n)}<span>${n===1?'Última pieza':n+' en stock'}</span></div>`;
+  return`<div class="stock-line ${low?'low':''}">${stockDots(n,true)}<span>${n===1?'Última pieza':n+' en stock'}</span></div>`;
 }
 function pintarVenta(){
   const p=state.producto,body=document.getElementById('venta-body'),foot=document.getElementById('venta-foot');
