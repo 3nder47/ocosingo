@@ -283,6 +283,10 @@ input{font:inherit;color:inherit}
 .ring-txt b{font-size:17px;font-weight:800;letter-spacing:-.03em}
 .ring-txt small{font-size:8.5px;font-weight:700;opacity:.7;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
 .hero.refresh .val{animation:blink .5s}
+.ring.record .ring-fg{stroke:var(--mango)}
+.ring.record .ring-txt b{color:var(--mango)}
+.ring.record{animation:recordpulse 2.4s ease-in-out infinite}
+@keyframes recordpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes blink{50%{opacity:.5}}
 
 /* sparkline en fila */
@@ -626,9 +630,9 @@ function armarDashboard(){
         <div class="val num" id="h-val">$0.00</div>
         <div class="sub"><span class="chip" id="h-pend">—</span><span class="chip" id="h-hoy">Hoy $0.00</span></div>
       </div>
-      <div class="ring" onclick="toast('Porcentaje de las ventas del mes que ya está transferido a Alex.')">
+      <div class="ring" id="h-ringbox" onclick="toast(ringHelp)">
         <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="h-ring" cx="40" cy="40" r="34"/></svg>
-        <div class="ring-txt"><b id="h-pct">0%</b><small>transferido<br>del mes</small></div>
+        <div class="ring-txt"><b id="h-pct">0%</b><small id="h-ringlbl">de tu<br>mejor mes</small></div>
       </div>
     </div>
     <div class="section-title">Pendiente de transferir</div>
@@ -656,9 +660,7 @@ function renderDashboard(d,meses,m){
   tick($('h-val'),d.porTransferir);
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} pendiente${d.totalVentas===1?'':'s'}`;
   $('h-hoy').textContent='Hoy $'+money(d.ventasHoy);
-  const pct=d.ventasTotalesMes>0?Math.max(0,Math.min(1,1-(d.pendienteMes||0)/d.ventasTotalesMes)):0;
-  $('h-ring').style.strokeDashoffset=213.6*(1-pct);
-  tick($('h-pct'),pct*100,{prefix:'',fmt:x=>Math.round(x)+'%'});
+  renderRing(d,meses);
   tick($('v-girene'),d.gananciaIrene);tick($('v-galex'),d.gananciaAlex);tick($('v-moto'),d.gastoMotomandado);
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
   renderSpark(d.ventasSemana||[]);
@@ -666,6 +668,24 @@ function renderDashboard(d,meses,m){
   if(!meses.length){c.innerHTML=vacio('leaf','Sin ventas registradas aún');return;}
   const firma=JSON.stringify(meses);
   if(c.dataset.firma!==firma){c.dataset.firma=firma;renderChart(meses);}
+}
+let ringHelp='';
+/* Anillo: ventas de este mes comparadas con el mejor mes anterior (récord). Sin metas fijas. */
+function renderRing(d,meses){
+  const $=id=>document.getElementById(id);
+  const prev=meses.slice(0,-1);                       // el último elemento es el mes actual
+  const best=prev.reduce((a,m)=>m.total>a.total?m:a,{total:0,label:''});
+  const actual=d.ventasTotalesMes||0;
+  let pct=0,lbl='de tu<br>mejor mes';
+  if(best.total>0){
+    pct=actual/best.total;
+    if(pct>=1){lbl='¡nuevo<br>récord!';$('h-ringbox').classList.add('record');}
+    else{lbl=`del récord<br>${esc(best.label.split(' ')[0].toLowerCase())}`;$('h-ringbox').classList.remove('record');}
+    ringHelp=pct>=1?`Este mes ya superó tu mejor mes (${best.label}, $${money(best.total)}).`:`Llevas $${money(actual)} este mes; tu mejor mes fue ${best.label} con $${money(best.total)}.`;
+  }else{ringHelp='Cuando haya más de un mes de ventas, aquí verás cómo va este mes contra tu mejor mes.';}
+  $('h-ringlbl').innerHTML=lbl;
+  $('h-ring').style.strokeDashoffset=213.6*(1-Math.min(1,pct));
+  tick($('h-pct'),Math.min(999,pct*100),{prefix:'',fmt:x=>Math.round(x)+'%'});
 }
 function fila(ico,label,id,cls,help,tone='',sub='',extra=''){
   return `<div class="row tap" onclick="toast(HELP.${help})">
