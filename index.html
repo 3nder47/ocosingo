@@ -722,7 +722,7 @@ input{font:inherit;color:inherit}
 
 <script src="config.js"></script>
 <script>
-const APP_VERSION='6.2';const APP_BUILD='30 Aug 2026 16:06';
+const APP_VERSION='6.3';const APP_BUILD='30 Aug 2026 16:06';
 /* ---------- API (Apps Script como backend JSON) ---------- */
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
@@ -1018,14 +1018,14 @@ function cargarDashboard(){
   },()=>{el.innerHTML=vacio('wifi','No se pudo cargar','Revisa tu conexión y desliza hacia abajo para reintentar.');listo();});
 }
 function armarDashboard(){
-  const esAlex=state.usuario==='Alex';
+  const esAlex=state.usuario==='Alex',esIrene=state.usuario==='Irene';
   const I=(d)=>`<svg viewBox="0 0 24 24">${d}</svg>`;
   document.getElementById('view-dashboard').innerHTML=`
     <div class="hero" id="hero">
       <div class="top">
         <div class="hero-main">
-          <div class="lbl tap" onclick="explicar('hero')">${esAlex?'Por recibir de Irene':'Por transferir a Alex'} ›</div>
-          <div class="val num tap" id="h-val" onclick="abrirDetalle('transferencia')">$0.00</div>
+          <div class="lbl tap" onclick="explicar('${esIrene?'negocio':'hero'}')">${esIrene?'Tu ganancia de '+mesActualNombre():esAlex?'Por recibir de Irene':'Por transferir a Alex'} ›</div>
+          <div class="val num tap" id="h-val" onclick="${esIrene?`explicar('negocio')`:`abrirDetalle('transferencia')`}">$0.00</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
           <div class="ring" id="h-ringbox" onclick="explicar('ring')" style="width:78px;height:78px">
@@ -1034,7 +1034,7 @@ function armarDashboard(){
           </div>
         </div>
       </div>
-      <div class="sub"><span class="chip" id="h-pend">—</span><span class="chip tap" id="h-hoy" onclick="explicar('hoy')">Hoy $0.00</span></div>
+      <div class="sub" id="h-chips">${esIrene?'':'<span class="chip" id="h-pend">—</span><span class="chip tap" id="h-hoy" onclick="explicar(\'hoy\')">Hoy $0.00</span>'}</div>
       <div class="actions">
         <button class="main" onclick="abrirQuick()">${I('<path d="M12 5v14M5 12h14"/>')}Vender</button>
         <button onclick="abrirDetalle('transferencia')">${I('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>')}Ver cuenta</button>
@@ -1042,15 +1042,18 @@ function armarDashboard(){
         <button onclick="abrirDetalle('mes')">${I('<path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/>')}Este mes</button>
       </div>
     </div>
+    ${esIrene?`<div class="group wrap" style="margin-top:12px"><div class="row tap" onclick="abrirDetalle('transferencia')"><div class="ico mango">${ICONS.cash}</div><div class="t"><b>Por transferir a Alex</b><small id="tc-sub">del efectivo que guardas</small></div><div class="v num" id="tc-val">$0.00</div></div></div>`:''}
     <div id="neg-wrap"></div>
+    <div id="sec-quedan" ${esIrene?'style="display:none"':''}>
     <div class="section-title">Se lo quedan</div>
     <div class="group wrap">
       ${fila('user','Ganancia de Irene','v-girene','pos','gIrene','','de sus ventas pendientes · no se transfiere')}
       <div id="row-gmama">${fila('user','Ganancia de Mamá','v-gmama','pos','gMama','','de sus ventas pendientes · no se transfiere')}</div>
     </div>
+    </div>
     <div class="section-title">Este mes</div>
     <div class="group">
-      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span><svg class="spark" id="spark" viewBox="0 0 72 26"></svg>','','mes')}
+      ${fila('sum',esIrene?'Ventas de la tienda':'Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span><svg class="spark" id="spark" viewBox="0 0 72 26"></svg>','','mes')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','Incluye transferidos','','mes')}
       ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','Gasto en envíos · no es por transferir')}
     </div>
@@ -1081,12 +1084,20 @@ function renderDashboard(d,meses,m){
   if(!hero||hero.dataset.user!==state.usuario){armarDashboard();document.getElementById('hero').dataset.user=state.usuario;}
   else if(!m.stale){const h=document.getElementById('hero');h.classList.remove('refresh');void h.offsetWidth;h.classList.add('refresh');}
   const $=id=>document.getElementById(id);state._dash=d;state._meses=meses;
+  const esIrene=state.usuario==='Irene',o=state.operacion;
+  if(esIrene){
+    tick($('h-val'),o?o.gMesTotal:0);
+    $('h-chips').innerHTML=`<span class="chip">De tu mercancía $${money(o?o.gMesPropio:0)}</span><span class="chip">Vendiendo lo de Alex $${money(o?o.gMesAjeno:0)}</span>`;
+    tick($('tc-val'),d.porTransferir);
+    $('tc-sub').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} pendiente${d.totalVentas===1?'':'s'} · toca para ver la cuenta`;
+  }else{
   tick($('h-val'),d.porTransferir);
   // comparación con el mes anterior, en la fila "Ventas del mes"
   const prev=meses.length>1?meses[meses.length-2]:null,cmp=$('v-total-cmp');
   if(cmp)cmp.textContent=prev?`${mesLargo(prev.label).split(' ')[0]} $${money(prev.total).replace(/\.00$/,'')} → ${mesActualNombre()} $${money(d.ventasTotalesMes).replace(/\.00$/,'')}`:'';
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} pendiente${d.totalVentas===1?'':'s'}`;
   $('h-hoy').textContent='Hoy $'+money(d.ventasHoy);
+  }
   renderRing(d,meses);
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
   tick($('v-moto'),d.gastoMotomandado);
@@ -1110,17 +1121,11 @@ function renderNegocio(){
   const o=state.operacion;
   if(state.usuario!=='Irene'||!o){w.innerHTML='';w.dataset.firma='';return;}
   const firma=JSON.stringify(o);if(w.dataset.firma===firma)return;w.dataset.firma=firma;
-  w.innerHTML=`<div class="section-title">Tu negocio · ${mesActualNombre()}</div>
-    <div class="neg-card tap" onclick="explicar('negocio')">
-      <div class="k">Tu ganancia del mes</div>
-      <div class="n num" id="neg-tot">$0</div>
-      <div class="sub"><span class="chip">De tu mercancía $${money(o.gMesPropio)}</span><span class="chip">Vendiendo lo de Alex $${money(o.gMesAjeno)}</span></div>
-    </div>
-    <div class="group wrap" style="margin-top:12px">
+  w.innerHTML=`<div class="section-title">Tu negocio</div>
+    <div class="group wrap">
       <div class="row tap" onclick="explicar('inversion')"><div class="ico grey">${ICONS.cash}</div><div class="t"><b>Inversión en tu mercancía</b><small>lo que has pagado por tus productos</small></div><div class="v num">$${money(o.inversion)}</div></div>
       <div class="row tap" onclick="explicar('stockIrene')"><div class="ico grey">${ICONS.box}</div><div class="t"><b>Tu mercancía en stock</b><small>${o.piezasStock} pieza${o.piezasStock===1?'':'s'} sin vender</small></div><div class="v num">$${money(o.valorStock)}</div></div>
     </div>`;
-  tick(document.getElementById('neg-tot'),o.gMesTotal,{dur:900});
 }
 function renderRing(d,meses){
   const $=id=>document.getElementById(id);
