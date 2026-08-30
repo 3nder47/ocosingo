@@ -128,7 +128,7 @@ input{font:inherit;color:inherit}
 .chart-head span{font-size:12px;font-weight:600;color:var(--muted)}
 .chart{height:190px;position:relative;margin-top:8px;touch-action:pan-y}
 .chart svg{width:100%;height:100%;overflow:visible}
-.tip{position:absolute;top:0;transform:translate(-50%,-100%);background:var(--ink);color:var(--bg);font-size:12px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.tip{position:absolute;top:0;transform:translate(-50%,-4px);z-index:2;background:var(--ink);color:var(--bg);font-size:12px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .tip.on{opacity:1}
 
 /* ---------- SEARCH / SEGMENTED ---------- */
@@ -290,7 +290,7 @@ input{font:inherit;color:inherit}
 @keyframes blink{50%{opacity:.5}}
 
 /* sparkline en fila */
-.spark{width:56px;height:22px;flex-shrink:0;margin-right:2px}
+.spark{width:72px;height:22px;display:block;margin-top:3px}
 .spark path{fill:none;stroke:var(--selva);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:200;stroke-dashoffset:200;animation:draw2 1s var(--ease) .2s forwards}
 .spark circle{fill:var(--selva)}
 @keyframes draw2{to{stroke-dashoffset:0}}
@@ -328,6 +328,8 @@ input{font:inherit;color:inherit}
 .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s}
 .thumb img.ok{opacity:1}
 .thumb.lg{width:64px;height:64px;border-radius:16px;font-size:22px}
+.thumb.sm{width:36px;height:36px;border-radius:10px}
+.thumb.sm .ph{width:50%;height:50%}
 /* placeholder con ícono de categoría */
 .thumb .ph{width:46%;height:46%;stroke:rgba(255,255,255,.9);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .thumb{background:var(--ph,var(--selva));background-image:linear-gradient(135deg,rgba(255,255,255,.18),rgba(0,0,0,.08))}
@@ -352,10 +354,10 @@ input{font:inherit;color:inherit}
 .gal-wrap .gal-track .thumb{aspect-ratio:5/4}
 .gal-wrap+.prod.compact{margin-top:0}
 /* galería en hoja de venta */
-.gal{position:relative;margin:-4px 0 12px;border-radius:18px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
-.gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gal{position:relative;margin:-4px 0 12px;border-radius:20px;overflow:hidden;background:transparent;box-shadow:var(--shadow);-webkit-mask-image:-webkit-radial-gradient(#fff,#000);isolation:isolate}
+.gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-radius:inherit}
 .gal-track::-webkit-scrollbar{display:none}
-.gal-track .thumb{flex:0 0 100%;width:100%;height:auto;aspect-ratio:4/3;border-radius:0;font-size:40px;scroll-snap-align:start}
+.gal-track .thumb{flex:0 0 100%;width:100%;height:auto;aspect-ratio:4/3;border-radius:20px;font-size:40px;scroll-snap-align:start}
 .gal-track .thumb .ph{width:28%;height:28%}
 .gal-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
 .gal-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5);transition:all .2s}
@@ -383,7 +385,7 @@ input{font:inherit;color:inherit}
 .topc .rank{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:11px;font-weight:800;display:grid;place-items:center}
 .topc .rank.gold{background:var(--mango);color:#1a1200}
 .topc .ti{padding:8px 10px 10px}
-.topc .ti b{display:block;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topc .ti b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;line-height:1.2;min-height:2.4em}
 .topc .ti small{display:block;font-size:11px;font-weight:700;color:var(--selva);margin-top:2px}
 
 .topc{transition:transform .15s var(--ease)}
@@ -398,9 +400,55 @@ input{font:inherit;color:inherit}
 .success .badge-ok svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:draw .4s .35s var(--ease) forwards}
 
 /* ventas con miniatura */
-.vrow{grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:4px 12px;align-items:center}
-.vrow .thumb{grid-row:1/3;width:44px;height:44px}
+.vrow{grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:3px 12px;align-items:center;padding:11px 14px}
+.vrow .thumb{grid-row:1/3;width:40px;height:40px;border-radius:11px}
+.vrow .meta{flex-wrap:nowrap;overflow:hidden;white-space:nowrap}
+.vrow .meta span{flex-shrink:0}
 .vrow .name{grid-column:2}.vrow .amt{grid-column:3}.vrow .meta{grid-column:2}.vrow .gain{grid-column:3}
+
+.rev-head{margin:0 0 12px}
+.rev-head .thumb.lg{border-radius:14px}
+/* ---- v5 motion ---- */
+/* 1. login: ripple en teclas, rebote de puntos, salida de la marca */
+.key{position:relative;overflow:hidden}
+.key .rip{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--selva);opacity:.28;transform:translate(-50%,-50%) scale(0);animation:rip .55s var(--ease) forwards;pointer-events:none}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(9);opacity:0}}
+.pin-dots span.on{animation:dotpop .32s var(--ease)}
+@keyframes dotpop{0%{transform:scale(.6)}60%{transform:scale(1.4)}100%{transform:scale(1.15)}}
+.pin-dots.ok span{background:var(--selva);border-color:var(--selva)}
+#login.bye{animation:loginout .45s var(--ease) forwards;pointer-events:none}
+#login.bye .brand-mark{animation:jump .45s var(--ease) forwards}
+@keyframes jump{0%{transform:scale(1)}40%{transform:translateY(-14px) scale(1.12)}100%{transform:translateY(-60px) scale(.6);opacity:0}}
+@keyframes loginout{to{opacity:0;transform:translateY(-24px)}}
+#app.hello{animation:hello .5s var(--ease) both}
+@keyframes hello{from{opacity:0;transform:translateY(18px)}}
+
+/* 2. transición lateral entre pestañas */
+.view{animation:none}
+.view.slide-l{animation:slidel .22s var(--ease) both}
+.view.slide-r{animation:slider .22s var(--ease) both}
+@keyframes slidel{from{opacity:0;transform:translateX(28px)}}
+@keyframes slider{from{opacity:0;transform:translateX(-28px)}}
+.nav button{transition:color .2s var(--ease),transform .2s var(--ease)}
+.nav button.on svg{animation:navpop .35s var(--ease)}
+@keyframes navpop{40%{transform:translateY(-3px) scale(1.12)}}
+
+/* 3. foto que vuela a la pantalla de éxito */
+.fly{position:fixed;z-index:70;border-radius:20px;overflow:hidden;background-size:cover;background-position:center;box-shadow:0 20px 40px -14px rgba(0,0,0,.4);transition:all .5s cubic-bezier(.2,.8,.2,1);pointer-events:none;will-change:transform,width,height,top,left}
+.success .hero-img.wait{visibility:hidden}
+
+/* 4. brillo del hero y rebote del anillo */
+.hero::after{content:'';position:absolute;top:-40%;bottom:-40%;left:-60%;width:40%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.18) 45%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.18) 55%,transparent 100%);transform:skewX(-18deg);animation:shine 1.4s .35s var(--ease) both;pointer-events:none}
+@keyframes shine{to{left:130%}}
+.ring .ring-fg{transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.4,.64,1) .2s}
+.ring-txt b{display:inline-block}
+.hero:not(.refresh) .ring-txt b{animation:pop .6s .9s var(--ease) both}
+
+/* 5. skeletons con brillo */
+.sk{position:relative;overflow:hidden;background:var(--card);animation:none}
+.sk::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(29,158,117,.10) 50%,transparent 80%);transform:translateX(-100%);animation:shimmer 1.4s ease-in-out infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+@media (prefers-color-scheme:dark){.sk::after{background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.06) 50%,transparent 80%)}}
 
 /* estados vacíos con ilustración */
 .empty svg{width:64px;height:64px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin:0 auto 12px;display:block}
@@ -615,6 +663,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.querySelectorAll('#filtros button').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.filtro=b.dataset.f;renderVentas();
   }));
   setupPullToRefresh();
+  entrarRecordado();
 });
 
 const buzz=(ms=8)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
@@ -637,7 +686,9 @@ function buildKeypad(){
   ['1','2','3','4','5','6','7','8','9','','0','⌫'].forEach(d=>{
     const b=document.createElement('button');
     b.className='key'+(d===''||d==='⌫'?' ghost':'');b.textContent=d;
-    if(d!=='')b.onclick=()=>{b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');tecla(d);};
+    if(d!=='')b.onclick=e=>{b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');
+      const r=b.getBoundingClientRect(),w=document.createElement('i');w.className='rip';w.style.left=((e.clientX||r.left+r.width/2)-r.left)+'px';w.style.top=((e.clientY||r.top+r.height/2)-r.top)+'px';b.appendChild(w);setTimeout(()=>w.remove(),600);
+      tecla(d);};
     k.appendChild(b);
   });
 }
@@ -662,10 +713,32 @@ function fallo(msg){
   document.getElementById('login-err').textContent=msg;state.pin='';pintarDots();
 }
 function entrar(u){
-  state.usuario=u;state.pin='';pintarDots();
+  state.usuario=u;
+  const lg=document.getElementById('login'),app=document.getElementById('app');
+  document.getElementById('dots').classList.add('ok');buzz([15,30,15]);
+  lg.classList.add('bye');
+  setTimeout(()=>{
+    lg.classList.add('hidden');lg.classList.remove('bye');document.getElementById('dots').classList.remove('ok');
+    state.pin='';pintarDots();
+    app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
+    setUsuario(u);cargarDashboard();
+  },420);
+  try{localStorage.setItem('oc:usuario',u);}catch(e){}
+}
+/* Si este teléfono ya entró antes, salta el login */
+function entrarRecordado(){
+  let u=null;try{u=localStorage.getItem('oc:usuario');}catch(e){}
+  if(!u)return false;
+  state.usuario=u;
   document.getElementById('login').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  setUsuario(u);cargarDashboard();
+  const app=document.getElementById('app');app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
+  setUsuario(u);cargarDashboard();return true;
+}
+function cerrarSesion(){
+  try{localStorage.removeItem('oc:usuario');}catch(e){}
+  cerrarUsuarios();state.usuario=null;state.ventas=[];state.ventFirma='';
+  document.getElementById('app').classList.add('hidden');
+  const lg=document.getElementById('login');lg.classList.remove('hidden');state.pin='';pintarDots();
 }
 const claseUsuario=u=>({Irene:'u-irene','Mamá':'u-mama',Alex:'u-alex'})[u]||'';
 function saludo(){const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';}
@@ -677,10 +750,12 @@ function setUsuario(u){
 }
 
 /* ---------- NAV ---------- */
+const ORDEN=['dashboard','catalogo','ventas'];
 function cambiarVista(v){
-  state.vista=v;
+  const prev=state.vista;state.vista=v;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
-  ['dashboard','catalogo','ventas'].forEach(x=>document.getElementById('view-'+x).classList.toggle('hidden',x!==v));
+  const dir=ORDEN.indexOf(v)>=ORDEN.indexOf(prev)?'slide-l':'slide-r';
+  ORDEN.forEach(x=>{const el=document.getElementById('view-'+x);el.classList.toggle('hidden',x!==v);el.classList.remove('slide-l','slide-r');if(x===v&&prev!==v){void el.offsetWidth;el.classList.add(dir);}});
   window.scrollTo({top:0});
   ({dashboard:cargarDashboard,catalogo:cargarCatalogo,ventas:cargarVentas})[v]();
 }
@@ -747,7 +822,7 @@ function armarDashboard(){
     </div>
     <div class="section-title">Este mes</div>
     <div class="group">
-      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
+      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<svg class="spark" id="spark" viewBox="0 0 72 26"></svg>')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey')}
     </div>
     <div class="section-title">Historial</div>
@@ -844,7 +919,7 @@ function renderChart(data){
     const b=bars.reduce((a,q)=>Math.abs(q.x+bw/2-x)<Math.abs(a.x+bw/2-x)?q:a);
     if(hit)hit.classList.remove('hit');hit=c.querySelector(`.bar[data-i="${bars.indexOf(b)}"]`);hit.classList.add('hit');
     tip.textContent=`${b.d.label} · $${money(b.d.total)} · ${b.d.cantidad} art.`;
-    tip.style.left=Math.max(60,Math.min(W-60,b.x+bw/2))+'px';tip.style.top=(b.y-10)+'px';tip.classList.add('on');
+    tip.style.left=Math.max(90,Math.min(W-90,b.x+bw/2))+'px';tip.style.top='0px';tip.classList.add('on');
   };
   const hide=()=>{tip.classList.remove('on');if(hit){hit.classList.remove('hit');hit=null;}};
   c.addEventListener('touchstart',show,{passive:true});c.addEventListener('touchmove',show,{passive:true});c.addEventListener('touchend',hide);
@@ -988,8 +1063,8 @@ function pintarVenta(){
     const outer=document.getElementById('venta-titulo');outer.style.display='';outer.previousElementSibling.style.display='';outer.textContent='¿Confirmar venta?';
     const extra=Number(state.cobro)||0,g=Number(state.gastos)||0;
     const r=(a,b,cls='')=>`<div class="row ${cls}"><div class="t"><b>${a}</b></div><div class="v num">${b}</div></div>`;
-    body.innerHTML=`<div class="review">
-      ${r('Producto',esc(p.descripcion))}
+    body.innerHTML=`<div class="prod compact rev-head">${thumb(p,'lg')}<div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px">${esc(p.categoria||'')}</small></div><span class="p num">$${money(p.precio)}</span></div>
+    <div class="review">
       ${r('Precio','$'+money(p.precio))}
       ${extra?r('Cobro extra','+$'+money(extra)):''}
       ${g?r('Motomandado','−$'+money(g)):''}
@@ -1048,10 +1123,12 @@ function setupHold(){
 function confirmarVenta(){
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
   const venta={descripcion:state.producto.descripcion,vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||''};
+  const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
+  const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
   apiPost('registrarVenta',{venta}).then(r=>{
     cerrarVenta();
     if(r.success){
-      const vendido=state.producto;
+      const vendido=state.producto;if(origen)vendido._fly=origen;
       state.dirty=true;state.catFirma='';   // fuerza datos frescos en la siguiente carga
       // descuenta 1 localmente para que el catálogo se vea al día aunque tarde la red
       const it=state.catalogo.find(x=>x.descripcion===state.producto.descripcion&&x.categoria===state.producto.categoria);
@@ -1068,7 +1145,17 @@ function celebrar(id,p){
   s.innerHTML=Array.from({length:26},(_,i)=>`<div class="confetti" style="left:50%;top:45%;background:${colors[i%5]};--dx:${(Math.random()-.5)*360}px;--dy:${(Math.random()-.5)*360}px;animation-delay:${Math.random()*.2}s"></div>`).join('')+
     `${visual}<h3>Venta registrada</h3><p>${p?esc(p.descripcion)+' · ':''}${esc(id)}</p>`;
   s.classList.remove('hidden');buzz([30,40,60]);
-  setTimeout(()=>{s.classList.add('hidden');cambiarVista('dashboard');},1700);
+  // la foto "vuela" desde la hoja de venta hasta su lugar en la pantalla de éxito
+  const fly=p&&p._fly,dest=s.querySelector('.hero-img');
+  if(fly&&dest&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
+    delete p._fly;dest.classList.add('wait');
+    const f=document.createElement('div');f.className='fly';const a=fly.rect;
+    Object.assign(f.style,{left:a.left+'px',top:a.top+'px',width:a.width+'px',height:a.height+'px',backgroundImage:`url('${fly.src}')`});
+    document.body.appendChild(f);
+    requestAnimationFrame(()=>{const b=dest.getBoundingClientRect();Object.assign(f.style,{left:b.left+'px',top:b.top+'px',width:b.width+'px',height:b.height+'px',borderRadius:'28px'});});
+    setTimeout(()=>{dest.classList.remove('wait');f.remove();},520);
+  }
+  setTimeout(()=>{s.classList.add('hidden');cambiarVista(state.vista||'dashboard');},1700);
 }
 
 /* ---------- MIS VENTAS ---------- */
@@ -1126,10 +1213,11 @@ function abrirUsuarios(){
   const u=[['Irene','Ventas en Ocosingo'],['Mamá','Ventas ocasionales'],['Alex','Administrador']];
   document.getElementById('user-list').innerHTML=u.map(([n,d])=>`
     <button class="user ${state.usuario===n?'on':''}" onclick="cambiarUsuario('${n}')" style="width:100%;text-align:left">
-      <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('');
+      <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('')+
+    `<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }
-function cambiarUsuario(u){buzz();setUsuario(u);state.ventas=[];state.ventFirma='';cerrarUsuarios();cambiarVista('dashboard');}
+function cambiarUsuario(u){buzz();try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';cerrarUsuarios();cambiarVista('dashboard');}
 function cerrarUsuarios(){document.getElementById('sheet-usuario').classList.add('hidden');}
 
 /* ---------- UTILS ---------- */
