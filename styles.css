@@ -205,7 +205,8 @@ input{font:inherit;color:inherit}
 .review .total{background:var(--selva-soft)}
 .review .total .t b{color:var(--selva-ink)}
 .review .total .v{color:var(--selva-ink);font-size:18px;font-weight:800}
-.hold{position:relative;overflow:hidden;width:100%;padding:18px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;user-select:none;-webkit-user-select:none;touch-action:none}
+.hold{position:relative;overflow:hidden;width:100%;padding:18px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+.hold .fill,.hold svg,.hold span{pointer-events:none}
 .hold .fill{position:absolute;inset:0;width:0;background:var(--selva);transition:width .9s linear}
 .hold.go .fill{width:100%}
 .hold span{position:relative;z-index:1}
