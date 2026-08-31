@@ -100,8 +100,8 @@
     <h3>Agregar producto <span class="tag-irene">tuyo</span></h3>
     <div class="form-field"><label>Descripción</label><input id="np-desc" placeholder="Auriculares X100 Negro" autocomplete="off"></div>
     <div class="form-field"><label>Categoría</label><input id="np-cat" list="cats-list" placeholder="Audifonos" autocomplete="off"><datalist id="cats-list"></datalist></div>
-    <div style="display:flex;gap:12px"><div class="form-field" style="flex:1"><label>Costo (lo que pagaste)</label><div class="money"><span>$</span><input id="np-costo" type="number" inputmode="decimal" placeholder="0.00"></div></div>
-    <div class="form-field" style="flex:1"><label>Precio de venta</label><div class="money"><span>$</span><input id="np-precio" type="number" inputmode="decimal" placeholder="0.00"></div></div></div>
+    <div style="display:flex;gap:12px"><div class="form-field" style="flex:1"><label>Te costó</label><div class="money"><span>$</span><input id="np-costo" type="number" inputmode="decimal" placeholder="0.00"></div></div>
+    <div class="form-field" style="flex:1"><label>Lo vendes en</label><div class="money"><span>$</span><input id="np-precio" type="number" inputmode="decimal" placeholder="0.00"></div></div></div>
     <div class="form-field"><label>Cantidad de piezas</label><div class="cant"><button onclick="npCant(-1)">−</button><b id="np-n">1</b><button onclick="npCant(1)">+</button></div></div>
     <div class="form-field"><label>Foto (opcional)</label>
       <input id="np-foto" type="file" accept="image/*" style="display:none" onchange="npFoto(this)">
