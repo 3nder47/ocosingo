@@ -1,4 +1,4 @@
-const APP_VERSION='7.1';const APP_BUILD='30 Aug 2026 21:30';
+const APP_VERSION='7.2';const APP_BUILD='30 Aug 2026 22:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -306,14 +306,13 @@ function armarDashboard(){
           <div class="lbl tap" onclick="explicar('${esIrene?'negocio':'hero'}')">${esIrene?'Tu ganancia de '+mesActualNombre():esAlex?'Irene te debe':'Le deben a Alex'} ›</div>
           <div class="val num tap" id="h-val" onclick="${esIrene?`explicar('negocio')`:`abrirDetalle('transferencia')`}">$0</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-          <div class="ring" id="h-ringbox" onclick="explicar('ring')" style="width:88px;height:88px">
-            <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="h-ring" cx="40" cy="40" r="34"/></svg>
-            <div class="ring-txt"><b id="h-pct">$0</b><small id="h-ringlbl">este<br>mes</small></div>
-          </div>
-        </div>
       </div>
       <div class="sub" id="h-chips">${esIrene?'':'<span class="chip" id="h-pend">—</span><span class="chip tap" id="h-hoy" onclick="explicar(\'hoy\')">Hoy $0</span>'}</div>
+      <div class="hbar tap" id="h-bar" onclick="explicar('ring')">
+        <div class="hbar-h"><span id="h-bar-t">Ventas de la tienda · ${mesActualNombre()}</span><b class="num" id="h-bar-v">$0</b></div>
+        <div class="hbar-track"><i id="h-bar-i"></i></div>
+        <div class="hbar-f" id="h-bar-f"></div>
+      </div>
       <div class="actions">
         <button class="main" onclick="abrirQuick()">${I('<path d="M12 5v14M5 12h14"/>')}Vender</button>
         <button onclick="abrirDetalle('transferencia')">${I('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>')}La cuenta</button>
@@ -331,7 +330,7 @@ function armarDashboard(){
     </div>
     <div class="section-title">Este mes</div>
     <div class="group">
-      ${fila('sum',esIrene?'Ventas de la tienda':'Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span><svg class="spark" id="spark" viewBox="0 0 72 26"></svg>','','mes')}
+      ${fila('sum',esIrene?'Ventas de la tienda':'Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span>','','mes')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','piezas vendidas este mes','','mes')}
       ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','gastado en envíos este mes')}
     </div>
@@ -405,21 +404,19 @@ function renderNegocio(){
       <div class="row tap" onclick="explicar('stockIrene')"><div class="ico grey">${ICONS.box}</div><div class="t"><b>Tu mercancía en stock</b><small>${o.piezasStock} pieza${o.piezasStock===1?'':'s'} sin vender</small></div><div class="v num">$${pesos(o.valorStock)}</div></div>
     </div>`;
 }
-function renderRing(d,meses){
-  const $=id=>document.getElementById(id);
+function renderRing(d,meses){ // barra: ventas de la tienda este mes contra el mejor mes anterior
+  const $=id=>document.getElementById(id),bar=$('h-bar');if(!bar)return;
   const prev=meses.slice(0,-1);                       // el último elemento es el mes actual
   const best=prev.reduce((a,m)=>m.total>a.total?m:a,{total:0,label:''});
-  const actual=d.ventasTotalesMes||0;
-  let pct=0,lbl='este<br>mes';
+  const actual=d.ventasTotalesMes||0;let pct=0,f='';
   if(best.total>0){
-    pct=actual/best.total;
-    if(pct>=1){lbl='¡nuevo<br>récord!';$('h-ringbox').classList.add('record');}
-    else{lbl=`de $${pesos(best.total)}<br>${esc(best.label.split(' ')[0].toLowerCase())}`;$('h-ringbox').classList.remove('record');}
-    ringHelp=pct>=1?`Este mes ya superó tu mejor mes (${best.label}, $${pesos(best.total)}).`:`Llevas $${pesos(actual)} este mes. Tu mejor mes fue ${best.label} con $${pesos(best.total)}: te faltan $${pesos(best.total-actual)} para superarlo.`;
-  }else{ringHelp='Cuando haya más de un mes de ventas, aquí verás cómo va este mes contra tu mejor mes.';}
-  $('h-ringlbl').innerHTML=lbl;
-  $('h-ring').style.strokeDashoffset=213.6*(1-Math.min(1,pct));
-  tick($('h-pct'),actual);
+    pct=actual/best.total;const mes=mesLargo(best.label).split(' ')[0];
+    if(pct>=1){f=`¡Nuevo récord! Ya superaste ${mes} ($${pesos(best.total)})`;bar.classList.add('record');}
+    else{f=`Tu mejor mes: ${mes} $${pesos(best.total)} · faltan $${pesos(best.total-actual)}`;bar.classList.remove('record');}
+    ringHelp=pct>=1?`Este mes ya superó tu mejor mes (${best.label}, $${pesos(best.total)}).`:`La tienda lleva $${pesos(actual)} este mes. El mejor mes fue ${best.label} con $${pesos(best.total)}: faltan $${pesos(best.total-actual)} para superarlo.`;
+  }else{f='Cuando haya más meses, aquí se compara con el mejor';ringHelp='Cuando haya más de un mes de ventas, aquí verás cómo va este mes contra el mejor mes.';}
+  $('h-bar-f').textContent=f;$('h-bar-i').style.width=(Math.min(1,pct)*100)+'%';
+  tick($('h-bar-v'),actual);
 }
 function fila(ico,label,id,cls,help,tone='',sub='',extra='',detalle=''){
   return `<div class="row tap" onclick="${detalle?`abrirDetalle('${detalle}')`:`explicar('${help}')`}">
@@ -889,7 +886,7 @@ const EXPLICA={
   moto:{t:'Motomandado del mes',p:'Todo lo gastado en envíos este mes. <b>Es un gasto</b>: ese dinero ya se le pagó al repartidor.',f:null},
   totalMes:{t:'Ventas del mes',p:'Todo lo vendido este mes (precio + extra), liquidado o no. La línea muestra los últimos 7 días. <b>Toca la fila para ver la lista.</b>',f:null},
   artMes:{t:'Artículos vendidos',p:'Cuántas piezas se vendieron este mes, liquidadas o no.',f:null},
-  ring:{t:'Anillo del récord',p:()=>ringHelp+' Cuando este mes supera al mejor, el anillo se pone naranja.',f:null},
+  ring:{t:'Ventas de la tienda',p:()=>ringHelp+' Cuenta las ventas de todos (Alex, Irene y Mamá). Cuando se supera el mejor mes, la barra se pone naranja.',f:null},
   negocio:{t:'Tu ganancia del mes',p:'Suma de <b>tu mercancía</b> (precio + extra − costo − moto, porque el costo lo pagaste tú) más lo que ganas <b>vendiendo la mercancía de Alex</b> (precio + extra − costo − moto; el costo se le regresa a él). Todo esto es tuyo.',f:null},
   inversion:{t:'Inversión en tu mercancía',p:'La suma de lo que <b>has pagado</b> por todos tus productos, vendidos o en stock. Sirve para saber cuánto has metido a tu negocio.',f:null},
   stockIrene:{t:'Tu mercancía en stock',p:'Lo que te costó la mercancía tuya que <b>aún no se vende</b>. Es dinero tuyo convertido en producto.',f:null},
@@ -913,8 +910,8 @@ function aporte(v){ // cuánto aporta una venta pendiente a "por transferir" y p
   if(v.vendedor==='Alex')return efectivo?{tipo:'a',monto:v.precio+v.cobroExtra-v.gastoExt}:{tipo:'c',monto:-v.gastoExt};
   return{tipo:'b',monto:v.costoFinal};
 }
-function filaVenta(v,monto,sub,fichas){
-  return`<div class="row plain" style="align-items:flex-start">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small>${fichas||''}</div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${pesos(Math.abs(monto))}</div></div>`;
+function filaVenta(v,monto,sub,fichas,gan){
+  return`<div class="row plain" style="align-items:flex-start">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small>${fichas||''}</div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${pesos(Math.abs(monto))}${gan!=null?`<small class="gan">+$${pesos(gan)} ganancia</small>`:''}</div></div>`;
 }
 function fichasAporte(v){ // qué se transfiere de esta venta, en fichas
   const $=x=>'$'+pesos(x),p=[];
@@ -963,7 +960,7 @@ function abrirDetalle(tipo,copiar){
     body.innerHTML=`<div class="det-total"><div><small>${mes.length} artículo${mes.length===1?'':'s'}${totIrene?` · incluye $${pesos(totIrene)} de mercancía de Irene`:''}${prev?` · ${mesLargo(prev.label).split(' ')[0]}: $${pesos(prev.total)}`:''}</small>Total vendido</div><b class="num">$${pesos(tot)}</b></div>`+
       (['Irene','Alex','Mamá'].filter(u=>por[u]).map(u=>{const l=por[u],tv=l.reduce((s,v)=>s+v.precio+v.cobroExtra,0),tg=l.reduce((s,v)=>s+v.ganancia,0);return`
         <div class="vend-head"><div class="avatar ${claseUsuario(u)}">${u[0]}</div><div class="vh"><b>${u}</b><small>${l.length} artículo${l.length===1?'':'s'}</small></div><div class="vt"><b class="num">$${pesos(tv)}</b><small>+$${pesos(tg)} ganancia</small></div></div>
-        <div class="group">${l.map(v=>filaVenta(v,v.precio+v.cobroExtra,`${diaLabel(v.fechaTimestamp)} · ${v.origen==='Irene'?'mercancía de Irene':v.estatusTransferencia==='Transferido'?'liquidada':'sin liquidar'} · +$${money(v.ganancia)}`)).join('')}</div>`;}).join('')||vacio('leaf','Sin ventas este mes'));
+        <div class="group">${l.map(v=>filaVenta(v,v.precio+v.cobroExtra,`${diaLabel(v.fechaTimestamp)} · ${v.origen==='Irene'?'mercancía de Irene':v.estatusTransferencia==='Transferido'?'liquidada':'sin liquidar'}`,'',v.ganancia)).join('')}</div>`;}).join('')||vacio('leaf','Sin ventas este mes'));
   }
   document.getElementById('sheet-detalle').classList.remove('hidden');document.querySelector('#sheet-detalle .sheet').scrollTo({top:0});
 }
