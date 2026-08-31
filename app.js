@@ -1,4 +1,4 @@
-const APP_VERSION='6.4';const APP_BUILD='30 Aug 2026 20:00';
+const APP_VERSION='6.5';const APP_BUILD='30 Aug 2026 20:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -720,6 +720,9 @@ function setupHold(){
     t=setTimeout(()=>{b.disabled=true;buzz(45);confirmarVenta();},900);};
   const up=()=>{clearTimeout(t);tics.forEach(clearTimeout);b.classList.remove('go');};
   b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointerleave',up);b.addEventListener('pointercancel',up);
+  // Bloquea el menú contextual del navegador (Samsung Internet / Chrome) al mantener presionado
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 }
 function confirmarVenta(){
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
