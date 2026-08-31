@@ -1,11 +1,11 @@
 // Service worker Tienda Ocosingo
-// - App shell (HTML, manifest, íconos): cache-first, se actualiza al cambiar CACHE.
+// - App shell (HTML, CSS, JS, manifest, íconos): cache-first, se actualiza al cambiar CACHE.
 // - Fuentes de Google: stale-while-revalidate.
-// - API de Apps Script: no se intercepta; el respaldo offline lo maneja localStorage en index.html.
-const CACHE = 'ocosingo-v4';
+// - API de Apps Script: no se intercepta; el respaldo offline lo maneja localStorage en app.js.
+const CACHE = 'ocosingo-v5';
 const IMG_CACHE = 'ocosingo-img-v1';
 async function podarImagenes(c) { const keys = await c.keys(); if (keys.length > 300) for (const k of keys.slice(0, keys.length - 300)) await c.delete(k); }
-const SHELL = ['./', './index.html', './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
