@@ -96,6 +96,7 @@ input{font:inherit;color:inherit}
 .row .v{font-size:1rem;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
 .row .v.pos{color:var(--selva)}
 .row .v.neg{color:var(--danger)}
+.row .v small.gan{display:block;font-size:0.75rem;font-weight:700;color:var(--selva);text-align:right;margin-top:3px}
 
 /* stat strip */
 .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -511,6 +512,15 @@ input{font:inherit;color:inherit}
 .hero .actions button.main{background:#fff;color:var(--hero-a)}
 .hero .actions svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .hero .ring{width:auto;height:auto}
+/* barra del mejor mes (sustituye al anillo) */
+.hbar{margin-top:16px;position:relative;z-index:1}
+.hbar-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:0.8125rem;font-weight:700;opacity:.9}
+.hbar-h b{font-size:1rem;letter-spacing:-.02em;opacity:1;white-space:nowrap}
+.hbar-track{height:8px;border-radius:99px;background:rgba(255,255,255,.16);margin-top:8px;overflow:hidden}
+.hbar-track i{display:block;height:100%;width:0;border-radius:99px;background:#fff;transition:width 1.1s var(--ease) .2s}
+.hbar.record .hbar-track i{background:var(--mango)}
+.hbar.record .hbar-f{color:var(--mango);opacity:1}
+.hbar-f{font-size:0.75rem;font-weight:600;opacity:.8;margin-top:7px}
 /* dona de composición */
 .donut-card{display:flex;align-items:center;gap:16px;padding:16px;border-radius:20px;background:var(--card);box-shadow:var(--shadow)}
 .donut{width:112px;height:112px;flex-shrink:0;position:relative}
