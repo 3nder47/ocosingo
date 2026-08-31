@@ -1,4 +1,4 @@
-const APP_VERSION='7.0';const APP_BUILD='30 Aug 2026 21:00';
+const APP_VERSION='7.1';const APP_BUILD='30 Aug 2026 21:30';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -307,7 +307,7 @@ function armarDashboard(){
           <div class="val num tap" id="h-val" onclick="${esIrene?`explicar('negocio')`:`abrirDetalle('transferencia')`}">$0</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-          <div class="ring" id="h-ringbox" onclick="explicar('ring')" style="width:78px;height:78px">
+          <div class="ring" id="h-ringbox" onclick="explicar('ring')" style="width:88px;height:88px">
             <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="h-ring" cx="40" cy="40" r="34"/></svg>
             <div class="ring-txt"><b id="h-pct">$0</b><small id="h-ringlbl">este<br>mes</small></div>
           </div>
@@ -365,7 +365,7 @@ function renderDashboard(d,meses,m){
   const esIrene=state.usuario==='Irene',o=state.operacion;
   if(esIrene){
     tick($('h-val'),o?o.gMesTotal:0);
-    $('h-chips').innerHTML=`<span class="chip">De tu mercancía $${pesos(o?o.gMesPropio:0)}</span><span class="chip">Vendiendo lo de Alex $${pesos(o?o.gMesAjeno:0)}</span>`;
+    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')||'<span class="chip">Aún sin ventas este mes</span>';
     tick($('tc-val'),d.porTransferir);
     $('tc-sub').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
   }else{
@@ -797,7 +797,7 @@ function renderMini(d){
   if(!m.querySelector('#m-pend'))m.innerHTML=`
     <div class="stat"><small>Sin liquidar</small><b class="num" id="m-pend">0</b></div>
     <div class="stat"><small>Mi ganancia</small><b class="num pos" id="m-gan">$0</b></div>
-    <div class="stat"><small>Este mes</small><b class="num" id="m-mes">0</b></div>`;
+    <div class="stat"><small>Piezas este mes</small><b class="num" id="m-mes">0</b></div>`;
   tick(document.getElementById('m-pend'),d.pendientes,{prefix:'',fmt:entero});
   tick(document.getElementById('m-gan'),d.ganancia);
   tick(document.getElementById('m-mes'),d.articulosMes,{prefix:'',fmt:entero});
@@ -914,10 +914,10 @@ function aporte(v){ // cuánto aporta una venta pendiente a "por transferir" y p
   return{tipo:'b',monto:v.costoFinal};
 }
 function filaVenta(v,monto,sub,fichas){
-  return`<div class="row plain" style="align-items:flex-start">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small>${fichas||''}</div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${money(Math.abs(monto))}</div></div>`;
+  return`<div class="row plain" style="align-items:flex-start">${thumb(v)}<div class="t"><b>${esc(v.descripcion)}</b><small>${esc(sub)}</small>${fichas||''}</div><div class="v num ${monto<0?'neg':''}">${monto<0?'−':''}$${pesos(Math.abs(monto))}</div></div>`;
 }
 function fichasAporte(v){ // qué se transfiere de esta venta, en fichas
-  const $=x=>'$'+money(x),p=[];
+  const $=x=>'$'+pesos(x),p=[];
   if(v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'){p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
   else if(v.vendedor==='Alex'){p.push(ficha('ya pagado a Alex'),op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
   else{p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'),op('−'),ficha($(v.ganancia)+' suya','','neg'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
