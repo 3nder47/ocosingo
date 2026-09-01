@@ -603,3 +603,12 @@ input{font:inherit;color:inherit}
 .install .t small{display:block;font-size:0.75rem;color:var(--muted);font-weight:600;margin-top:2px}
 .install .btn.primary{width:auto;padding:10px 14px;font-size:0.875rem;border-radius:12px}
 .install .x{width:28px;height:28px;border-radius:50%;background:var(--card-2);color:var(--muted);font-size:0.75rem;font-weight:800;flex-shrink:0}
+
+/* editar / eliminar producto de Irene */
+.edit-link{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;border-radius:999px;background:var(--selva-soft);color:var(--selva-ink);font-size:0.8125rem;font-weight:800}
+.edit-link:active{transform:scale(.96)}
+.btn.danger{background:transparent;color:var(--danger);margin-top:14px}
+.btn.danger.solid{background:var(--danger);color:#fff}
+.del-conf{margin-top:14px;padding:14px 16px;border-radius:16px;background:var(--danger-soft)}
+.del-conf p{font-size:0.875rem;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:12px}
+.del-conf .det-btn{margin:0}
