@@ -1,6 +1,7 @@
 /* Kiosko · estilos. Cargado desde index.html. */
 /* ---------- TOKENS ---------- */
 :root{
+  color-scheme:light;
   --bg:#F2F3F7; --card:#FFFFFF; --card-2:#F7F8FB;
   --ink:#0F1222; --muted:#6B7080; --line:rgba(15,18,34,.08);
   --selva:#1D9E75; --selva-soft:#E3F5EE; --selva-ink:#0F5C44;
@@ -14,13 +15,39 @@
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#0C0E15; --card:#171A24; --card-2:#1E222E;
-    --ink:#F5F6FA; --muted:#8B90A0; --line:rgba(255,255,255,.08);
-    --selva-soft:rgba(29,158,117,.18); --selva-ink:#8FE0C4;
-    --mango-soft:rgba(245,158,11,.16); --danger-soft:rgba(229,72,77,.16);
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
-    --nav-blur:rgba(23,26,36,.72);
+    color-scheme:dark;
+    --bg:#0B0D13; --card:#161923; --card-2:#20242F;
+    --ink:#F5F6FA; --muted:#9298A8; --line:rgba(255,255,255,.09);
+    --selva:#34C48F; --selva-soft:rgba(52,196,143,.16); --selva-ink:#9DEBD0;
+    --mango-soft:rgba(245,158,11,.18); --danger:#FF7075; --danger-soft:rgba(255,112,117,.16);
+    --shadow:0 1px 0 rgba(255,255,255,.03),0 10px 30px -14px rgba(0,0,0,.6);
+    --nav-blur:rgba(22,25,35,.78);
+    --hero-a:#0F2A21; --hero-b:#1E8F6B;
   }
+  /* En oscuro las sombras no se ven: las superficies se separan con un borde fino, como en iOS */
+  .group,.stat,.chart-card,.tile,.mini,.topc,.search,.donut-card,.user,.vend-head,.key,.opt,.money,.form-field input,.install,.review{border:1px solid var(--line)}
+  .hero{border:1px solid rgba(255,255,255,.07)}
+  .hero .actions button{background:rgba(255,255,255,.09)}
+  .hero .actions button.main{background:#fff;color:#0F2A21}
+  .chip{background:rgba(255,255,255,.11)}
+  .ico.mango{color:#FFC65C}
+  .status.mango,.stock-line.low{color:#FFC65C}
+  .tile .low,.mini .tag{color:#1a1200}
+  .nav button.on{color:var(--selva-ink)}
+  .btn.primary{background:#F5F6FA;color:#0B0D13}
+  .cat.on{background:#F5F6FA;color:#0B0D13;border-color:#F5F6FA}
+  .cat.on .n{background:rgba(0,0,0,.1);color:#0B0D13}
+  .key.ghost{border:0}
+  .det-total{background:#F5F6FA;color:#0B0D13}
+  .hold{background:#F5F6FA;color:#0B0D13}
+  .hold .hold-ring .a{stroke:rgba(0,0,0,.18)}.hold .hold-ring .b{stroke:#0B0D13}
+  .hold.go{color:#fff}
+  .tip{background:#F5F6FA;color:#0B0D13}
+  .toast{background:#F5F6FA;color:#0B0D13}
+  .toast.ok{background:var(--selva);color:#06211A}
+  .undo-row .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .lgc{box-shadow:0 14px 30px -16px rgba(0,0,0,.7)}
+  .fab-add{background:#F5F6FA;color:#0B0D13}
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
