@@ -1,4 +1,4 @@
-const APP_VERSION='8.1';const APP_BUILD='31 Aug 2026 21:30';
+const APP_VERSION='9.0';const APP_BUILD='1 Sep 2026 10:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-ofrecer':()=>cerrarOfrecer()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -288,13 +288,15 @@ function listo(){if(_refrescando){const f=_refrescando;_refrescando=null;setTime
 function cargarDashboard(){
   const el=document.getElementById('view-dashboard');
   if(!document.getElementById('hero'))el.innerHTML='<div class="sk" style="height:150px"></div><div class="sk" style="height:250px;margin-top:14px"></div><div class="sk" style="height:220px;margin-top:14px"></div>';
-  apiCached('inicio',{},(d,m)=>{
+  apiCached('inicio',{usuario:state.usuario},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
     if(Array.isArray(d.catalogo)){state.catalogo=d.catalogo;}      // precarga para "+"
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
     if(Array.isArray(d.topMes))state.topMes=d.topMes;
     if(Array.isArray(d.detalle))state.detalle=d.detalle;
     if(d.operacionIrene)state.operacion=d.operacionIrene;
+    if(d.impulso)state.impulso=d.impulso;
+    if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
     renderDashboard(d.dashboard,d.ventasMes||[],m);
     if(!m.stale)listo();
   },()=>{el.innerHTML=vacio('wifi','No se pudo cargar','Revisa tu conexión y desliza hacia abajo para reintentar.');listo();});
@@ -302,7 +304,7 @@ function cargarDashboard(){
 function armarDashboard(){
   const esAlex=state.usuario==='Alex',esIrene=state.usuario==='Irene';
   const I=(d)=>`<svg viewBox="0 0 24 24">${d}</svg>`;
-  document.getElementById('view-dashboard').innerHTML=`
+  const hero=`
     <div class="hero" id="hero">
       <div class="top">
         <div class="hero-main">
@@ -311,8 +313,8 @@ function armarDashboard(){
         </div>
       </div>
       <div class="sub" id="h-chips">${esIrene?'':'<span class="chip" id="h-pend">—</span><span class="chip tap" id="h-hoy" onclick="explicar(\'hoy\')">Hoy $0</span>'}</div>
-      <div class="hbar tap" id="h-bar" onclick="explicar('ring')">
-        <div class="hbar-h"><span id="h-bar-t">Ventas de la tienda · ${mesActualNombre()}</span><b class="num" id="h-bar-v">$0</b></div>
+      <div class="hbar tap" id="h-bar" onclick="abrirMeta()">
+        <div class="hbar-h"><span id="h-bar-t">Meta de ${mesActualNombre()}</span><b class="num" id="h-bar-v">—</b></div>
         <div class="hbar-track"><i id="h-bar-i"></i></div>
         <div class="hbar-f" id="h-bar-f"></div>
       </div>
@@ -321,19 +323,21 @@ function armarDashboard(){
         <button onclick="abrirDetalle('transferencia')">${I('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>')}La cuenta</button>
         <button onclick="abrirDetalle('mes')">${I('<path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/>')}Este mes</button>
       </div>
-    </div>
-    ${esIrene?`<div class="group wrap" style="margin-top:12px"><div class="row tap" onclick="abrirDetalle('transferencia')"><div class="ico mango">${ICONS.cash}</div><div class="t"><b>Le debes a Alex</b><small id="tc-sub">del efectivo que guardas</small></div><div class="v num" id="tc-val">$0</div></div></div>`:''}
-    <div id="neg-wrap"></div>
-    <div id="sec-quedan" ${esIrene?'style="display:none"':''}>
+    </div>`;
+  const ofrecer=`<div id="ofrecer-wrap"></div>`;
+  const debes=esIrene?`<div class="group wrap" style="margin-top:14px"><div class="row tap" onclick="abrirDetalle('transferencia')"><div class="ico mango">${ICONS.cash}</div><div class="t"><b>Le debes a Alex</b><small id="tc-sub">del efectivo que guardas</small></div><div class="v num" id="tc-val">$0</div></div></div>`:'';
+  const negocio=`<div id="neg-wrap"></div>`;
+  const quedan=esIrene?'':`<div id="sec-quedan">
     <div class="section-title">Lo que ganan ellas</div>
     <div class="group wrap">
       ${fila('user','Ganancia de Irene','v-girene','pos','gIrene','','de lo que aún no liquida · es suya')}
       <div id="row-gmama">${fila('user','Ganancia de Mamá','v-gmama','pos','gMama','','de lo que aún no liquida · es suya')}</div>
     </div>
-    </div>
-    <div class="section-title">Este mes</div>
+    </div>`;
+  // Para Irene, "Este mes" e "Historial" son datos de la tienda, no suyos: viven en el botón "Este mes".
+  const mes=esIrene?'':`<div class="section-title">Este mes</div>
     <div class="group">
-      ${fila('sum',esIrene?'Ventas de la tienda':'Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span>','','mes')}
+      ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span>','','mes')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','piezas vendidas este mes','','mes')}
       ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','gastado en envíos este mes')}
     </div>
@@ -341,21 +345,35 @@ function armarDashboard(){
     <div class="chart-card">
       <div class="chart-head"><b>Ventas</b><div class="chart-tabs"><button class="${state.chartTab!=='semana'?'on':''}" onclick="setChartTab('mes')">12 meses</button><button class="${state.chartTab==='semana'?'on':''}" onclick="setChartTab('semana')">7 días</button></div></div>
       <div class="chart" id="chart"><div class="sk" style="height:100%"></div></div>
-    </div>
-    <div id="top-wrap"></div>`;
+    </div>`;
+  document.getElementById('view-dashboard').innerHTML=esIrene?hero+ofrecer+debes+negocio:hero+ofrecer+quedan+mes;
 }
 function setChartTab(t){buzz();state.chartTab=t;const c=document.getElementById('chart');if(c)c.dataset.firma='';document.querySelectorAll('.chart-tabs button').forEach((b,i)=>b.classList.toggle('on',(i===0)!==(t==='semana')));renderDashboard(state._dash,state._meses,{stale:true});}
-function renderTop(){
-  const w=document.getElementById('top-wrap');if(!w)return;
-  const t=state.topMes||[];const firma=JSON.stringify(t)+'|'+t.map(p=>(state.catalogo.find(x=>x.descripcion===p.descripcion)||{}).stock||0).join(',');
-  if(w.dataset.firma===firma)return;w.dataset.firma=firma;
+/* OFRECE ESTO HOY: lo que se vende rápido y hay en stock. Cada tarjeta abre "mandar por WhatsApp" o "vender". */
+function renderOfrecer(){
+  const w=document.getElementById('ofrecer-wrap');if(!w)return;
+  const t=(state.ofrecer||[]).filter(p=>p.stock>0).slice(0,6);
+  const firma=JSON.stringify(t);if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   if(!t.length){w.innerHTML='';return;}
-  w.innerHTML=`<div class="section-title">Lo más vendido del mes <span class="hint">Toca para vender otro</span></div><div class="top3 stagger">${t.map((p,i)=>{
-    const cat=state.catalogo.find(x=>mismoProd(x,p));const st=cat?cat.stock:0;
-    return`<button class="topc ${st?'':'out'}" onclick="venderTop(${i})"><span class="rank ${i===0?'gold':''}">${i+1}</span>${thumb(p)}<div class="ti"><b>${esc(p.descripcion)}</b><small>×${p.cantidad} · $${pesos(p.total)}</small><em>${st?st+' en stock':'Agotado'}</em></div></button>`}).join('')}</div>`;
+  w.innerHTML=`<div class="section-title">Ofrece esto hoy <span class="hint">Toca para mandarlo por WhatsApp</span></div>
+    <div class="strip-h stagger">${t.map((p,i)=>`<button class="mini ofr" onclick="abrirOfrecer(${i})">${thumb(p)}${p.vendidos60>=2?'<span class="tag n">Sale rápido</span>':''}${esDeIrene(p)?'<span class="tag-irene mini-tag">de Irene</span>':''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)} · ${p.stock} disp.</small></div></button>`).join('')}</div>`;
 }
-function venderTop(i){
-  const p=state.topMes[i];const cat=state.catalogo.find(x=>mismoProd(x,p));
+function abrirOfrecer(i){
+  const p=(state.ofrecer||[])[i];if(!p)return;buzz();state._ofr=p;
+  document.getElementById('ofr-body').innerHTML=`<div class="prod compact rev-head">${thumb(p,'lg')}<div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">${p.stock} en stock${p.vendidos60?` · ${p.vendidos60} vendido${p.vendidos60===1?'':'s'} en 60 días`:''}</small></div><span class="p num">$${precio(p.precio)}</span></div>`;
+  document.getElementById('sheet-ofrecer').classList.remove('hidden');
+}
+function cerrarOfrecer(){document.getElementById('sheet-ofrecer').classList.add('hidden');}
+/* Abre WhatsApp con el mensaje listo: nombre, precio y foto. Con navigator.share el teléfono deja elegir el contacto. */
+function compartirProducto(){
+  const p=state._ofr;if(!p)return;buzz(12);
+  const texto=`*${p.descripcion}*\nPrecio: $${precio(p.precio)}`+(p.imagen?`\n${p.imagen}`:'');
+  if(navigator.share){navigator.share({text:texto}).catch(()=>{});return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
+}
+function venderOfrecido(){
+  const p=state._ofr;if(!p)return;
+  const cat=state.catalogo.find(x=>mismoProd(x,p));cerrarOfrecer();
   if(!cat){buzz([10,30]);toast('Sin stock de '+p.descripcion,'err');return;}
   buzz(12);state.producto=cat;state.vendedor=state.usuario;state.metodo=null;state.paso=1;abrirVenta();
 }
@@ -367,7 +385,7 @@ function renderDashboard(d,meses,m){
   const esIrene=state.usuario==='Irene',o=state.operacion;
   if(esIrene){
     tick($('h-val'),o?o.gMesTotal:0);
-    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')||'<span class="chip">Aún sin ventas este mes</span>';
+    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')+rachaChip()||'<span class="chip">Aún sin ventas este mes</span>';
     tick($('tc-val'),d.porTransferir);
     $('tc-sub').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
   }else{
@@ -377,15 +395,17 @@ function renderDashboard(d,meses,m){
   if(cmp)cmp.textContent=prev?`${mesLargo(prev.label).split(' ')[0]} $${pesos(prev.total)} → ${mesActualNombre()} $${pesos(d.ventasTotalesMes)}`:'';
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar`;
   $('h-hoy').textContent='Hoy $'+pesos(d.ventasHoy);
+  const rc=$('h-racha');if(rc)rc.remove();$('h-chips').insertAdjacentHTML('beforeend',rachaChip());
   }
-  renderRing(d,meses);
+  renderMeta();
+  renderOfrecer();
+  renderNegocio();
+  if(!esIrene){
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
   tick($('v-moto'),d.gastoMotomandado);
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
-  renderSpark(d.ventasSemana||[]);
-  renderNegocio();
-  renderTop();
-  const c=$('chart');
+  }
+  const c=$('chart');if(!c)return;
   if(state.chartTab==='semana'){
     const D=['dom','lun','mar','mié','jue','vie','sáb'],hoy=new Date(),sem=(d.ventasSemana||[]).map((t,i)=>{const f=new Date(hoy);f.setDate(hoy.getDate()-(6-i));return{label:(i===6?'hoy':D[f.getDay()])+' ',cantidad:0,total:t};});
     const firma='s'+JSON.stringify(sem);if(c.dataset.firma!==firma){c.dataset.firma=firma;renderChart(sem,true);}return;
@@ -394,32 +414,77 @@ function renderDashboard(d,meses,m){
   const firma=JSON.stringify(meses);
   if(c.dataset.firma!==firma){c.dataset.firma=firma;renderChart(meses);}
 }
-let ringHelp='';
 /* Anillo: ventas de este mes comparadas con el mejor mes anterior (récord). Sin metas fijas. */
 function renderNegocio(){
   const w=document.getElementById('neg-wrap');if(!w)return;
   const o=state.operacion;
   if(state.usuario!=='Irene'||!o){w.innerHTML='';w.dataset.firma='';return;}
-  const firma=JSON.stringify(o);if(w.dataset.firma===firma)return;w.dataset.firma=firma;
+  const valorVenta=state.catalogo.filter(esDeIrene).reduce((s,p)=>s+(Number(p.precio)||0)*(Number(p.stock)||0),0),recuperado=o.inversion-o.valorStock;
+  const firma=JSON.stringify(o)+'|'+valorVenta;if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   w.innerHTML=`<div class="section-title">Tu negocio</div>
     <div class="group wrap">
-      <div class="row tap" onclick="explicar('inversion')"><div class="ico grey">${ICONS.cash}</div><div class="t"><b>Inversión en tu mercancía</b><small>lo que has pagado por tus productos</small></div><div class="v num">$${pesos(o.inversion)}</div></div>
-      <div class="row tap" onclick="explicar('stockIrene')"><div class="ico grey">${ICONS.box}</div><div class="t"><b>Tu mercancía en stock</b><small>${o.piezasStock} pieza${o.piezasStock===1?'':'s'} sin vender</small></div><div class="v num">$${pesos(o.valorStock)}</div></div>
+      <div class="row tap" onclick="explicar('inversion')"><div class="ico grey">${ICONS.cash}</div><div class="t"><b>Inversión en tu mercancía</b><small>${recuperado>0?`ya recuperaste $${pesos(recuperado)} vendiendo`:'todo sigue en tu inventario'}</small></div><div class="v num">$${pesos(o.inversion)}</div></div>
+      <div class="row tap" onclick="explicar('stockIrene')"><div class="ico">${ICONS.box}</div><div class="t"><b>Si vendes todo tu stock</b><small>${o.piezasStock} pieza${o.piezasStock===1?'':'s'} · te costaron $${pesos(o.valorStock)} · ganarías $${pesos(valorVenta-o.valorStock)}</small></div><div class="v num pos">$${pesos(valorVenta)}</div></div>
     </div>`;
 }
-function renderRing(d,meses){ // barra: ventas de la tienda este mes contra el mejor mes anterior
+/* Racha: solo se muestra cuando existe. Nunca lo contrario ("llevas N días sin vender"). */
+function rachaChip(){const r=(state.impulso||{}).racha||0;return r>=2?`<span class="chip" id="h-racha">🔥 ${r} días seguidos vendiendo</span>`:'';}
+/* Barra del hero: la ganancia del usuario contra SU meta del mes. La distancia se dice en ventas, no solo en pesos. */
+function renderMeta(){
   const $=id=>document.getElementById(id),bar=$('h-bar');if(!bar)return;
-  const prev=meses.slice(0,-1);                       // el último elemento es el mes actual
-  const best=prev.reduce((a,m)=>m.total>a.total?m:a,{total:0,label:''});
-  const actual=d.ventasTotalesMes||0;let pct=0,f='';
-  if(best.total>0){
-    pct=actual/best.total;const mes=mesLargo(best.label).split(' ')[0];
-    if(pct>=1){f=`¡Nuevo récord! Ya superaste ${mes} ($${pesos(best.total)})`;bar.classList.add('record');}
-    else{f=`Tu mejor mes: ${mes} $${pesos(best.total)} · faltan $${pesos(best.total-actual)}`;bar.classList.remove('record');}
-    ringHelp=pct>=1?`Este mes ya superó tu mejor mes (${best.label}, $${pesos(best.total)}).`:`La tienda lleva $${pesos(actual)} este mes. El mejor mes fue ${best.label} con $${pesos(best.total)}: faltan $${pesos(best.total-actual)} para superarlo.`;
-  }else{f='Cuando haya más meses, aquí se compara con el mejor';ringHelp='Cuando haya más de un mes de ventas, aquí verás cómo va este mes contra el mejor mes.';}
-  $('h-bar-f').textContent=f;$('h-bar-i').style.width=(Math.min(1,pct)*100)+'%';
-  tick($('h-bar-v'),actual);
+  const im=state.impulso,mes=mesActualNombre();
+  if(!im){$('h-bar-t').textContent='Meta de '+mes;$('h-bar-v').textContent='—';$('h-bar-f').textContent='';return;}
+  const g=im.gananciaMes||0,meta=im.meta||0;
+  bar.classList.toggle('record',meta>0&&g>=meta);
+  if(!meta){
+    $('h-bar-t').textContent='Ponte una meta para '+mes;$('h-bar-v').textContent='›';
+    $('h-bar-i').style.width='0%';
+    $('h-bar-f').textContent=g>0?`Llevas $${pesos(g)} de ganancia. Una meta clara ayuda a vender más.`:'Una meta clara ayuda a vender más. Toca para elegirla.';
+    return;
+  }
+  $('h-bar-t').textContent=`Meta de ${mes}`;
+  $('h-bar-v').textContent=`$${pesos(g)} de $${pesos(meta)}`;
+  $('h-bar-i').style.width=(Math.min(1,g/meta)*100)+'%';
+  if(g>=meta){
+    $('h-bar-f').textContent=`¡Meta cumplida! Vas $${pesos(g-meta)} arriba.`;
+    const k=`oc:meta-ok:${state.usuario}:${new Date().getMonth()}`;let ya='';try{ya=localStorage.getItem(k);}catch(e){}
+    if(!ya){try{localStorage.setItem(k,'1');}catch(e){}buzz([30,40,60]);confetiRapido();toast(`¡Cumpliste tu meta de ${mes}! 🎉`,'ok');}
+  }else{
+    const falta=meta-g,n=im.promedio>0?Math.max(1,Math.ceil(falta/im.promedio)):0;
+    $('h-bar-f').textContent=`Faltan $${pesos(falta)}`+(n?` · ${n===1?'una venta más':'unas '+n+' ventas más'}`:'');
+  }
+}
+function confetiRapido(){
+  const colors=['#1D9E75','#F59E0B','#E5484D','#3B82F6','#A855F7'],w=document.createElement('div');w.className='confeti-wrap';
+  w.innerHTML=Array.from({length:30},(_,i)=>`<div class="confetti" style="left:50%;top:30%;background:${colors[i%5]};--dx:${(Math.random()-.5)*420}px;--dy:${(Math.random()-.3)*420}px;animation-delay:${Math.random()*.25}s"></div>`).join('');
+  document.body.appendChild(w);setTimeout(()=>w.remove(),1800);
+}
+/* Hoja para fijar la meta del mes */
+function abrirMeta(){
+  buzz();const im=state.impulso||{},mes=mesActualNombre();
+  const sug=[];
+  if(im.record>0){sug.push(['Igualar tu récord',Math.round(im.record)]);sug.push(['Superarlo un poco',Math.round(im.record*1.1/50)*50]);}
+  else if(im.gananciaMes>0)sug.push(['El doble de lo que llevas',Math.round(im.gananciaMes*2/50)*50]);
+  document.getElementById('meta-titulo').textContent=`Tu meta de ${mes}`;
+  document.getElementById('meta-body').innerHTML=`
+    <p class="exp-p">¿Cuánto quieres <b>ganar</b> este mes? Es tu meta, nadie más la ve. Puedes cambiarla cuando quieras.</p>
+    ${sug.length?`<div class="opts" style="margin-bottom:14px">${sug.map(([t,v])=>`<button class="opt" onclick="document.getElementById('meta-monto').value=${v};buzz()">${t}<br><b>$${pesos(v)}</b></button>`).join('')}</div>`:''}
+    <div class="money"><span>$</span><input id="meta-monto" type="number" inputmode="numeric" placeholder="0" value="${im.meta||''}"></div>
+    ${im.gananciaMes>0?`<div class="quick-hint" style="padding-top:10px">Llevas $${pesos(im.gananciaMes)} este mes${im.promedio>0?` · ganas unos $${pesos(im.promedio)} por venta`:''}</div>`:''}
+    <div style="margin-top:18px"><button class="btn primary" id="meta-btn" onclick="guardarMeta()">Guardar meta</button>${im.meta?`<button class="btn ghost" onclick="guardarMeta(0)">Quitar la meta</button>`:`<button class="btn ghost" onclick="cerrarMeta()">Ahora no</button>`}</div>`;
+  document.getElementById('sheet-meta').classList.remove('hidden');
+  setTimeout(()=>{const i=document.getElementById('meta-monto');if(i&&!i.value)i.focus();},350);
+}
+function cerrarMeta(){document.getElementById('sheet-meta').classList.add('hidden');}
+function guardarMeta(v){
+  const monto=v===0?0:Number(document.getElementById('meta-monto').value);
+  if(!(monto>=0)){toast('Escribe un monto','err');return;}
+  const b=document.getElementById('meta-btn');b.disabled=true;b.textContent='Guardando…';
+  apiPost('guardarMeta',{usuario:state.usuario,monto}).then(r=>{
+    if(!r.success){toast(r.error||'No se pudo guardar','err');b.disabled=false;b.textContent='Guardar meta';return;}
+    state.impulso=Object.assign({},state.impulso||{},{meta:monto});state.dirty=true;
+    cerrarMeta();buzz(12);toast(monto?`Meta de ${mesActualNombre()}: $${pesos(monto)}`:'Meta quitada','ok');renderMeta();
+  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se guardó','err');b.disabled=false;b.textContent='Guardar meta';});
 }
 function fila(ico,label,id,cls,help,tone='',sub='',extra='',detalle=''){
   return `<div class="row tap" onclick="${detalle?`abrirDetalle('${detalle}')`:`explicar('${help}')`}">
@@ -929,10 +994,10 @@ const EXPLICA={
   moto:{t:'Motomandado del mes',p:'Todo lo gastado en envíos este mes. <b>Es un gasto</b>: ese dinero ya se le pagó al repartidor.',f:null},
   totalMes:{t:'Ventas del mes',p:'Todo lo vendido este mes (precio + extra), liquidado o no. La línea muestra los últimos 7 días. <b>Toca la fila para ver la lista.</b>',f:null},
   artMes:{t:'Artículos vendidos',p:'Cuántas piezas se vendieron este mes, liquidadas o no.',f:null},
-  ring:{t:'Ventas de la tienda',p:()=>ringHelp+' Cuenta las ventas de todos (Alex, Irene y Mamá). Cuando se supera el mejor mes, la barra se pone naranja.',f:null},
+  ring:{t:'Tu meta del mes',p:'Tu ganancia de este mes comparada con la meta que tú elegiste. "Unas N ventas más" se calcula con lo que sueles ganar por venta.',f:null},
   negocio:{t:'Tu ganancia del mes',p:'Suma de <b>tu mercancía</b> (precio + extra − costo − moto, porque el costo lo pagaste tú) más lo que ganas <b>vendiendo la mercancía de Alex</b> (precio + extra − costo − moto; el costo se le regresa a él). Todo esto es tuyo.',f:null},
-  inversion:{t:'Inversión en tu mercancía',p:'La suma de lo que <b>has pagado</b> por todos tus productos, vendidos o en stock. Sirve para saber cuánto has metido a tu negocio.',f:null},
-  stockIrene:{t:'Tu mercancía en stock',p:'Lo que te costó la mercancía tuya que <b>aún no se vende</b>. Es dinero tuyo convertido en producto.',f:null},
+  inversion:{t:'Inversión en tu mercancía',p:'La suma de lo que <b>has pagado</b> por todos tus productos, vendidos o en stock. Cada vez que vendes una pieza recuperas lo que te costó; lo demás es ganancia.',f:null},
+  stockIrene:{t:'Si vendes todo tu stock',p:'Lo que cobrarías vendiendo <b>todas</b> tus piezas al precio que les pusiste. Abajo dice cuánto te costaron y cuánto ganarías: la diferencia entre las dos.',f:null},
   hero:{t:()=>state.usuario==='Alex'?'Irene te debe':'Le debes a Alex',p:'Es la suma de: ganancia de Alex en sus ventas en efectivo <b>+</b> costo de lo que vendieron Irene y Mamá <b>−</b> moto que puso Irene. <b>Toca el monto</b> para ver venta por venta.',f:()=>[ficha('ganancia Alex','efectivo'),op('+'),ficha('costo','Irene y Mamá'),op('−'),ficha('moto','puso Irene','neg'),op('='),ficha('total','por transferir','res')]}
 };
 function explicar(k){
@@ -1025,7 +1090,7 @@ function abrirUsuarios(){
      <div class="ver">Kiosko v${APP_VERSION} · ${APP_BUILD}<button onclick="buscarActualizacion()">Buscar actualización</button></div>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }
-function cambiarUsuario(u){buzz();try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('dashboard');}
+function cambiarUsuario(u){buzz();state.impulso=null;try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('dashboard');}
 function cerrarUsuarios(){document.getElementById('sheet-usuario').classList.add('hidden');}
 
 /* ---------- UTILS ---------- */
