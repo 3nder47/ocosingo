@@ -97,18 +97,20 @@
 <div id="sheet-alta" class="overlay hidden" onclick="if(event.target===this)cerrarAlta()">
   <div class="sheet">
     <div class="handle"></div>
-    <h3>Agregar producto <span class="tag-irene">tuyo</span></h3>
+    <h3 id="np-titulo">Agregar producto <span class="tag-irene">tuyo</span></h3>
     <div class="form-field"><label>Descripción</label><input id="np-desc" placeholder="Auriculares X100 Negro" autocomplete="off"></div>
     <div class="form-field"><label>Categoría</label><input id="np-cat" list="cats-list" placeholder="Audifonos" autocomplete="off"><datalist id="cats-list"></datalist></div>
     <div style="display:flex;gap:12px"><div class="form-field" style="flex:1"><label>Te costó</label><div class="money"><span>$</span><input id="np-costo" type="number" inputmode="decimal" placeholder="0.00"></div></div>
     <div class="form-field" style="flex:1"><label>Lo vendes en</label><div class="money"><span>$</span><input id="np-precio" type="number" inputmode="decimal" placeholder="0.00"></div></div></div>
-    <div class="form-field"><label>Cantidad de piezas</label><div class="cant"><button onclick="npCant(-1)">−</button><b id="np-n">1</b><button onclick="npCant(1)">+</button></div></div>
+    <div class="form-field"><label id="np-cant-lbl">Cantidad de piezas</label><div class="cant"><button onclick="npCant(-1)">−</button><b id="np-n">1</b><button onclick="npCant(1)">+</button></div></div>
     <div class="form-field"><label>Foto (opcional)</label>
       <input id="np-foto" type="file" accept="image/*" style="display:none" onchange="npFoto(this)">
       <button class="foto-pick" id="np-foto-btn" onclick="document.getElementById('np-foto').click()"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir foto</span></button>
     </div>
     <button class="btn primary" id="np-btn" onclick="guardarProducto()">Agregar a mi inventario</button>
     <button class="btn ghost" onclick="cerrarAlta()">Cancelar</button>
+    <button class="btn danger hidden" id="np-del" onclick="pedirEliminar()">Eliminar producto</button>
+    <div class="del-conf hidden" id="np-del-conf"><p id="np-del-txt"></p><div class="det-btn"><button class="btn danger solid" id="np-del-si" onclick="eliminarProducto()">Sí, eliminar</button><button class="btn ghost" onclick="cancelarEliminar()">No</button></div></div>
   </div>
 </div>
 <div id="sheet-exp" class="overlay hidden" onclick="if(event.target===this)cerrarExp()">
