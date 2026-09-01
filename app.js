@@ -1,4 +1,4 @@
-const APP_VERSION='7.3';const APP_BUILD='31 Aug 2026 10:00';
+const APP_VERSION='8.0';const APP_BUILD='31 Aug 2026 12:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -50,6 +50,9 @@ function apiCached(accion,params,onData,onFail){
   });
 }
 function relTime(t){const m=Math.round((Date.now()-t)/60000);return m<1?'hace un momento':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`;}
+
+/* Mismo producto: por ProductoID si ambos lo tienen; si no, por nombre. */
+const mismoProd=(a,b)=>!!a&&!!b&&((a.pid&&b.pid)?(a.pid===b.pid&&(a.origen||'Alex')===(b.origen||'Alex')):a.descripcion===b.descripcion);
 
 /* ---------- ICONOS / TEXTOS ---------- */
 const ICONS = {
@@ -348,11 +351,11 @@ function renderTop(){
   if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   if(!t.length){w.innerHTML='';return;}
   w.innerHTML=`<div class="section-title">Lo más vendido del mes <span class="hint">Toca para vender otro</span></div><div class="top3 stagger">${t.map((p,i)=>{
-    const cat=state.catalogo.find(x=>x.descripcion===p.descripcion);const st=cat?cat.stock:0;
+    const cat=state.catalogo.find(x=>mismoProd(x,p));const st=cat?cat.stock:0;
     return`<button class="topc ${st?'':'out'}" onclick="venderTop(${i})"><span class="rank ${i===0?'gold':''}">${i+1}</span>${thumb(p)}<div class="ti"><b>${esc(p.descripcion)}</b><small>×${p.cantidad} · $${pesos(p.total)}</small><em>${st?st+' en stock':'Agotado'}</em></div></button>`}).join('')}</div>`;
 }
 function venderTop(i){
-  const p=state.topMes[i];const cat=state.catalogo.find(x=>x.descripcion===p.descripcion);
+  const p=state.topMes[i];const cat=state.catalogo.find(x=>mismoProd(x,p));
   if(!cat){buzz([10,30]);toast('Sin stock de '+p.descripcion,'err');return;}
   buzz(12);state.producto=cat;state.vendedor=state.usuario;state.metodo=null;state.paso=1;abrirVenta();
 }
@@ -469,13 +472,35 @@ const SVG_LIST='<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></sv
 function pintarToggle(){document.getElementById('toggle').innerHTML=state.grid?SVG_LIST:SVG_GRID;}
 function toggleVista(){buzz();state.grid=!state.grid;pintarToggle();renderCatalogo();}
 function abrirAlta(){
+  state.editando=null;prepararAlta();
+  document.getElementById('np-titulo').innerHTML='Agregar producto <span class="tag-irene">tuyo</span>';
+  document.getElementById('np-cant-lbl').textContent='Cantidad de piezas';
+  document.getElementById('np-btn').textContent='Agregar a mi inventario';
+  document.getElementById('np-del').classList.add('hidden');document.getElementById('np-del-conf').classList.add('hidden');
+  document.getElementById('sheet-alta').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('np-desc').focus(),350);
+}
+/* Editar un producto de Irene: mismo formulario, relleno. Los cambios solo tocan las piezas sin vender. */
+function abrirEdicion(){
+  const p=state.producto;if(!p||!esDeIrene(p))return;
+  if(!p.pid){toast('Falta correr asignarProductoIDs en la hoja para poder editar','err');return;}
+  state.editando=p;cerrarVenta();prepararAlta();
+  document.getElementById('np-titulo').textContent='Editar producto';
+  document.getElementById('np-desc').value=p.descripcion;document.getElementById('np-cat').value=p.categoria||'';
+  document.getElementById('np-costo').value=p.costoFinal||'';document.getElementById('np-precio').value=p.precio||'';
+  state.npN=Number(p.stock)||1;document.getElementById('np-n').textContent=state.npN;
+  document.getElementById('np-cant-lbl').textContent='Piezas sin vender';
+  if(p.imagen){const fb=document.getElementById('np-foto-btn');fb.classList.add('ok');fb.innerHTML=`<img src="${esc(p.imagen)}" alt=""><span id="np-foto-txt">Foto actual · toca para cambiarla</span>`;}
+  document.getElementById('np-btn').textContent='Guardar cambios';
+  document.getElementById('np-del').classList.remove('hidden');document.getElementById('np-del-conf').classList.add('hidden');
+  document.getElementById('sheet-alta').classList.remove('hidden');
+}
+function prepararAlta(){
   buzz();state.npN=1;document.getElementById('np-n').textContent='1';npFotoData=null;
   const fb=document.getElementById('np-foto-btn');fb.classList.remove('ok');fb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir foto</span>';document.getElementById('np-foto').value='';
   ['np-desc','np-cat','np-costo','np-precio'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('cats-list').innerHTML=[...new Set(state.catalogo.map(p=>p.categoria))].sort().map(c=>`<option value="${esc(c)}">`).join('');
-  const b=document.getElementById('np-btn');b.disabled=false;b.textContent='Agregar a mi inventario';
-  document.getElementById('sheet-alta').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('np-desc').focus(),350);
+  document.getElementById('np-btn').disabled=false;
 }
 function cerrarAlta(){document.getElementById('sheet-alta').classList.add('hidden');}
 let npFotoData=null;
@@ -500,19 +525,37 @@ function npFoto(inp){
 function npCant(d){buzz();state.npN=Math.min(50,Math.max(1,state.npN+d));document.getElementById('np-n').textContent=state.npN;}
 function guardarProducto(){
   const v=id=>document.getElementById(id).value.trim();
-  const producto={origen:'Irene',descripcion:v('np-desc'),categoria:v('np-cat'),costo:v('np-costo'),precio:v('np-precio'),cantidad:state.npN};
+  const ed=state.editando;
+  const producto={origen:'Irene',pid:ed?ed.pid:'',descripcion:v('np-desc'),categoria:v('np-cat'),costo:v('np-costo'),precio:v('np-precio'),cantidad:state.npN};
+  const etiqueta=ed?'Guardar cambios':'Agregar a mi inventario';
   if(!producto.descripcion||!producto.categoria||!(Number(producto.costo)>0)||!(Number(producto.precio)>0)){toast('Llena descripción, categoría, costo y precio','err');return;}
   const b=document.getElementById('np-btn');b.disabled=true;b.textContent='Guardando…';
-  apiPost('agregarProducto',{producto}).then(async r=>{
-    if(!r.success){toast(r.error||'No se pudo guardar','err');b.disabled=false;b.textContent='Agregar a mi inventario';return;}
+  apiPost(ed?'editarProducto':'agregarProducto',{producto}).then(async r=>{
+    if(!r.success){toast(r.error||'No se pudo guardar','err');b.disabled=false;b.textContent=etiqueta;return;}
     if(npFotoData){
       b.textContent='Subiendo foto…';
-      try{const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,base64:npFotoData,mime:'image/jpeg'});if(!rf.success)toast('Producto guardado, pero la foto no: '+(rf.error||''),'err');}
+      try{const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,base64:npFotoData,mime:'image/jpeg',principal:!!ed});if(!rf.success)toast('Producto guardado, pero la foto no: '+(rf.error||''),'err');}
       catch(e){toast('Producto guardado; la foto no subió, puedes intentar luego','err');}
     }
-    cerrarAlta();buzz([20,30,20]);toast(`${r.agregados} pieza${r.agregados===1?'':'s'} de "${producto.descripcion}" en tu inventario`,'ok');
+    cerrarAlta();buzz([20,30,20]);
+    toast(ed?`Cambios guardados en "${producto.descripcion}"`:`${r.agregados} pieza${r.agregados===1?'':'s'} de "${producto.descripcion}" en tu inventario`,'ok');
+    state.editando=null;state.producto=null;
     state.dirty=true;state.catFirma='';cargarCatalogo();
-  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se guardó','err');b.disabled=false;b.textContent='Agregar a mi inventario';});
+  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se guardó','err');b.disabled=false;b.textContent=etiqueta;});
+}
+function pedirEliminar(){buzz();const p=state.editando;if(!p)return;
+  document.getElementById('np-del-txt').textContent=`Se quitan ${p.stock} pieza${Number(p.stock)===1?'':'s'} sin vender de "${p.descripcion}". Las ventas ya registradas no cambian.`;
+  document.getElementById('np-del').classList.add('hidden');document.getElementById('np-del-conf').classList.remove('hidden');
+  document.querySelector('#sheet-alta .sheet').scrollTo({top:9999,behavior:'smooth'});}
+function cancelarEliminar(){document.getElementById('np-del').classList.remove('hidden');document.getElementById('np-del-conf').classList.add('hidden');}
+function eliminarProducto(){
+  const p=state.editando;if(!p)return;buzz(20);
+  const b=document.getElementById('np-del-si');b.disabled=true;b.textContent='Eliminando…';
+  apiPost('eliminarProducto',{producto:{origen:'Irene',pid:p.pid}}).then(r=>{
+    if(!r.success){toast(r.error||'No se pudo eliminar','err');b.disabled=false;b.textContent='Sí, eliminar';return;}
+    state.catalogo=state.catalogo.filter(x=>x!==p);state.editando=null;state.producto=null;
+    cerrarAlta();toast(`"${p.descripcion}" eliminado de tu inventario`,'ok');state.dirty=true;state.catFirma='';cargarCatalogo();
+  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se eliminó','err');b.disabled=false;b.textContent='Sí, eliminar';});
 }
 function cargarCatalogo(){
   const l=document.getElementById('catalogo-list');
@@ -610,7 +653,7 @@ function renderQuick(){
     if(!quickLista.length){l.innerHTML=vacio('search','Nada con ese nombre');return;}
     l.innerHTML=`<div class="quick-hint">Resultados</div><div class="group stagger">${quickLista.map(fila).join('')}</div>`;return;
   }
-  const rec=state.recientes.map(d=>state.catalogo.find(p=>p.descripcion===d)).filter(Boolean);
+  const rec=state.recientes.map(d=>state.catalogo.find(p=>p.pid===d||p.descripcion===d)).filter(Boolean);
   const masStock=[...state.catalogo].filter(p=>!rec.includes(p)).sort((a,b)=>b.stock-a.stock).slice(0,8);
   quickLista=[...rec,...masStock];
   if(!quickLista.length){l.innerHTML=vacio('box','Sin stock','Todo está vendido.');return;}
@@ -645,7 +688,7 @@ function pintarVenta(){
     outer.style.display=fotos.length?'none':'';outer.previousElementSibling.style.display=fotos.length?'none':'';
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
-      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}</div><span class="p num">$${money(p.precio)}</span></div>
+      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div><span class="p num">$${money(p.precio)}</span></div>
       <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>
@@ -722,7 +765,7 @@ function setupHold(){
 }
 function confirmarVenta(){
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
-  const venta={descripcion:state.producto.descripcion,vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
+  const venta={descripcion:state.producto.descripcion,pid:state.producto.pid||'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
   const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
   const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
   apiPost('registrarVenta',{venta}).then(r=>{
@@ -731,13 +774,13 @@ function confirmarVenta(){
       const vendido=state.producto;if(origen)vendido._fly=origen;
       state.dirty=true;state.catFirma='';   // fuerza datos frescos en la siguiente carga
       // descuenta 1 localmente para que el catálogo se vea al día aunque tarde la red
-      const it=state.catalogo.find(x=>x.descripcion===state.producto.descripcion&&x.categoria===state.producto.categoria&&x.origen===state.producto.origen);
+      const it=state.catalogo.find(x=>mismoProd(x,state.producto)&&x.categoria===state.producto.categoria);
       if(it){it.stock--;if(it.stock<=0)state.catalogo=state.catalogo.filter(x=>x!==it);}
-      celebrar(r.detalle.id,vendido);state.producto=null;state.vendedor=null;state.metodo=null;
+      celebrar(r.detalle.id,vendido,r.detalle.ventaID);state.producto=null;state.vendedor=null;state.metodo=null;
     }else{toast(r.error||'No se pudo registrar','err');}
   }).catch(err=>{b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para confirmar';toast(err.api?err.message:'Sin conexión, la venta no se guardó','err');});
 }
-function celebrar(id,p){
+function celebrar(id,p,ventaID){
   const s=document.getElementById('success');
   const colors=['#1D9E75','#F59E0B','#E5484D','#3B82F6','#A855F7'];
   const visual=p?`${thumb(p,'hero-img')}<div class="badge-ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>`
@@ -757,7 +800,7 @@ function celebrar(id,p){
     setTimeout(()=>{dest.classList.remove('wait');f.remove();},520);
   }
   // ventana de 10 s para deshacer; al terminar se cierra sola
-  let n=10;state._exito={id,p,timer:setInterval(()=>{n--;const e=document.getElementById('undo-n');if(e)e.textContent=n;if(n<=0)cerrarExito();},1000)};
+  let n=10;state._exito={id,p,ventaID,timer:setInterval(()=>{n--;const e=document.getElementById('undo-n');if(e)e.textContent=n;if(n<=0)cerrarExito();},1000)};
 }
 function cerrarExito(){
   const x=state._exito;if(x){clearInterval(x.timer);state._exito=null;}
@@ -766,7 +809,7 @@ function cerrarExito(){
 function deshacerVenta(){
   const x=state._exito;if(!x)return;clearInterval(x.timer);buzz(12);
   const b=document.getElementById('btn-undo');b.disabled=true;b.textContent='Deshaciendo…';
-  apiPost('anularVenta',{id:x.id,origen:(x.p&&x.p.origen)||'Alex'}).then(r=>{
+  apiPost('anularVenta',{id:x.id,ventaID:x.ventaID||'',origen:(x.p&&x.p.origen)||'Alex'}).then(r=>{
     if(!r.success){toast(r.error||'No se pudo deshacer','err');b.disabled=false;b.textContent='Deshacer';return;}
     if(x.p){x.p.stock=(Number(x.p.stock)||0)+1;if(!state.catalogo.includes(x.p))state.catalogo.push(x.p);}
     state.dirty=true;state.catFirma='';state.ventFirma='';
