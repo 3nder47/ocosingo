@@ -1,4 +1,4 @@
-const APP_VERSION='7.2';const APP_BUILD='30 Aug 2026 22:00';
+const APP_VERSION='7.3';const APP_BUILD='31 Aug 2026 10:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -236,7 +236,7 @@ function cerrarSesion(){
 const claseUsuario=u=>({Irene:'u-irene','Mamá':'u-mama',Alex:'u-alex'})[u]||'';
 function saludo(){const h=new Date().getHours();return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';}
 function setUsuario(u){
-  state.usuario=u;
+  state.usuario=u;setupInstall();
   document.getElementById('greeting').textContent=`${saludo()}, ${u}`;
   const a=document.getElementById('avatar');a.textContent=u[0];a.className='avatar '+claseUsuario(u);
   document.getElementById('header-date').textContent=formatDate(new Date());
@@ -999,4 +999,37 @@ function toast(msg,type=''){const t=document.getElementById('toast');t.textConte
 /* ---------- PWA ---------- */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+/* ---------- INSTALAR COMO APP ----------
+   Si se abre en el navegador (no instalada), sugiere instalarla una vez iniciada sesión.
+   Chrome/Edge dan el diálogo nativo (beforeinstallprompt); otros navegadores ven instrucciones. */
+let _bip=null,_installListo=false;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_bip=e;if(state.usuario)mostrarInstall();});
+window.addEventListener('appinstalled',()=>{cerrarInstall(true);toast('Kiosko instalada, búscala en tu pantalla de inicio','ok');});
+function instalada(){return matchMedia('(display-mode:standalone)').matches||navigator.standalone===true;}
+function setupInstall(){
+  if(_installListo||instalada())return;_installListo=true;
+  let hasta=0;try{hasta=Number(localStorage.getItem('oc:install-no')||0);}catch(e){}
+  if(Date.now()<hasta)return;
+  setTimeout(mostrarInstall,3000);   // deja que cargue el inicio antes de pedir algo
+}
+function mostrarInstall(){
+  if(instalada())return;
+  const el=document.getElementById('install');if(!el||!el.classList.contains('hidden'))return;
+  document.getElementById('install-btn').textContent=_bip?'Instalar':'Cómo';
+  el.classList.remove('hidden');
+}
+function instalar(){
+  buzz();
+  if(_bip){_bip.prompt();_bip.userChoice.then(r=>{if(r.outcome!=='accepted')cerrarInstall();});return;}
+  const ua=navigator.userAgent,ios=/iPhone|iPad/.test(ua),samsung=/SamsungBrowser/.test(ua);
+  explicarTexto('Cómo instalar Kiosko',
+    ios?'En Safari toca el botón de <b>compartir</b> (el cuadrito con la flecha) y luego <b>"Agregar a pantalla de inicio"</b>.':
+    samsung?'Samsung Internet no deja instalarla bien. Abre esta misma dirección en <b>Chrome</b>, toca el menú <b>⋮</b> y elige <b>"Instalar app"</b> o <b>"Agregar a la pantalla principal"</b>.':
+    'Toca el menú <b>⋮</b> del navegador y elige <b>"Instalar app"</b> o <b>"Agregar a la pantalla principal"</b>.');
+}
+function cerrarInstall(silencio){
+  document.getElementById('install').classList.add('hidden');
+  if(!silencio)try{localStorage.setItem('oc:install-no',String(Date.now()+7*864e5));}catch(e){}  // vuelve a preguntar en una semana
 }
