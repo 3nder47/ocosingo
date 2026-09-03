@@ -43,8 +43,7 @@
   </div>
 
   <div class="content">
-    <div id="view-dashboard" class="view"></div>
-    <div id="view-catalogo" class="view hidden">
+    <div id="view-catalogo" class="view">
       <div class="search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="search" type="search" placeholder="Buscar producto" autocomplete="off">
@@ -56,8 +55,12 @@
       <div id="catalogo-list"></div>
     </div>
     <div id="view-ventas" class="view hidden">
-      <div class="strip" id="mini"></div>
+      <div id="dinero-hero"></div>
+      <div id="dinero-cuenta"></div>
+      <div id="neg-wrap"></div>
       <div id="logros"></div>
+      <div id="mes-wrap"></div>
+      <div class="section-title" style="padding-top:20px">Todas tus ventas</div>
       <div class="seg" id="filtros">
         <button class="on" data-f="todo">Todo</button>
         <button data-f="pendiente">Sin liquidar</button>
@@ -68,11 +71,10 @@
     </div>
   </div>
 
-  <nav class="nav">
-    <button data-view="dashboard" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>Inicio</button>
-    <button data-view="catalogo"><svg viewBox="0 0 24 24"><path d="M3 7.5 12 3l9 4.5-9 4.5z"/><path d="M3 7.5V17l9 4 9-4V7.5"/><path d="M12 12v9"/></svg>Catálogo</button>
-    <button class="fab" data-view="nueva" aria-label="Nueva venta"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button data-view="ventas"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Ventas</button>
+  <nav class="nav nav3">
+    <button data-view="catalogo" class="on"><svg viewBox="0 0 24 24"><path d="M3 7.5 12 3l9 4.5-9 4.5z"/><path d="M3 7.5V17l9 4 9-4V7.5"/><path d="M12 12v9"/></svg>Tienda</button>
+    <button class="fab" data-view="nueva" aria-label="Vender"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button data-view="ventas"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><circle cx="12" cy="12" r="2.5"/><path d="M3 10h3M18 10h3"/></svg>Dinero</button>
   </nav>
 </div>
 
@@ -119,18 +121,6 @@
     <div class="handle"></div>
     <h3 id="meta-titulo">Tu meta</h3>
     <div id="meta-body"></div>
-  </div>
-</div>
-<div id="sheet-ofrecer" class="overlay hidden" onclick="if(event.target===this)cerrarOfrecer()">
-  <div class="sheet">
-    <div class="handle"></div>
-    <h3>Ofrecer producto</h3>
-    <div id="ofr-body"></div>
-    <div style="margin-top:18px">
-      <button class="btn primary wa" onclick="compartirProducto()"><svg viewBox="0 0 24 24"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.4-4.2A8 8 0 1 1 20 11.5z"/><path d="M9.5 9c.2 1.5 1.5 3.5 3.5 4.5.6.3 1.3 0 1.6-.6l.3-.5-1.5-.8-.6.6c-.8-.4-1.5-1.1-1.9-1.9l.6-.6-.8-1.5-.5.3c-.5.2-.8.6-.7 1z"/></svg>Mandar por WhatsApp</button>
-      <button class="btn ghost" onclick="venderOfrecido()">Ya se vendió, registrarla</button>
-      <button class="btn ghost" onclick="cerrarOfrecer()">Cerrar</button>
-    </div>
   </div>
 </div>
 <div id="sheet-exp" class="overlay hidden" onclick="if(event.target===this)cerrarExp()">
