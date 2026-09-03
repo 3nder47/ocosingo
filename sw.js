@@ -2,7 +2,7 @@
 // - App shell (HTML, CSS, JS, manifest, íconos): cache-first, se actualiza al cambiar CACHE.
 // - Fuentes de Google: stale-while-revalidate.
 // - API de Apps Script: no se intercepta; el respaldo offline lo maneja localStorage en app.js.
-const CACHE = 'ocosingo-v5';
+const CACHE = 'ocosingo-v6';
 const IMG_CACHE = 'ocosingo-img-v1';
 async function podarImagenes(c) { const keys = await c.keys(); if (keys.length > 300) for (const k of keys.slice(0, keys.length - 300)) await c.delete(k); }
 const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
@@ -57,7 +57,7 @@ self.addEventListener('fetch', e => {
       fetch(e.request).then(r => {
         if (r.ok) { const copia = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copia)); }
         return r;
-      }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+      }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(r => r || caches.match('./index.html')))
     );
   }
 });
