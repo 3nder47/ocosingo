@@ -1,4 +1,4 @@
-const APP_VERSION='9.0';const APP_BUILD='1 Sep 2026 10:00';
+const APP_VERSION='10.0';const APP_BUILD='3 Sep 2026 19:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -109,14 +109,15 @@ function thumb(p,cls='',src){
 }
 function vacio(illu,titulo,texto){return`<div class="empty">${ILLU[illu]||''}<b>${titulo}</b>${texto||''}</div>`;}
 
-let state={usuario:null,vista:'dashboard',filtro:'todo',pin:'',producto:null,vendedor:null,metodo:null,catalogo:[],filtrado:[],ventas:[],busy:false,cat:'Todas',dueno:'todos',grid:true,paso:1,dirty:false,recientes:[],topMes:[],detalle:[],operacion:null,npN:1};
+let state={usuario:null,vista:'catalogo',filtro:'todo',pin:'',producto:null,vendedor:null,metodo:null,catalogo:[],filtrado:[],ventas:[],busy:false,cat:'Todas',dueno:'todos',grid:true,paso:1,dirty:false,recientes:[],topMes:[],detalle:[],operacion:null,npN:1};
 
 document.addEventListener('DOMContentLoaded',()=>{
   buildKeypad();
   document.getElementById('search').addEventListener('input',renderCatalogo);
   document.getElementById('qsearch').addEventListener('input',renderQuick);
   pintarToggle();
-  document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>b.dataset.view==='nueva'?abrirQuick():(buzz(),cambiarVista(b.dataset.view))));
+  document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view!=='nueva'){buzz();cambiarVista(b.dataset.view);return;}
+    if(state.vista==='catalogo'){buzz(12);window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>document.getElementById('search').focus(),250);}else abrirQuick();}));
   document.querySelectorAll('#filtros button').forEach(b=>b.addEventListener('click',()=>{
     document.querySelectorAll('#filtros button').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.filtro=b.dataset.f;renderVentas();
   }));
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-ofrecer':()=>cerrarOfrecer()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -208,7 +209,7 @@ function entrar(u){
     lg.classList.add('hidden');lg.classList.remove('bye');document.getElementById('dots').classList.remove('ok');
     state.pin='';pintarDots();
     app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
-    setUsuario(u);cargarDashboard();
+    setUsuario(u);cambiarVista('catalogo');
   },420);
   try{localStorage.setItem('oc:usuario',u);}catch(e){}
 }
@@ -219,7 +220,7 @@ function entrarRecordado(){
   state.usuario=u;
   document.getElementById('login').classList.add('hidden');
   const app=document.getElementById('app');app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
-  setUsuario(u);cargarDashboard();return true;
+  setUsuario(u);cambiarVista('catalogo');return true;
 }
 async function buscarActualizacion(){
   toast('Buscando versión nueva…');
@@ -246,14 +247,14 @@ function setUsuario(u){
 }
 
 /* ---------- NAV ---------- */
-const ORDEN=['dashboard','catalogo','ventas'];
+const ORDEN=['catalogo','ventas'];
 function cambiarVista(v){
   const prev=state.vista;state.vista=v;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
   const dir=ORDEN.indexOf(v)>=ORDEN.indexOf(prev)?'slide-l':'slide-r';
   ORDEN.forEach(x=>{const el=document.getElementById('view-'+x);el.classList.toggle('hidden',x!==v);el.classList.remove('slide-l','slide-r');if(x===v&&prev!==v){void el.offsetWidth;el.classList.add(dir);}});
   window.scrollTo({top:0});
-  ({dashboard:cargarDashboard,catalogo:cargarCatalogo,ventas:cargarVentas})[v]();
+  ({catalogo:cargarCatalogo,ventas:cargarDinero})[v]();
   const fab=document.getElementById('fab-add');if(fab)fab.style.display=(v==='catalogo'&&state.usuario==='Irene')?'':'none';
 }
 
@@ -280,35 +281,39 @@ function setupPullToRefresh(){
 let _refrescando=null;
 function refrescar(done){
   state.dirty=true;_refrescando=done;
-  ({dashboard:cargarDashboard,catalogo:cargarCatalogo,ventas:cargarVentas})[state.vista]();
+  ({catalogo:cargarCatalogo,ventas:cargarDinero})[state.vista]();
 }
 function listo(){if(_refrescando){const f=_refrescando;_refrescando=null;setTimeout(f,350);}}
 
-/* ---------- DASHBOARD ---------- */
-function cargarDashboard(){
-  const el=document.getElementById('view-dashboard');
-  if(!document.getElementById('hero'))el.innerHTML='<div class="sk" style="height:150px"></div><div class="sk" style="height:250px;margin-top:14px"></div><div class="sk" style="height:220px;margin-top:14px"></div>';
+/* ---------- DINERO (fusión del dashboard y Mis ventas) ---------- */
+function cargarDinero(){
+  const hero=document.getElementById('dinero-hero');
+  if(!hero.innerHTML)hero.innerHTML='<div class="sk" style="height:180px"></div>';
+  if(!document.getElementById('ventas-list').innerHTML)document.getElementById('ventas-list').innerHTML='<div class="sk" style="height:200px;margin-top:8px"></div>';
+  let pendientes=2;const fin=st=>{if(!st)pendientes--;if(pendientes<=0)listo();};
   apiCached('inicio',{usuario:state.usuario},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
-    if(Array.isArray(d.catalogo)){state.catalogo=d.catalogo;}      // precarga para "+"
+    if(Array.isArray(d.catalogo))state.catalogo=d.catalogo;
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
-    if(Array.isArray(d.topMes))state.topMes=d.topMes;
     if(Array.isArray(d.detalle))state.detalle=d.detalle;
+    if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
-    if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
-    renderDashboard(d.dashboard,d.ventasMes||[],m);
-    if(!m.stale)listo();
-  },()=>{el.innerHTML=vacio('wifi','No se pudo cargar','Revisa tu conexión y desliza hacia abajo para reintentar.');listo();});
+    renderDinero(d.dashboard,d.ventasMes||[],m);fin(m.stale);
+  },()=>{hero.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');fin(false);});
+  apiCached('misVentas',{vendedor:state.usuario},(d,m)=>{
+    if(d.logros)renderLogros(d.logros);
+    if(Array.isArray(d.ventas)){const firma=JSON.stringify(d.ventas);if(firma!==state.ventFirma){state.ventFirma=firma;state.ventas=d.ventas;renderVentas();}}
+    fin(m.stale);
+  },()=>{document.getElementById('ventas-list').innerHTML=vacio('wifi','No se pudieron cargar','Desliza hacia abajo para reintentar.');fin(false);});
 }
-function armarDashboard(){
-  const esAlex=state.usuario==='Alex',esIrene=state.usuario==='Irene';
-  const I=(d)=>`<svg viewBox="0 0 24 24">${d}</svg>`;
-  const hero=`
+function armarDinero(){
+  const esIrene=state.usuario==='Irene';
+  document.getElementById('dinero-hero').innerHTML=`
     <div class="hero" id="hero">
       <div class="top">
         <div class="hero-main">
-          <div class="lbl tap" onclick="explicar('${esIrene?'negocio':'hero'}')">${esIrene?'Tu ganancia de '+mesActualNombre():esAlex?'Irene te debe':'Le deben a Alex'} ›</div>
+          <div class="lbl tap" onclick="explicar('${esIrene?'negocio':'hero'}')">${esIrene?'Tu ganancia de '+mesActualNombre():state.usuario==='Alex'?'Irene te debe':'Le deben a Alex'} ›</div>
           <div class="val num tap" id="h-val" onclick="${esIrene?`explicar('negocio')`:`abrirDetalle('transferencia')`}">$0</div>
         </div>
       </div>
@@ -318,24 +323,17 @@ function armarDashboard(){
         <div class="hbar-track"><i id="h-bar-i"></i></div>
         <div class="hbar-f" id="h-bar-f"></div>
       </div>
-      <div class="actions">
-        <button class="main" onclick="abrirQuick()">${I('<path d="M12 5v14M5 12h14"/>')}Vender</button>
-        <button onclick="abrirDetalle('transferencia')">${I('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>')}La cuenta</button>
-        <button onclick="abrirDetalle('mes')">${I('<path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/>')}Este mes</button>
-      </div>
     </div>`;
-  const ofrecer=`<div id="ofrecer-wrap"></div>`;
-  const debes=esIrene?`<div class="group wrap" style="margin-top:14px"><div class="row tap" onclick="abrirDetalle('transferencia')"><div class="ico mango">${ICONS.cash}</div><div class="t"><b>Le debes a Alex</b><small id="tc-sub">del efectivo que guardas</small></div><div class="v num" id="tc-val">$0</div></div></div>`:'';
-  const negocio=`<div id="neg-wrap"></div>`;
-  const quedan=esIrene?'':`<div id="sec-quedan">
-    <div class="section-title">Lo que ganan ellas</div>
-    <div class="group wrap">
-      ${fila('user','Ganancia de Irene','v-girene','pos','gIrene','','de lo que aún no liquida · es suya')}
-      <div id="row-gmama">${fila('user','Ganancia de Mamá','v-gmama','pos','gMama','','de lo que aún no liquida · es suya')}</div>
-    </div>
-    </div>`;
-  // Para Irene, "Este mes" e "Historial" son datos de la tienda, no suyos: viven en el botón "Este mes".
-  const mes=esIrene?'':`<div class="section-title">Este mes</div>
+  document.getElementById('dinero-cuenta').innerHTML=esIrene
+    ?`<div class="group wrap" style="margin-top:14px"><div class="row tap" onclick="abrirDetalle('transferencia')"><div class="ico mango">${ICONS.cash}</div><div class="t"><b>Le debes a Alex</b><small id="tc-sub">del efectivo que guardas</small></div><div class="v num" id="tc-val">$0</div></div></div>`
+    :`<div id="sec-quedan">
+      <div class="section-title">Lo que ganan ellas</div>
+      <div class="group wrap">
+        ${fila('user','Ganancia de Irene','v-girene','pos','gIrene','','de lo que aún no liquida · es suya')}
+        <div id="row-gmama">${fila('user','Ganancia de Mamá','v-gmama','pos','gMama','','de lo que aún no liquida · es suya')}</div>
+      </div></div>`;
+  document.getElementById('mes-wrap').innerHTML=esIrene?'':`
+    <div class="section-title">Este mes</div>
     <div class="group">
       ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span>','','mes')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','piezas vendidas este mes','','mes')}
@@ -346,41 +344,31 @@ function armarDashboard(){
       <div class="chart-head"><b>Ventas</b><div class="chart-tabs"><button class="${state.chartTab!=='semana'?'on':''}" onclick="setChartTab('mes')">12 meses</button><button class="${state.chartTab==='semana'?'on':''}" onclick="setChartTab('semana')">7 días</button></div></div>
       <div class="chart" id="chart"><div class="sk" style="height:100%"></div></div>
     </div>`;
-  document.getElementById('view-dashboard').innerHTML=esIrene?hero+ofrecer+debes+negocio:hero+ofrecer+quedan+mes;
 }
-function setChartTab(t){buzz();state.chartTab=t;const c=document.getElementById('chart');if(c)c.dataset.firma='';document.querySelectorAll('.chart-tabs button').forEach((b,i)=>b.classList.toggle('on',(i===0)!==(t==='semana')));renderDashboard(state._dash,state._meses,{stale:true});}
-/* OFRECE ESTO HOY: lo que se vende rápido y hay en stock. Cada tarjeta abre "mandar por WhatsApp" o "vender". */
-function renderOfrecer(){
-  const w=document.getElementById('ofrecer-wrap');if(!w)return;
-  const t=(state.ofrecer||[]).filter(p=>p.stock>0).slice(0,6);
-  const firma=JSON.stringify(t);if(w.dataset.firma===firma)return;w.dataset.firma=firma;
-  if(!t.length){w.innerHTML='';return;}
-  w.innerHTML=`<div class="section-title">Ofrece esto hoy <span class="hint">Toca para mandarlo por WhatsApp</span></div>
-    <div class="strip-h stagger">${t.map((p,i)=>`<button class="mini ofr" onclick="abrirOfrecer(${i})">${thumb(p)}${p.vendidos60>=2?'<span class="tag n">Sale rápido</span>':''}${esDeIrene(p)?'<span class="tag-irene mini-tag">de Irene</span>':''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)} · ${p.stock} disp.</small></div></button>`).join('')}</div>`;
+function setChartTab(t){buzz();state.chartTab=t;const c=document.getElementById('chart');if(c)c.dataset.firma='';document.querySelectorAll('.chart-tabs button').forEach((b,i)=>b.classList.toggle('on',(i===0)!==(t==='semana')));renderDinero(state._dash,state._meses,{stale:true});}
+/* Compartir el producto abierto (hoja del sistema: Messenger, WhatsApp…). La foto se precarga al abrir la hoja de venta. */
+function precargarFoto(p){
+  state._shareFile=null;
+  if(!p||!p.imagen||!navigator.canShare)return;
+  api('fotoProducto',{descripcion:p.descripcion}).then(f=>{
+    if(!f||!f.base64||state.producto!==p)return;
+    const bin=atob(f.base64),arr=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);
+    const file=new File([arr],(p.descripcion||'producto')+'.jpg',{type:f.mime||'image/jpeg'});
+    if(navigator.canShare({files:[file]}))state._shareFile=file;
+  }).catch(()=>{});
 }
-function abrirOfrecer(i){
-  const p=(state.ofrecer||[])[i];if(!p)return;buzz();state._ofr=p;
-  document.getElementById('ofr-body').innerHTML=`<div class="prod compact rev-head">${thumb(p,'lg')}<div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">${p.stock} en stock${p.vendidos60?` · ${p.vendidos60} vendido${p.vendidos60===1?'':'s'} en 60 días`:''}</small></div><span class="p num">$${precio(p.precio)}</span></div>`;
-  document.getElementById('sheet-ofrecer').classList.remove('hidden');
-}
-function cerrarOfrecer(){document.getElementById('sheet-ofrecer').classList.add('hidden');}
-/* Abre WhatsApp con el mensaje listo: nombre, precio y foto. Con navigator.share el teléfono deja elegir el contacto. */
 function compartirProducto(){
-  const p=state._ofr;if(!p)return;buzz(12);
-  const texto=`*${p.descripcion}*\nPrecio: $${precio(p.precio)}`+(p.imagen?`\n${p.imagen}`:'');
-  if(navigator.share){navigator.share({text:texto}).catch(()=>{});return;}
+  const p=state.producto;if(!p)return;buzz(12);
+  const texto=`${p.descripcion}\nPrecio: $${precio(p.precio)}`;
+  if(navigator.share){
+    const datos=state._shareFile?{files:[state._shareFile],text:texto}:{text:texto};
+    navigator.share(datos).catch(()=>{});return;
+  }
   window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
 }
-function venderOfrecido(){
-  const p=state._ofr;if(!p)return;
-  const cat=state.catalogo.find(x=>mismoProd(x,p));cerrarOfrecer();
-  if(!cat){buzz([10,30]);toast('Sin stock de '+p.descripcion,'err');return;}
-  buzz(12);state.producto=cat;state.vendedor=state.usuario;state.metodo=null;state.paso=1;abrirVenta();
-}
-function renderDashboard(d,meses,m){
-  const hero=document.getElementById('hero');
-  if(!hero||hero.dataset.user!==state.usuario){armarDashboard();document.getElementById('hero').dataset.user=state.usuario;}
-  else if(!m.stale){const h=document.getElementById('hero');h.classList.remove('refresh');void h.offsetWidth;h.classList.add('refresh');}
+function renderDinero(d,meses,m){
+  if(state._dinArmado!==state.usuario){armarDinero();state._dinArmado=state.usuario;}
+  else if(!m.stale){const h=document.getElementById('hero');if(h){h.classList.remove('refresh');void h.offsetWidth;h.classList.add('refresh');}}
   const $=id=>document.getElementById(id);state._dash=d;state._meses=meses;
   const esIrene=state.usuario==='Irene',o=state.operacion;
   if(esIrene){
@@ -390,7 +378,6 @@ function renderDashboard(d,meses,m){
     $('tc-sub').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
   }else{
   tick($('h-val'),d.porTransferir);
-  // comparación con el mes anterior, en la fila "Ventas del mes"
   const prev=meses.length>1?meses[meses.length-2]:null,cmp=$('v-total-cmp');
   if(cmp)cmp.textContent=prev?`${mesLargo(prev.label).split(' ')[0]} $${pesos(prev.total)} → ${mesActualNombre()} $${pesos(d.ventasTotalesMes)}`:'';
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar`;
@@ -398,7 +385,6 @@ function renderDashboard(d,meses,m){
   const rc=$('h-racha');if(rc)rc.remove();$('h-chips').insertAdjacentHTML('beforeend',rachaChip());
   }
   renderMeta();
-  renderOfrecer();
   renderNegocio();
   if(!esIrene){
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
@@ -626,10 +612,15 @@ function cargarCatalogo(){
   const l=document.getElementById('catalogo-list');
   if(state.catalogo.length){renderCats();renderCatalogo();}
   else l.innerHTML='<div class="sk" style="height:60px;margin-top:16px"></div><div class="sk" style="height:180px;margin-top:10px"></div>';
-  apiCached('catalogo',{},(d,m)=>{
-    if(d.error){toast(d.error,'err');return;}
-    const firma=JSON.stringify(d);
-    if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=d;renderCats();renderCatalogo();}
+  apiCached('inicio',{usuario:state.usuario},(d,m)=>{
+    if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
+    if(Array.isArray(d.recientes))state.recientes=d.recientes;
+    if(Array.isArray(d.detalle))state.detalle=d.detalle;
+    if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
+    if(d.operacionIrene)state.operacion=d.operacionIrene;
+    if(d.impulso)state.impulso=d.impulso;
+    state._dash=d.dashboard;state._meses=d.ventasMes||[];
+    if(Array.isArray(d.catalogo)){const firma=JSON.stringify(d.catalogo);if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=d.catalogo;renderCats();renderCatalogo();}else renderStrips(document.getElementById('search').value.trim().toLowerCase());}
     if(!m.stale)listo();
   },()=>{l.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');listo();});
 }
@@ -661,14 +652,15 @@ function renderStrips(q){
   if(q||state.cat!=='Todas'||!state.catalogo.length){w.innerHTML='';w.dataset.firma='';return;}
   const baseD=state.catalogo.filter(filtroDueno);
   const bajos=baseD.filter(p=>p.stock<=2).sort((a,b)=>a.stock-b.stock||b.precio-a.precio);
-  const altos=[...baseD].sort((a,b)=>b.stock-a.stock).slice(0,8);
-  const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),altos.map(p=>p.descripcion+p.stock)]);
+  // "Sale rápido": lo que más se ha vendido en 60 días y sigue en stock (viene del backend)
+  const rapidos=(state.ofrecer||[]).filter(p=>p.vendidos60>0).map(p=>baseD.find(x=>mismoProd(x,p))&&Object.assign({},baseD.find(x=>mismoProd(x,p)),{vendidos60:p.vendidos60})).filter(Boolean).slice(0,8);
+  const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),rapidos.map(p=>p.descripcion+p.stock)]);
   if(w.dataset.firma===firma)return;w.dataset.firma=firma;
-  w.innerHTML=(bajos.length?`<div class="section-title">Por agotarse <span class="hint">${bajos.length} producto${bajos.length===1?'':'s'}</span></div>
+  w.innerHTML=(rapidos.length?`<div class="section-title">Sale rápido <span class="hint">Toca para vender o compartir</span></div>
+    <div class="strip-h stagger">${rapidos.map(p=>miniCard(p,`<span class="tag n">${p.vendidos60} en 60 días</span>`)).join('')}</div>`:'')+
+    (bajos.length?`<div class="section-title">Por agotarse <span class="hint">${bajos.length} producto${bajos.length===1?'':'s'}</span></div>
     <div class="strip-h stagger">${bajos.map(p=>miniCard(p,p.stock===1?'<span class="tag">Última</span>':'<span class="tag two">Quedan 2</span>')).join('')}</div>`:'')+
-    `<div class="section-title">Más stock</div>
-    <div class="strip-h stagger">${altos.map(p=>miniCard(p,`<span class="tag n">${p.stock} pzas</span>`)).join('')}</div>
-    <div class="section-title" style="padding-top:14px">Todo el catálogo</div>`;
+    ((rapidos.length||bajos.length)?`<div class="section-title" style="padding-top:14px">Todo el catálogo</div>`:'');
 }
 function venderProducto(desc){
   const p=state.catalogo.find(x=>x.descripcion===desc);if(!p){toast('Sin stock','err');return;}
@@ -728,14 +720,23 @@ function renderQuick(){
 function cerrarQuick(){document.getElementById('sheet-quick').classList.add('hidden');}
 
 /* ---------- VENTA ---------- */
+/* Precio efectivo de esta venta: normal, o al costo cuando es para la familia. */
+function precioVenta(){const p=state.producto;return state.precioTipo==='costo'?(Number(p.costoFinal)||0):p.precio;}
+/* Ganancia = utilidad real, para todos: precio + extra − costo − moto. */
 function gananciaEst(){
   const p=state.producto,extra=Number(state.cobro)||0,g=Number(state.gastos)||0;
-  if(esDeIrene(p))return p.precio+extra-(Number(p.costoFinal)||0)-g;
-  return state.vendedor==='Alex'?p.precio+extra-g:p.precio+extra-(Number(p.costoFinal)||0)-g;
+  return precioVenta()+extra-(Number(p.costoFinal)||0)-g;
+}
+/* Lo que Irene le pasa a Alex por esta venta (solo ventas de Alex cobradas en efectivo): incluye el costo que él puso. */
+function transferEst(){
+  const p=state.producto,extra=Number(state.cobro)||0,g=Number(state.gastos)||0;
+  if(esDeIrene(p)||state.vendedor!=='Alex'||state.metodo!=='Efectivo a Irene')return null;
+  return precioVenta()+extra-g;
 }
 function abrirVenta(){
   if(!state.producto){abrirQuick();return;}
-  state.paso=1;pintarVenta();
+  precargarFoto(state.producto);
+  state.precioTipo='normal';state.paso=1;pintarVenta();
   document.getElementById('sheet-venta').classList.remove('hidden');
 }
 function stockLinea(p){
@@ -753,12 +754,16 @@ function pintarVenta(){
     outer.style.display=fotos.length?'none':'';outer.previousElementSibling.style.display=fotos.length?'none':'';
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
-      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div><span class="p num">$${money(p.precio)}</span></div>
+      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto()">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">$${money(p.precio)}</span></div>
       <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>
         <button class="opt ${state.metodo===(esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex')?'on':''}" onclick="setMetodo('${esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex'}')">Transferencia</button>
       </div></div>
+      ${Number(p.costoFinal)<p.precio?`<div class="field"><label>Precio</label><div class="opts" data-p="1">
+        <button class="opt ${state.precioTipo!=='costo'?'on':''}" id="pt-n" onclick="setPrecioTipo('normal')">Normal · $${precio(p.precio)}</button>
+        <button class="opt ${state.precioTipo==='costo'?'on':''}" id="pt-c" onclick="setPrecioTipo('costo')">Al costo · $${precio(p.costoFinal)}<br><small style="font-weight:600">para la familia</small></button>
+      </div></div>`:''}
       <div class="field"><label>Cobro extra</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="field"><label>Motomandado / gastos</label><div class="money"><span>$</span><input id="gastos" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.gastos||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="calc" id="calc"></div>`;
@@ -768,14 +773,15 @@ function pintarVenta(){
     const outer=document.getElementById('venta-titulo');outer.style.display='';outer.previousElementSibling.style.display='';outer.textContent='¿Confirmar venta?';
     const extra=Number(state.cobro)||0,g=Number(state.gastos)||0;
     const r=(a,b,cls='')=>`<div class="row ${cls}"><div class="t"><b>${a}</b></div><div class="v num">${b}</div></div>`;
-    body.innerHTML=`<div class="prod compact rev-head">${thumb(p,'lg')}<div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">${esc(p.categoria||'')}</small></div><span class="p num">$${money(p.precio)}</span></div>
+    body.innerHTML=`<div class="prod compact rev-head">${thumb(p,'lg')}<div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">${esc(p.categoria||'')}</small></div><span class="p num">$${money(precioVenta())}</span></div>
     <div class="review">
-      ${r('Precio','$'+money(p.precio))}
+      ${r('Precio','$'+money(precioVenta())+(state.precioTipo==='costo'?' <small style="font-weight:700;color:var(--mango)">al costo · familia</small>':''))}
       ${extra?r('Cobro extra','+$'+money(extra)):''}
       ${g?r('Motomandado','−$'+money(g)):''}
       ${r('Costo','$'+money(p.costoFinal))}
       ${r('Vendedor',state.vendedor)}
       ${r('Pago',state.metodo==='Efectivo a Irene'?(esDeIrene(p)?'Efectivo':'Efectivo a Irene'):(esDeIrene(p)?'Transferencia a Irene':'Transferencia a Alex'))}
+      ${transferEst()!=null?r('Irene te transfiere','$'+money(transferEst())+' <small style="font-weight:600;color:var(--muted)">incluye tu costo</small>'):''}
       ${r('Ganancia '+(esDeIrene(p)?'Irene':state.vendedor),'$'+money(gananciaEst()),'total')}
     </div>
     <p style="font-size:0.8125rem;color:var(--muted);font-weight:600;text-align:center;margin-top:14px">${esDeIrene(p)?'Mercancía de Irene: la ganancia completa es suya y no entra a las cuentas con Alex. ':''}Se descuenta 1 pieza del inventario${Number(p.stock)===1?' (es la última)':''}. Tendrás 10 segundos para deshacer.</p>`;
@@ -800,13 +806,14 @@ function tintDesde(url,el){
     im.src=url;
   }catch(e){}
 }
-function pintarCalc(){const c=document.getElementById('calc');if(!c||!state.vendedor)return;c.innerHTML=`<span>Ganancia estimada</span><b class="num" id="calc-v"></b>`;tick(document.getElementById('calc-v'),gananciaEst(),{dur:350});}
+function pintarCalc(){const c=document.getElementById('calc');if(!c||!state.vendedor)return;const t=transferEst();c.innerHTML=`<span>Ganancia estimada</span><b class="num" id="calc-v"></b>`+(t!=null?`</div><div class="calc"><span>Irene te pasa (con tu costo)</span><b class="num">$${money(t)}</b>`:'');tick(document.getElementById('calc-v'),gananciaEst(),{dur:350});}
 function guardarInputs(){state.cobro=document.getElementById('cobro')?.value||'';state.gastos=document.getElementById('gastos')?.value||'';}
 /* Cambios de vendedor / método: solo actualizan lo afectado, sin reconstruir la hoja (evita reflash de la galería). */
 function setVend(v){buzz();state.vendedor=v;refrescarOpciones();}
 function setMetodo(m){buzz();state.metodo=m;refrescarOpciones();}
+function setPrecioTipo(t){buzz();state.precioTipo=t;const n=document.getElementById('pt-n'),c=document.getElementById('pt-c');if(n)n.classList.toggle('on',t!=='costo');if(c)c.classList.toggle('on',t==='costo');pintarCalc();}
 function refrescarOpciones(){
-  document.querySelectorAll('#venta-body .opts').forEach((g,gi)=>{
+  document.querySelectorAll('#venta-body .opts:not([data-p])').forEach((g,gi)=>{
     g.querySelectorAll('.opt').forEach(b=>{
       const val=gi===0?b.textContent.trim():(b.textContent.trim()==='Transferencia'?(esDeIrene(state.producto)?'Transferencia a Irene':'Transferencia directa a Alex'):'Efectivo a Irene');
       b.classList.toggle('on',gi===0?state.vendedor===val:state.metodo===val);
@@ -816,7 +823,7 @@ function refrescarOpciones(){
   const n=document.getElementById('btn-next');if(n)n.disabled=!(state.vendedor&&state.metodo);
 }
 function revisar(){if(!state.vendedor||!state.metodo)return;buzz(12);guardarInputs();state.paso=2;pintarVenta();document.querySelector('#sheet-venta .sheet').scrollTo({top:0});}
-function cerrarVenta(){const o=document.getElementById('venta-titulo');o.style.display='';o.previousElementSibling.style.display='';document.getElementById('sheet-venta').classList.add('hidden');state.cobro='';state.gastos='';state.paso=1;}
+function cerrarVenta(){const o=document.getElementById('venta-titulo');o.style.display='';o.previousElementSibling.style.display='';document.getElementById('sheet-venta').classList.add('hidden');state.cobro='';state.gastos='';state.paso=1;state.precioTipo='normal';}
 function setupHold(){
   const b=document.getElementById('hold');let t,tics=[];
   const down=e=>{e.preventDefault();if(b.disabled)return;buzz(15);b.classList.add('go');
@@ -830,7 +837,7 @@ function setupHold(){
 }
 function confirmarVenta(){
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
-  const venta={descripcion:state.producto.descripcion,pid:state.producto.pid||'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
+  const venta={descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
   const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
   const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
   apiPost('registrarVenta',{venta}).then(r=>{
@@ -869,7 +876,7 @@ function celebrar(id,p,ventaID){
 }
 function cerrarExito(){
   const x=state._exito;if(x){clearInterval(x.timer);state._exito=null;}
-  document.getElementById('success').classList.add('hidden');cambiarVista(state.vista||'dashboard');
+  document.getElementById('success').classList.add('hidden');cambiarVista(state.vista||'catalogo');
 }
 function deshacerVenta(){
   const x=state._exito;if(!x)return;clearInterval(x.timer);buzz(12);
@@ -879,34 +886,11 @@ function deshacerVenta(){
     if(x.p){x.p.stock=(Number(x.p.stock)||0)+1;if(!state.catalogo.includes(x.p))state.catalogo.push(x.p);}
     state.dirty=true;state.catFirma='';state.ventFirma='';
     state._exito=null;document.getElementById('success').classList.add('hidden');
-    toast('Venta deshecha, la pieza volvió al inventario','ok');cambiarVista(state.vista||'dashboard');
+    toast('Venta deshecha, la pieza volvió al inventario','ok');cambiarVista(state.vista||'catalogo');
   }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se pudo deshacer','err');b.disabled=false;b.textContent='Deshacer';});
 }
 
-/* ---------- MIS VENTAS ---------- */
-function cargarVentas(){
-  const l=document.getElementById('ventas-list');
-  if(!state.ventas.length){
-    document.getElementById('mini').innerHTML='<div class="sk" style="height:70px"></div>'.repeat(3);
-    l.innerHTML='<div class="sk" style="height:200px"></div>';
-  }
-  apiCached('misVentas',{vendedor:state.usuario},(d,m)=>{
-    if(d.resumen&&!d.resumen.error)renderMini(d.resumen);
-    if(d.logros)renderLogros(d.logros);
-    if(Array.isArray(d.ventas)){const firma=JSON.stringify(d.ventas);if(firma!==state.ventFirma){state.ventFirma=firma;state.ventas=d.ventas;renderVentas();}}
-    if(!m.stale)listo();
-  },()=>{l.innerHTML=vacio('wifi','No se pudieron cargar','Desliza hacia abajo para reintentar.');listo();});
-}
-function renderMini(d){
-  const m=document.getElementById('mini');
-  if(!m.querySelector('#m-pend'))m.innerHTML=`
-    <div class="stat"><small>Sin liquidar</small><b class="num" id="m-pend">0</b></div>
-    <div class="stat"><small>Mi ganancia</small><b class="num pos" id="m-gan">$0</b></div>
-    <div class="stat"><small>Piezas este mes</small><b class="num" id="m-mes">0</b></div>`;
-  tick(document.getElementById('m-pend'),d.pendientes,{prefix:'',fmt:entero});
-  tick(document.getElementById('m-gan'),d.ganancia);
-  tick(document.getElementById('m-mes'),d.articulosMes,{prefix:'',fmt:entero});
-}
+/* ---------- LISTA DE VENTAS (dentro de Dinero) ---------- */
 const LG_ICONS={
   cal:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
   trophy:'<svg class="ic" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8 21h8M9 17h6"/></svg>',
@@ -921,23 +905,16 @@ function renderLogros(L){
   const w=document.getElementById('logros');if(!w)return;
   const firma=JSON.stringify(L)+state.usuario;if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   if(!L||!L.total||!L.total.cantidad){w.innerHTML='';return;}
-  const c=[],mp=L.mesPasado,ma=L.mesActual,mesA=mesActualNombre();
-  state._ayudas=[];const ay=(t,p)=>state._ayudas.push({t,p})-1;
-  const card=(cls,ico,k,cuerpo,ayuda)=>`<div class="lgc ${cls} tap" onclick="explicarAyuda(${ay(k,ayuda)})">${ico||''}<div class="k">${k}</div><div class="d big">${cuerpo}</div></div>`;
-  if(mp)c.push(card('mango',LG_ICONS.cal,'Mes pasado',
-    `En <b>${mesLargo(mp.label).split(' ')[0]}</b> ganaste <b class="num" data-v="${mp.ganancia}">$0</b> con ${pz(mp.cantidad)}.${ma?(ma.ganancia>mp.ganancia?`<span class="up">▲ En ${mesA} ya lo superaste</span>`:`<br>En ${mesA} llevas <b>$${pesos(ma.ganancia)}</b>.`):''}`,
-    `Tu ganancia del mes anterior, sumando todas tus ventas de ese mes (transferidas o no). Se compara con lo que llevas este mes.`));
+  const c=[],mesA=mesActualNombre();
+  const card=(cls,ico,k,cuerpo,ayuda)=>`<div class="lgc ${cls} tap" onclick="explicarAyuda(${(state._ayudas=state._ayudas||[]).push({t:k,p:ayuda})-1})">${ico||''}<div class="k">${k}</div><div class="d big">${cuerpo}</div></div>`;
+  state._ayudas=[];
   if(L.mejorMes)c.push(card('selva',LG_ICONS.trophy,'Tu récord',
     `Tu mejor mes fue <b>${mesLargo(L.mejorMes.label)}</b>: <b class="num" data-v="${L.mejorMes.ganancia}">$0</b> de ganancia con ${pz(L.mejorMes.cantidad)}.`,
     `El mes en que más ganancia has tenido desde que empezaste a vender.`));
-  if(L.topProducto)c.push(`<div class="lgc foto tap" onclick="explicarAyuda(${ay('Tu producto estrella','El producto que más veces has vendido en todo tu historial.')})">${thumb(L.topProducto)}<div class="ft"><div class="k">Tu producto estrella</div><div class="n">${esc(L.topProducto.descripcion)}</div><div class="d">Lo has vendido <b>${L.topProducto.cantidad} veces</b> desde que empezaste.</div></div></div>`);
   c.push(card('tinta',LG_ICONS.rocket,'Tu trayectoria',
     `Vendes desde <b>${mesLargo(L.total.desde)||'el inicio'}</b>. Llevas <b class="num" data-v="${L.total.cantidad}" data-int="1">0</b> piezas vendidas y <b>$${pesos(L.total.ganancia)}</b> de ganancia en ${L.total.meses} mes${L.total.meses===1?'':'es'}.`,
     `Todo lo que has vendido y ganado desde tu primera venta registrada.`));
-  if(L.esteMes&&L.esteMes.diasConVenta)c.push(card('lila',LG_ICONS.sun,'Este mes',
-    `En ${mesA} has vendido en <b class="num" data-v="${L.esteMes.diasConVenta}" data-int="1">0</b> día${L.esteMes.diasConVenta===1?'':'s'} distinto${L.esteMes.diasConVenta===1?'':'s'}. Tu mejor día fue el <b>${L.esteMes.mejorDia} de ${mesA}</b>, con <b>$${pesos(L.esteMes.mejorDiaTotal)}</b> en ventas.`,
-    `Cuántos días de este mes registraste al menos una venta, y el día con mayor monto vendido (precio + cobro extra, sin restar costos).`));
-  w.innerHTML=`<div class="logros-title"><div class="section-title">Tus logros</div><small>Desliza → · toca para saber más</small></div><div class="logros stagger">${c.join('')}</div>`;
+  w.innerHTML=`<div class="logros-title"><div class="section-title">Tus logros</div><small>Toca para saber más</small></div><div class="logros stagger">${c.join('')}</div>`;
   w.querySelectorAll('.num[data-v]').forEach(el=>tick(el,Number(el.dataset.v),el.dataset.int?{prefix:'',fmt:entero,dur:900}:{dur:900}));
 }
 function diaLabel(ts){
@@ -973,15 +950,15 @@ const op=o=>`<span class="op">${o}</span>`;
 function formulaVenta(v,mini){ // fichas con números reales de una venta
   const $=x=>'$'+money(x);const partes=[ficha($(v.precio),'precio')];
   if(v.cobroExtra)partes.push(op('+'),ficha($(v.cobroExtra),'extra'));
-  if(v.vendedor!=='Alex')partes.push(op('−'),ficha($(v.costoFinal),'costo','neg'));
+  partes.push(op('−'),ficha($(v.costoFinal),'costo','neg'));
   if(v.gastoExt)partes.push(op('−'),ficha($(v.gastoExt),'moto','neg'));
   partes.push(op('='),ficha($(v.ganancia),'ganancia','res'));
   return`<div class="formula ${mini?'mini':''}">${partes.join('')}</div>`;
 }
 function ejemploVenta(f){return(state.detalle||[]).find(f)||null;}
 const EXPLICA={
-  tAlex:{t:'Ganancia de Alex',p:'Cuando <b>Alex</b> vende y el cliente paga en efectivo, Irene guarda ese dinero. Alex puso el costo del producto, así que <b>todo lo que queda después del moto es suyo</b> y se le transfiere.',
-    f:()=>[ficha('precio','pagó el cliente'),op('+'),ficha('extra'),op('−'),ficha('moto','envío','neg'),op('='),ficha('a Alex','se transfiere','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'},
+  tAlex:{t:'Ventas de Alex en efectivo',p:'Cuando <b>Alex</b> vende y el cliente paga en efectivo, Irene guarda ese dinero. Alex puso el costo del producto, así que <b>todo lo que queda después del moto se le transfiere</b> (su costo de vuelta + su ganancia).',
+    f:()=>[ficha('precio','pagó el cliente'),op('+'),ficha('extra'),op('−'),ficha('moto','envío','neg'),op('='),ficha('a Alex','se transfiere','res')],ej:null},
   tCosto:{t:'Costo de lo vendido por Irene y Mamá',p:'Cuando vende <b>Irene o Mamá</b>, ellas se quedan la ganancia. A Alex solo le regresan <b>el costo del producto</b>, que fue lo que él invirtió.',
     f:()=>[ficha('precio','pagó el cliente'),op('−'),ficha('ganancia','de ella','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('costo','a Alex','res')],ej:v=>v.vendedor!=='Alex'},
   tMoto:{t:'Moto que puso Irene',p:'Si el cliente le pagó a <b>Alex por transferencia</b>, Irene pagó el envío de su bolsa. Ese monto <b>se le descuenta</b> a Alex en la siguiente transferencia.',
@@ -1033,7 +1010,7 @@ function donutHTML(A,B,C,T){
   const seg=(v,cls)=>{const len=Math.max(0,v/base*L-(v?2:0));const h=`<circle class="${cls}" cx="50" cy="50" r="40" stroke-dasharray="${len} ${L-len}" stroke-dashoffset="${-off}"/>`;off+=v/base*L;return h;};
   const it=(cls,t,sub,v,k,neg)=>`<div class="it ${neg?'neg':''}" onclick="explicar('${k}')"><span class="sw" style="background:var(${cls})"></span><div class="t">${t}<small>${sub}</small></div><div class="v num">${neg?'−':''}$${pesos(v)}</div></div>`;
   return`<div class="donut-card"><div class="donut"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="40"/>${seg(A,'s1')}${seg(B,'s2')}${seg(C,'s3')}</svg><div class="ctr"><b class="num">$${pesos(T)}</b><small>total</small></div></div>
-    <div class="dleg">${A?it('--selva','Ganancia de Alex','sus ventas en efectivo',A,'tAlex'):''}${B?it('--ink','Costo de lo de Irene y Mamá','ellas se quedan la ganancia',B,'tCosto'):''}${C?it('--mango','Moto que puso Irene','se descuenta',C,'tMoto',true):''}</div></div>
+    <div class="dleg">${A?it('--selva','Ventas de Alex en efectivo','precio completo · el costo era suyo',A,'tAlex'):''}${B?it('--ink','Costo de lo de Irene y Mamá','ellas se quedan la ganancia',B,'tCosto'):''}${C?it('--mango','Moto que puso Irene','se descuenta',C,'tMoto',true):''}</div></div>
     <div style="font-size:0.7188rem;font-weight:600;color:var(--muted);text-align:center;margin:8px 0 4px">Toca un renglón para ver cómo se calcula</div>`;
 }
 function abrirDetalle(tipo,copiar){
@@ -1050,7 +1027,7 @@ function abrirDetalle(tipo,copiar){
       <div class="det-total"><div><small>${pend.length} venta${pend.length===1?'':'s'} sin liquidar</small>Total</div><b class="num">$${pesos(T)}</b></div>
       ${donutHTML(A,B,C,T)}
       <div class="det-btn"><button class="btn primary" onclick="copiarResumen()">Copiar resumen</button><button class="btn ghost" onclick="cerrarDetalle()">Cerrar</button></div>
-      ${grupo('a','Ganancia de Alex · efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
+      ${grupo('a','Ventas de Alex en efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
       ${grupo('b','Costo de lo vendido por Irene y Mamá','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
       ${grupo('c','Moto que puso Irene · se descuenta','',v=>`Alex · pagado por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
       ${pend.length?'':vacio('leaf','Nada pendiente','Todo está liquidado.')}`;
@@ -1090,7 +1067,7 @@ function abrirUsuarios(){
      <div class="ver">Kiosko v${APP_VERSION} · ${APP_BUILD}<button onclick="buscarActualizacion()">Buscar actualización</button></div>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }
-function cambiarUsuario(u){buzz();state.impulso=null;try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('dashboard');}
+function cambiarUsuario(u){buzz();state.impulso=null;state._dinArmado='';try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('catalogo');}
 function cerrarUsuarios(){document.getElementById('sheet-usuario').classList.add('hidden');}
 
 /* ---------- UTILS ---------- */
