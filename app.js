@@ -9,10 +9,11 @@ const API_URL=(window.OC_CONFIG||{}).API_URL||'';
 const API_TOKEN=(window.OC_CONFIG||{}).API_TOKEN||'';
 if(!API_URL||!API_TOKEN)console.error('Falta config.js con OC_CONFIG.API_URL y API_TOKEN');
 
-async function api(accion,params={},body=null){
-  if(!API_URL||!API_TOKEN){const e=new Error('Falta config.js en el repo (URL y token)');e.api=true;throw e;}
+async function api(accion,params={},body=null,ms=20000){
+  if(!API_URL||!API_TOKEN){const e=new Error('Falta config.js en el repo (URL y token)');e.api=true;e.tipo='config';throw e;}
   const url=new URL(API_URL);
-  const opts={redirect:'follow'};
+  const ctrl=new AbortController(),reloj=setTimeout(()=>ctrl.abort(),ms);
+  const opts={redirect:'follow',signal:ctrl.signal};
   if(body){
     opts.method='POST';
     opts.headers={'Content-Type':'text/plain;charset=utf-8'}; // text/plain = sin preflight CORS
@@ -20,12 +21,28 @@ async function api(accion,params={},body=null){
   }else{
     url.search=new URLSearchParams({token:API_TOKEN,accion,...params}).toString();
   }
-  const r=await fetch(url,opts);
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  const j=await r.json();
-  if(!j.ok){const e=new Error(j.error||'Error del servidor');e.api=true;throw e;}
+  let r;
+  try{r=await fetch(url,opts);}
+  catch(err){
+    const lento=err&&err.name==='AbortError';
+    const e=new Error(lento?('El servidor tardó más de '+Math.round(ms/1000)+' s'):'No se pudo conectar con el servidor');
+    e.tipo=lento?'lento':'red';throw e;
+  }
+  finally{clearTimeout(reloj);}
+  if(!r.ok){const e=new Error('El servidor respondió '+r.status);e.api=true;e.tipo='http';throw e;}
+  const txt=await r.text();
+  let j;
+  try{j=JSON.parse(txt);}
+  catch(err){
+    // Apps Script contesta HTML cuando el despliegue perdió el acceso público o truena al arrancar
+    const login=/accounts\.google|iniciar sesión|Sign in/i.test(txt);
+    const e=new Error(login?'La app no tiene permiso de entrar al servidor (revisa el acceso del despliegue)':'El servidor no devolvió datos válidos');
+    e.api=true;e.tipo='formato';e.muestra=txt.slice(0,200);throw e;
+  }
+  if(!j.ok){const e=new Error(j.error||'Error del servidor');e.api=true;e.tipo='api';throw e;}
   return j.data;
 }
+
 const apiPost=(accion,body)=>api(accion,{},body);
 
 /* Caché stale-while-revalidate:
@@ -46,7 +63,11 @@ function apiCached(accion,params,onData,onFail){
   }).catch(err=>{
     if(err.api){toast(err.message,'err');if(!c)onFail&&onFail(err);return;}
     const old=c||leerCache(key);
-    if(old){if(!c)onData(old.d,{stale:true});toast('Sin conexión · datos de '+relTime(old.t));return;}
+    // El motivo real, no siempre "sin conexión": puede ser lentitud del servidor o un error suyo.
+    const motivo=(err&&err.tipo==='lento')?'El servidor tardó demasiado'
+                :(navigator.onLine===false||!err||err.tipo==='red')?'Sin conexión'
+                :(err.message||'No se pudo actualizar');
+    if(old){if(!c)onData(old.d,{stale:true});toast(motivo+' · datos de '+relTime(old.t),'err');return;}
     onFail&&onFail(err);
   });
 }
