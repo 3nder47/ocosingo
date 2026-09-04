@@ -5,7 +5,7 @@
 // - Fotos de producto (Drive): caché primero para siempre (cada subida crea URL nueva) · máx. 120.
 // - Al cambiar de versión, actualizar CACHE y los ?v= de SHELL junto con index.html.
 // UNICO lugar que hay que tocar al subir version, junto con los ?v= de index.html y APP_VERSION de app.js.
-const V = '10.1';
+const V = '10.2';
 const CACHE = 'kiosko-shell-' + V;
 const IMG_CACHE = 'ocosingo-img-v2';
 const SHELL = ['./', './index.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
