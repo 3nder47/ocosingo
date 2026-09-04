@@ -1,4 +1,4 @@
-const APP_VERSION='10.3';const APP_BUILD='4 Sep 2026 11:30';
+const APP_VERSION='10.4';const APP_BUILD='4 Sep 2026 12:30';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -146,11 +146,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   setupPullToRefresh();
   setupSwipeSheets();
   entrarRecordado();
+  renderOutbox();enviarPendientes();
+  window.addEventListener('online',()=>enviarPendientes());
+  setInterval(enviarPendientes,60000);
 });
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -279,6 +282,7 @@ function cambiarVista(v){
   ORDEN.forEach(x=>{const el=document.getElementById('view-'+x);el.classList.toggle('hidden',x!==v);el.classList.remove('slide-l','slide-r');if(x===v&&prev!==v){void el.offsetWidth;el.classList.add(dir);}});
   window.scrollTo({top:0});
   ({catalogo:cargarCatalogo,ventas:cargarDinero})[v]();
+  enviarPendientes();
   const fab=document.getElementById('fab-add');if(fab)fab.style.display=(v==='catalogo'&&state.usuario==='Irene')?'':'none';
 }
 
@@ -317,7 +321,7 @@ function cargarDinero(){
   let pendientes=2;const fin=st=>{if(!st)pendientes--;if(pendientes<=0)listo();};
   apiCached('inicio',{usuario:state.usuario},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
-    if(Array.isArray(d.catalogo))state.catalogo=d.catalogo;
+    if(Array.isArray(d.catalogo))state.catalogo=aplicarOutbox(d.catalogo);
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
     if(Array.isArray(d.detalle))state.detalle=d.detalle;
     if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
@@ -648,7 +652,7 @@ function cargarCatalogo(){
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
     state._dash=d.dashboard;state._meses=d.ventasMes||[];
-    if(Array.isArray(d.catalogo)){const firma=JSON.stringify(d.catalogo);if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=d.catalogo;renderCats();renderCatalogo();}else renderStrips(document.getElementById('search').value.trim().toLowerCase());}
+    if(Array.isArray(d.catalogo)){const firma=JSON.stringify(d.catalogo)+outboxFirma();if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=aplicarOutbox(d.catalogo);renderCats();renderCatalogo();}else renderStrips(document.getElementById('search').value.trim().toLowerCase());}
     if(!m.stale)listo();
   },()=>{l.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');listo();});
 }
@@ -724,7 +728,7 @@ function abrirQuick(){
   buzz();document.getElementById('qsearch').value='';
   document.getElementById('sheet-quick').classList.remove('hidden');
   const go=()=>{renderQuick();setTimeout(()=>document.getElementById('qsearch').focus(),350);};
-  if(state.catalogo.length)go();else{document.getElementById('quick-list').innerHTML='<div class="sk" style="height:200px"></div>';apiCached('catalogo',{},d=>{if(!d.error){state.catalogo=d;go();}},()=>document.getElementById('quick-list').innerHTML=vacio('wifi','Sin conexión','No se pudo cargar el catálogo.'));}
+  if(state.catalogo.length)go();else{document.getElementById('quick-list').innerHTML='<div class="sk" style="height:200px"></div>';apiCached('catalogo',{},d=>{if(!d.error){state.catalogo=aplicarOutbox(d);go();}},()=>document.getElementById('quick-list').innerHTML=vacio('wifi','Sin conexión','No se pudo cargar el catálogo.'));}
 }
 let quickLista=[];
 function renderQuick(){
@@ -865,28 +869,37 @@ function setupHold(){
 }
 function confirmarVenta(){
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
-  const venta={descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
+  const venta={ventaID:uuid(),descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
   const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
   const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
-  apiPost('registrarVenta',{venta}).then(r=>{
+  const restaurar=()=>{b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para confirmar';};
+  const exito=(id,ventaID,pendiente)=>{
     cerrarVenta();
-    if(r.success){
-      const vendido=state.producto;if(origen)vendido._fly=origen;
-      state.dirty=true;state.catFirma='';   // fuerza datos frescos en la siguiente carga
-      // descuenta 1 localmente para que el catálogo se vea al día aunque tarde la red
-      const it=state.catalogo.find(x=>mismoProd(x,state.producto)&&x.categoria===state.producto.categoria);
-      if(it){it.stock--;if(it.stock<=0)state.catalogo=state.catalogo.filter(x=>x!==it);}
-      celebrar(r.detalle.id,vendido,r.detalle.ventaID);state.producto=null;state.vendedor=null;state.metodo=null;
-    }else{toast(r.error||'No se pudo registrar','err');}
-  }).catch(err=>{b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para confirmar';toast(err.api?err.message:'Sin conexión, la venta no se guardó','err');});
+    const vendido=state.producto;if(origen)vendido._fly=origen;
+    state.dirty=true;state.catFirma='';   // fuerza datos frescos en la siguiente carga
+    // descuenta 1 localmente para que el catálogo se vea al día aunque tarde la red
+    const it=state.catalogo.find(x=>mismoProd(x,state.producto)&&x.categoria===state.producto.categoria);
+    if(it){it.stock--;if(it.stock<=0)state.catalogo=state.catalogo.filter(x=>x!==it);}
+    celebrar(id,vendido,ventaID,pendiente);state.producto=null;state.vendedor=null;state.metodo=null;
+  };
+  apiPost('registrarVenta',{venta}).then(r=>{
+    if(r.success)exito(r.detalle.id,r.detalle.ventaID||venta.ventaID,false);
+    else{restaurar();toast(r.error||'No se pudo registrar','err');}
+  }).catch(err=>{
+    // El servidor la rechazó a propósito (sin stock, datos mal): no se guarda, se avisa.
+    if(err.api&&err.tipo==='api'){restaurar();toast(err.message,'err');return;}
+    // Sin señal o servidor caído: se guarda en el teléfono y se manda sola después.
+    outboxAgregar(venta,state.producto);
+    exito('',venta.ventaID,true);
+  });
 }
-function celebrar(id,p,ventaID){
+function celebrar(id,p,ventaID,pendiente){
   const s=document.getElementById('success');
   const colors=['#1D9E75','#F59E0B','#E5484D','#3B82F6','#A855F7'];
   const visual=p?`${thumb(p,'hero-img')}<div class="badge-ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>`
     :`<div class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>`;
   s.innerHTML=Array.from({length:26},(_,i)=>`<div class="confetti" style="left:50%;top:45%;background:${colors[i%5]};--dx:${(Math.random()-.5)*360}px;--dy:${(Math.random()-.5)*360}px;animation-delay:${Math.random()*.2}s"></div>`).join('')+
-    `${visual}<h3>Venta registrada</h3><p>${p?esc(p.descripcion)+' · ':''}${esc(id)}</p>
+    `${visual}<h3>${pendiente?'Venta guardada en el teléfono':'Venta registrada'}</h3><p>${p?esc(p.descripcion)+' · ':''}${pendiente?'se enviará sola cuando haya señal':esc(id)}</p>
     <div class="undo-row"><button class="btn ghost" id="btn-undo" onclick="deshacerVenta()">Deshacer · <span id="undo-n">10</span></button><button class="btn primary" onclick="cerrarExito()">Listo</button></div>`;
   s.classList.remove('hidden');buzz([30,40,60]);
   // la foto "vuela" desde la hoja de venta hasta su lugar en la pantalla de éxito
@@ -900,7 +913,7 @@ function celebrar(id,p,ventaID){
     setTimeout(()=>{dest.classList.remove('wait');f.remove();},520);
   }
   // ventana de 10 s para deshacer; al terminar se cierra sola
-  let n=10;state._exito={id,p,ventaID,timer:setInterval(()=>{n--;const e=document.getElementById('undo-n');if(e)e.textContent=n;if(n<=0)cerrarExito();},1000)};
+  let n=10;state._exito={id,p,ventaID,pendiente,timer:setInterval(()=>{n--;const e=document.getElementById('undo-n');if(e)e.textContent=n;if(n<=0)cerrarExito();},1000)};
 }
 function cerrarExito(){
   const x=state._exito;if(x){clearInterval(x.timer);state._exito=null;}
@@ -909,6 +922,14 @@ function cerrarExito(){
 function deshacerVenta(){
   const x=state._exito;if(!x)return;clearInterval(x.timer);buzz(12);
   const b=document.getElementById('btn-undo');b.disabled=true;b.textContent='Deshaciendo…';
+  // Venta que todavía no salió del teléfono: se borra de la bandeja y listo, sin red.
+  if(x.pendiente&&outboxLeer().some(y=>y.ventaID===x.ventaID)){
+    outboxQuitar(x.ventaID);
+    if(x.p){x.p.stock=(Number(x.p.stock)||0)+1;if(!state.catalogo.includes(x.p))state.catalogo.push(x.p);}
+    state.dirty=true;state.catFirma='';
+    state._exito=null;document.getElementById('success').classList.add('hidden');
+    toast('Venta deshecha, la pieza volvió al inventario','ok');cambiarVista(state.vista||'catalogo');return;
+  }
   apiPost('anularVenta',{id:x.id,ventaID:x.ventaID||'',origen:(x.p&&x.p.origen)||'Alex'}).then(r=>{
     if(!r.success){toast(r.error||'No se pudo deshacer','err');b.disabled=false;b.textContent='Deshacer';return;}
     if(x.p){x.p.stock=(Number(x.p.stock)||0)+1;if(!state.catalogo.includes(x.p))state.catalogo.push(x.p);}
@@ -917,6 +938,86 @@ function deshacerVenta(){
     toast('Venta deshecha, la pieza volvió al inventario','ok');cambiarVista(state.vista||'catalogo');
   }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se pudo deshacer','err');b.disabled=false;b.textContent='Deshacer';});
 }
+
+
+/* ---------- BANDEJA DE SALIDA (ventas sin señal) ----------
+   Si no hay red al confirmar, la venta se guarda en el teléfono con su propio ventaID y se
+   envía sola cuando vuelve la señal. El backend rechaza duplicados por ventaID, así que
+   reintentar nunca descuenta dos piezas. Las ventas que el servidor rechaza a propósito
+   (sin stock, etc.) se quedan esperando a que la persona decida: reintentar o descartar. */
+const OUTBOX_KEY='oc:outbox';
+function uuid(){
+  if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16);});
+}
+function outboxLeer(){try{return JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]');}catch(e){return[];}}
+function outboxGuardar(l){try{localStorage.setItem(OUTBOX_KEY,JSON.stringify(l));}catch(e){}renderOutbox();}
+function outboxQuitar(ventaID){outboxGuardar(outboxLeer().filter(x=>x.ventaID!==ventaID));}
+const outboxFirma=()=>outboxLeer().map(x=>x.ventaID).join(',');
+function outboxAgregar(venta,p){
+  const l=outboxLeer();
+  l.push({ventaID:venta.ventaID,venta,creada:Date.now(),intentos:0,error:'',
+    prod:{descripcion:p.descripcion,pid:p.pid||'',origen:p.origen||'Alex',categoria:p.categoria||'',imagen:p.imagen||'',precio:p.precio,costoFinal:p.costoFinal}});
+  outboxGuardar(l);
+}
+/* El catálogo que llega del servidor o del caché no sabe de las ventas que aún no salen del teléfono. */
+function aplicarOutbox(catalogo){
+  const l=outboxLeer();if(!l.length)return catalogo;
+  const out=catalogo.map(p=>Object.assign({},p));
+  l.forEach(x=>{const it=out.find(p=>mismoProd(p,x.prod)&&p.categoria===x.prod.categoria);if(it)it.stock--;});
+  return out.filter(p=>p.stock>0);
+}
+let _enviando=false;
+async function enviarPendientes(){
+  if(_enviando||navigator.onLine===false)return;
+  const l=outboxLeer();if(!l.length)return;
+  _enviando=true;let ok=0;
+  try{
+    for(const x of l){
+      if(x.error)continue;                       // rechazada: espera a que la persona decida
+      if(Date.now()-x.creada<12000)continue;      // respeta la ventana de "Deshacer"
+      try{
+        const r=await apiPost('registrarVenta',{venta:x.venta});
+        if(r.success){outboxQuitar(x.ventaID);ok++;}
+        else marcarError_(x.ventaID,r.error||'El servidor no aceptó la venta');
+      }catch(err){
+        if(err.api&&err.tipo==='api')marcarError_(x.ventaID,err.message);
+        else break;                              // sin red o servidor caído: se intenta luego, en orden
+      }
+    }
+  }finally{_enviando=false;}
+  if(ok){
+    state.dirty=true;state.catFirma='';state.ventFirma='';
+    toast(ok===1?'Venta enviada al servidor':ok+' ventas enviadas al servidor','ok');
+    if(!sheetAbierta()&&state.usuario)({catalogo:cargarCatalogo,ventas:cargarDinero})[state.vista]();
+  }
+  renderOutbox();
+}
+function marcarError_(ventaID,msg){const l=outboxLeer();const x=l.find(y=>y.ventaID===ventaID);if(x){x.error=msg;x.intentos=(x.intentos||0)+1;}outboxGuardar(l);}
+function renderOutbox(){
+  const el=document.getElementById('outbox-bar');if(!el)return;
+  const l=outboxLeer();
+  if(!l.length){el.classList.add('hidden');return;}
+  const conError=l.filter(x=>x.error).length,pend=l.length-conError;
+  el.classList.remove('hidden');el.classList.toggle('err',conError>0);
+  el.innerHTML=conError
+    ?`<span><b>${conError} venta${conError===1?'':'s'} no se pudo enviar</b><small>Toca para ver qué pasó</small></span>`
+    :`<span><b>${pend} venta${pend===1?'':'s'} por enviar</b><small>${navigator.onLine===false?'Sin señal · se enviará sola':'Se envía en cuanto se pueda'}</small></span>`;
+}
+function abrirOutbox(){
+  buzz();const l=outboxLeer();
+  const hh=t=>new Date(t).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('outbox-body').innerHTML=l.length?l.map(x=>`
+    <div class="group" style="margin-bottom:10px">
+      <div class="row plain" style="align-items:flex-start">${thumb(x.prod)}<div class="t"><b>${esc(x.prod.descripcion)}</b><small>${esc(x.venta.vendedor)} · ${diaLabel(x.creada)} ${hh(x.creada)}${x.venta.metodoPago?' · '+esc(x.venta.metodoPago):''}</small>${x.error?`<small style="color:var(--danger);font-weight:700;white-space:normal">${esc(x.error)}</small>`:'<small>Esperando señal</small>'}</div><div class="v num">$${pesos(x.venta.precioVenta||x.prod.precio||0)}</div></div>
+      ${x.error?`<div class="det-btn" style="padding:0 14px 12px;margin:0"><button class="btn primary" onclick="reintentarPendiente('${x.ventaID}')">Reintentar</button><button class="btn ghost" style="color:var(--danger)" onclick="descartarPendiente('${x.ventaID}')">Descartar</button></div>`:''}
+    </div>`).join('')
+  :vacio('leaf','Nada pendiente','Todas las ventas ya están en el servidor.');
+  document.getElementById('sheet-outbox').classList.remove('hidden');
+}
+function cerrarOutbox(){document.getElementById('sheet-outbox').classList.add('hidden');}
+function reintentarPendiente(id){buzz();const l=outboxLeer();const x=l.find(y=>y.ventaID===id);if(x){x.error='';x.creada=Math.min(x.creada,Date.now()-13000);}outboxGuardar(l);cerrarOutbox();toast('Reintentando…');enviarPendientes();}
+function descartarPendiente(id){buzz(15);outboxQuitar(id);cerrarOutbox();state.dirty=true;state.catFirma='';toast('Venta descartada · la pieza sigue en el inventario','ok');if(state.vista==='catalogo')cargarCatalogo();}
 
 /* ---------- LISTA DE VENTAS (dentro de Dinero) ---------- */
 const LG_ICONS={
