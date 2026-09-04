@@ -1,14 +1,22 @@
-// Service worker Tienda Ocosingo
-// - App shell (HTML, CSS, JS, manifest, íconos): cache-first, se actualiza al cambiar CACHE.
-// - Fuentes de Google: stale-while-revalidate.
-// - API de Apps Script: no se intercepta; el respaldo offline lo maneja localStorage en app.js.
-const CACHE = 'ocosingo-v6';
-const IMG_CACHE = 'ocosingo-img-v1';
-async function podarImagenes(c) { const keys = await c.keys(); if (keys.length > 300) for (const k of keys.slice(0, keys.length - 300)) await c.delete(k); }
-const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+// Service worker Kiosko v7
+// - Shell (HTML/CSS/JS): red primero con timeout de 3.5 s; sin señal, caché. Nada de esperar a 2G.
+// - La versión nueva NO se activa sola bajo una pestaña viva: espera el mensaje SKIP_WAITING
+//   (app.js avisa con un toast y recarga al cambiar de controlador). Así HTML y JS nunca se desfasan.
+// - Fotos de producto (Drive): caché primero para siempre (cada subida crea URL nueva) · máx. 120.
+// - Al cambiar de versión, actualizar CACHE y los ?v= de SHELL junto con index.html.
+// UNICO lugar que hay que tocar al subir version, junto con los ?v= de index.html y APP_VERSION de app.js.
+const V = '10.1';
+const CACHE = 'kiosko-shell-' + V;
+const IMG_CACHE = 'ocosingo-img-v2';
+const SHELL = ['./', './index.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // allSettled: si un ícono falla, el resto del shell se precachea igual (addAll era todo o nada)
+  e.waitUntil(caches.open(CACHE).then(c => Promise.allSettled(SHELL.map(u => c.add(u)))));
+});
+
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
@@ -18,12 +26,22 @@ self.addEventListener('activate', e => {
   );
 });
 
+async function podarImagenes(c) { const keys = await c.keys(); if (keys.length > 120) for (const k of keys.slice(0, keys.length - 120)) await c.delete(k); }
+
+// Red con límite de tiempo: en 2G la app arranca con el caché en vez de quedarse en blanco.
+function redConTimeout(req, ms) {
+  return new Promise((res, rej) => {
+    const t = setTimeout(() => rej(new Error('timeout')), ms);
+    fetch(req).then(r => { clearTimeout(t); res(r); }, err => { clearTimeout(t); rej(err); });
+  });
+}
+
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
   if (url.hostname.endsWith('script.google.com') || url.hostname.endsWith('googleusercontent.com')) return;
 
-  // Fotos de producto (Drive): caché primero; si no está, red y se guarda (máx. ~300)
+  // Fotos: caché primero (URL inmutable), red solo la primera vez
   if (url.hostname === 'drive.google.com' && url.pathname.startsWith('/thumbnail')) {
     e.respondWith(
       caches.open(IMG_CACHE).then(async c => {
@@ -44,20 +62,26 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       caches.open(CACHE).then(async c => {
         const hit = await c.match(e.request);
-        const net = fetch(e.request).then(r => { if (r.ok || r.type === 'opaque') { const copia = r.clone(); c.put(e.request, copia); } return r; }).catch(() => hit);
+        const net = fetch(e.request).then(r => { if (r.ok || r.type === 'opaque') c.put(e.request, r.clone()); return r; }).catch(() => hit);
         return hit || net;
       })
     );
     return;
   }
 
-  // App shell: red primero para tener siempre la última versión; caché si no hay señal
+  // Shell: red primero (máx. 3.5 s), luego caché; el HTML de respaldo solo aplica a navegaciones
   if (url.origin === self.location.origin) {
     e.respondWith(
-      fetch(e.request).then(r => {
+      redConTimeout(e.request, 3500).then(r => {
         if (r.ok) { const copia = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copia)); }
         return r;
-      }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(r => r || caches.match('./index.html')))
+      }).catch(() =>
+        caches.match(e.request, { ignoreSearch: true }).then(r => {
+          if (r) return r;
+          if (e.request.mode === 'navigate') return caches.match('./index.html');
+          return new Response('', { status: 504 });
+        })
+      )
     );
   }
 });
