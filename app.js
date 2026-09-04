@@ -1,4 +1,4 @@
-const APP_VERSION='10.2';const APP_BUILD='4 Sep 2026 11:00';
+const APP_VERSION='10.3';const APP_BUILD='4 Sep 2026 11:30';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -215,7 +215,7 @@ function validarPin(){
   apiPost('verificarPin',{pin:state.pin}).then(res=>{
     state.busy=false;
     if(res.valido){entrar(res.vendedor);}
-    else{fallo('PIN incorrecto');}
+    else{fallo(res.error||'PIN incorrecto');}   // el servidor explica si es bloqueo por intentos
   }).catch(err=>{state.busy=false;fallo(err.api?err.message:'Sin conexión ('+(err&&err.message||err)+')');});
 }
 function fallo(msg){
