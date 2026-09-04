@@ -655,3 +655,11 @@ input{font:inherit;color:inherit}
 .nav.nav3{grid-template-columns:1fr 64px 1fr;max-width:340px}
 /* acciones dentro de la hoja de producto (compartir / editar) */
 .prod-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+/* bandeja de salida: ventas guardadas sin señal */
+.outbox{display:flex;align-items:center;justify-content:space-between;gap:10px;width:calc(100% - 32px);margin:4px 16px 0;padding:12px 16px;border-radius:16px;background:var(--mango-soft);color:#8A5A00;text-align:left;animation:drop .3s var(--ease)}
+.outbox b{display:block;font-size:0.875rem;font-weight:800}
+.outbox small{display:block;font-size:0.75rem;font-weight:600;opacity:.85;margin-top:2px}
+.outbox::after{content:'›';font-size:1.25rem;font-weight:800;opacity:.6}
+.outbox.err{background:var(--danger-soft);color:var(--danger)}
+@media (prefers-color-scheme:dark){.outbox{color:#FFC65C}}
