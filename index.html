@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=10.3">
+<link rel="stylesheet" href="styles.css?v=10.4">
 </head>
 <body>
 
@@ -41,6 +41,7 @@
     </div>
     <button class="avatar" id="avatar" onclick="abrirUsuarios()">I</button>
   </div>
+  <button id="outbox-bar" class="outbox hidden" onclick="abrirOutbox()"></button>
 
   <div class="content">
     <div id="view-catalogo" class="view">
@@ -138,6 +139,15 @@
     <div id="detalle-body"></div>
   </div>
 </div>
+<div id="sheet-outbox" class="overlay hidden" onclick="if(event.target===this)cerrarOutbox()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h3>Ventas por enviar</h3>
+    <p class="exp-p" style="margin-bottom:12px">Se guardaron en este teléfono porque no había señal. Se envían solas en cuanto se pueda; no hace falta hacer nada.</p>
+    <div id="outbox-body"></div>
+    <button class="btn ghost" onclick="cerrarOutbox()">Cerrar</button>
+  </div>
+</div>
 <div id="sheet-quick" class="overlay hidden" onclick="if(event.target===this)cerrarQuick()">
   <div class="sheet">
     <div class="handle"></div>
@@ -161,6 +171,6 @@
 </div>
 
 <script src="config.js"></script>
-<script src="app.js?v=10.3"></script>
+<script src="app.js?v=10.4"></script>
 </body>
 </html>
