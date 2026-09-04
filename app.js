@@ -1,4 +1,4 @@
-const APP_VERSION='10.0.1';const APP_BUILD='3 Sep 2026 21:00';
+const APP_VERSION='10.1';const APP_BUILD='3 Sep 2026 23:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -37,6 +37,7 @@ function leerCache(k){try{const c=localStorage.getItem(k);return c?JSON.parse(c)
 function apiCached(accion,params,onData,onFail){
   const key=cacheKey(accion,params);
   const c=state.dirty?null:leerCache(key);
+  if(c&&Date.now()-c.t<60000){onData(c.d,{stale:false});return;}   // fresco de hace <1 min: no gastes datos ni cuota
   if(c)onData(c.d,{stale:true});
   api(accion,params).then(d=>{
     try{localStorage.setItem(key,JSON.stringify({t:Date.now(),d}));}catch(e){}
@@ -113,7 +114,7 @@ let state={usuario:null,vista:'catalogo',filtro:'todo',pin:'',producto:null,vend
 
 document.addEventListener('DOMContentLoaded',()=>{
   buildKeypad();
-  document.getElementById('search').addEventListener('input',renderCatalogo);
+  let _sT;document.getElementById('search').addEventListener('input',()=>{clearTimeout(_sT);_sT=setTimeout(renderCatalogo,120);});
   document.getElementById('qsearch').addEventListener('input',renderQuick);
   pintarToggle();
   document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view!=='nueva'){buzz();cambiarVista(b.dataset.view);return;}
@@ -225,11 +226,13 @@ function entrarRecordado(){
 async function buscarActualizacion(){
   toast('Buscando versión nueva…');
   try{
-    const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.unregister();
-    const keys=await caches.keys();for(const k of keys)if(k.startsWith('ocosingo-')&&!k.includes('img'))await caches.delete(k);
+    const reg=await navigator.serviceWorker.getRegistration();
+    if(reg){await reg.update();if(reg.waiting){reg.waiting.postMessage({type:'SKIP_WAITING'});return;}}
   }catch(e){}
-  try{const r=await fetch('app.js',{cache:'reload'});const t=await r.text();const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]===APP_VERSION){toast('Ya tienes la última versión (v'+APP_VERSION+'). Si acabas de subir cambios, GitHub tarda unos minutos.');return;}}catch(e){}
-  location.reload();
+  try{const r=await fetch('app.js?nc='+Date.now(),{cache:'reload'});const t=await r.text();const m=t.match(/APP_VERSION='([^']+)'/);
+    if(m&&m[1]!==APP_VERSION){location.reload();return;}
+  }catch(e){}
+  toast('Ya tienes la última versión (v'+APP_VERSION+'). Si acabas de subir cambios, GitHub tarda unos minutos.');
 }
 function cerrarSesion(){
   try{localStorage.removeItem('oc:usuario');}catch(e){}
@@ -346,25 +349,25 @@ function armarDinero(){
     </div>`;
 }
 function setChartTab(t){buzz();state.chartTab=t;const c=document.getElementById('chart');if(c)c.dataset.firma='';document.querySelectorAll('.chart-tabs button').forEach((b,i)=>b.classList.toggle('on',(i===0)!==(t==='semana')));renderDinero(state._dash,state._meses,{stale:true});}
-/* Compartir el producto abierto (hoja del sistema: Messenger, WhatsApp…). La foto se precarga al abrir la hoja de venta. */
-function precargarFoto(p){
-  state._shareFile=null;
-  if(!p||!p.imagen||!navigator.canShare)return;
-  api('fotoProducto',{descripcion:p.descripcion}).then(f=>{
-    if(!f||!f.base64||state.producto!==p)return;
-    const bin=atob(f.base64),arr=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);
-    const file=new File([arr],(p.descripcion||'producto')+'.jpg',{type:f.mime||'image/jpeg'});
-    if(navigator.canShare({files:[file]}))state._shareFile=file;
-  }).catch(()=>{});
-}
-function compartirProducto(){
+/* La foto se descarga solo cuando tocan Compartir (antes se bajaba en cada apertura de hoja). */
+function compartirProducto(btn){
   const p=state.producto;if(!p)return;buzz(12);
   const texto=`${p.descripcion}\nPrecio: $${precio(p.precio)}`;
-  if(navigator.share){
-    const datos=state._shareFile?{files:[state._shareFile],text:texto}:{text:texto};
-    navigator.share(datos).catch(()=>{});return;
-  }
-  window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
+  const soloTexto=()=>{if(navigator.share)navigator.share({text:texto}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');};
+  if(state._shareFile&&state._shareFile._p===p){navigator.share({files:[state._shareFile],text:texto}).catch(()=>{});return;}
+  if(!p.imagen||!navigator.canShare){soloTexto();return;}
+  const txt=btn&&btn.tagName==='BUTTON'?btn:null;if(txt)txt.textContent='Preparando foto…';
+  api('fotoProducto',{descripcion:p.descripcion}).then(f=>{
+    if(txt)txt.textContent='↗ Compartir con foto';
+    if(!f||!f.base64){soloTexto();return;}
+    const bin=atob(f.base64),arr=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);
+    const file=new File([arr],(p.descripcion||'producto')+'.jpg',{type:f.mime||'image/jpeg'});
+    if(!navigator.canShare({files:[file]})){soloTexto();return;}
+    file._p=p;state._shareFile=file;
+    navigator.share({files:[file],text:texto}).catch(err=>{
+      if(err&&err.name==='NotAllowedError')toast('Foto lista, toca Compartir de nuevo');
+    });
+  }).catch(()=>{if(txt)txt.textContent='↗ Compartir con foto';soloTexto();});
 }
 function renderDinero(d,meses,m){
   if(state._dinArmado!==state.usuario){armarDinero();state._dinArmado=state.usuario;}
@@ -504,17 +507,21 @@ function renderChart(data,semana){
   const last=bars[n-1];
   svg+=`<text x="${last.x+bw/2}" y="${last.y-7}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--selva)">$${pesos(last.d.total)}</text></svg><div class="tip" id="tip"></div>`;
   c.innerHTML=svg;
-  const tip=document.getElementById('tip');let hit=null;
-  const show=ev=>{
-    const r=c.getBoundingClientRect(),x=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
-    const b=bars.reduce((a,q)=>Math.abs(q.x+bw/2-x)<Math.abs(a.x+bw/2-x)?q:a);
-    if(hit)hit.classList.remove('hit');hit=c.querySelector(`.bar[data-i="${bars.indexOf(b)}"]`);hit.classList.add('hit');
-    tip.textContent=`${b.d.label.trim()} · $${pesos(b.d.total)}${b.d.cantidad?` · ${b.d.cantidad} art.`:''}`;
-    tip.style.left=Math.max(90,Math.min(W-90,b.x+bw/2))+'px';tip.style.top='0px';tip.classList.add('on');
-  };
-  const hide=()=>{tip.classList.remove('on');if(hit){hit.classList.remove('hit');hit=null;}};
-  c.addEventListener('touchstart',show,{passive:true});c.addEventListener('touchmove',show,{passive:true});c.addEventListener('touchend',hide);
-  c.addEventListener('mousemove',show);c.addEventListener('mouseleave',hide);
+  c._bars=bars;c._bw=bw;c._W=W;   // datos vivos para los listeners (que se instalan una sola vez)
+  if(!c.dataset.wired){c.dataset.wired='1';
+    let hit=null;
+    const show=ev=>{
+      const tip=document.getElementById('tip');if(!tip||!c._bars)return;
+      const r=c.getBoundingClientRect(),x=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+      const b=c._bars.reduce((a,q)=>Math.abs(q.x+c._bw/2-x)<Math.abs(a.x+c._bw/2-x)?q:a);
+      if(hit)hit.classList.remove('hit');hit=c.querySelector(`.bar[data-i="${c._bars.indexOf(b)}"]`);if(hit)hit.classList.add('hit');
+      tip.textContent=`${b.d.label.trim()} · $${pesos(b.d.total)}${b.d.cantidad?` · ${b.d.cantidad} art.`:''}`;
+      tip.style.left=Math.max(90,Math.min(c._W-90,b.x+c._bw/2))+'px';tip.style.top='0px';tip.classList.add('on');
+    };
+    const hide=()=>{const tip=document.getElementById('tip');if(tip)tip.classList.remove('on');if(hit){hit.classList.remove('hit');hit=null;}};
+    c.addEventListener('touchstart',show,{passive:true});c.addEventListener('touchmove',show,{passive:true});c.addEventListener('touchend',hide);
+    c.addEventListener('mousemove',show);c.addEventListener('mouseleave',hide);
+  }
 }
 
 /* ---------- CATÁLOGO ---------- */
@@ -640,12 +647,12 @@ function renderCats(){
   const counts={};base.forEach(p=>counts[p.categoria]=(counts[p.categoria]||0)+p.stock);
   const cats=['Todas',...Object.keys(counts).sort()];
   if(!cats.includes(state.cat))state.cat='Todas';
-  document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" onclick="setCat('${c.replace(/'/g,"\\'")}')">${esc(c)}<span class="n">${c==='Todas'?base.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
+  document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" data-c="${esc(c)}" onclick="setCat(this.dataset.c)">${esc(c)}<span class="n">${c==='Todas'?base.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
 }
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
 function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
 function miniCard(p,tag){
-  return`<button class="mini" onclick="venderProducto('${p.descripcion.replace(/'/g,"\\'")}')">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
+  return`<button class="mini" data-d="${esc(p.descripcion)}" onclick="venderProducto(this.dataset.d)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
 }
 function renderStrips(q){
   const w=document.getElementById('cat-strips');if(!w)return;
@@ -735,7 +742,7 @@ function transferEst(){
 }
 function abrirVenta(){
   if(!state.producto){abrirQuick();return;}
-  precargarFoto(state.producto);
+  state._shareFile=null;
   state.precioTipo='normal';state.paso=1;pintarVenta();
   document.getElementById('sheet-venta').classList.remove('hidden');
 }
@@ -754,7 +761,7 @@ function pintarVenta(){
     outer.style.display=fotos.length?'none':'';outer.previousElementSibling.style.display=fotos.length?'none':'';
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
-      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto()">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">$${money(p.precio)}</span></div>
+      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto(this)">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">$${money(p.precio)}</span></div>
       <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>
@@ -1083,7 +1090,22 @@ function toast(msg,type=''){const t=document.getElementById('toast');t.textConte
 
 /* ---------- PWA ---------- */
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(reg=>{
+    reg.addEventListener('updatefound',()=>{
+      const nuevo=reg.installing;if(!nuevo)return;
+      nuevo.addEventListener('statechange',()=>{
+        if(nuevo.state==='installed'&&navigator.serviceWorker.controller)avisarActualizacion(reg);
+      });
+    });
+  }).catch(()=>{}));
+  let _recargando=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!_recargando){_recargando=true;location.reload();}});
+}
+function avisarActualizacion(reg){
+  const t=document.getElementById('toast');
+  t.textContent='Versión nueva lista · toca aquí para actualizar';t.className='toast ok';
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),10000);
+  t.onclick=()=>{t.onclick=null;t.classList.add('hidden');if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});};
 }
 
 /* ---------- INSTALAR COMO APP ----------
@@ -1095,8 +1117,8 @@ window.addEventListener('appinstalled',()=>{cerrarInstall(true);toast('Kiosko in
 function instalada(){return matchMedia('(display-mode:standalone)').matches||navigator.standalone===true;}
 function setupInstall(){
   if(_installListo||instalada())return;_installListo=true;
-  let hasta=0;try{hasta=Number(localStorage.getItem('oc:install-no')||0);}catch(e){}
-  if(Date.now()<hasta)return;
+  let hasta=0,visitas=0;try{hasta=Number(localStorage.getItem('oc:install-no')||0);visitas=Number(localStorage.getItem('oc:visitas')||0)+1;localStorage.setItem('oc:visitas',String(visitas));}catch(e){}
+  if(Date.now()<hasta||visitas<2)return;   // en la primera visita, cero interrupciones
   setTimeout(mostrarInstall,3000);   // deja que cargue el inicio antes de pedir algo
 }
 function mostrarInstall(){
