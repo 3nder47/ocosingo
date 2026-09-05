@@ -221,8 +221,6 @@ input{font:inherit;color:inherit}
 .stock i{width:6px;height:6px;border-radius:50%;background:var(--selva);opacity:.9}
 .stock i.off{background:var(--line)}
 .stock small{font-size:0.75rem;font-weight:700;color:var(--muted);margin-left:4px}
-.stagger>*{animation:rise .4s var(--ease) both}
-.stagger>*:nth-child(1){animation-delay:.02s}.stagger>*:nth-child(2){animation-delay:.05s}.stagger>*:nth-child(3){animation-delay:.08s}.stagger>*:nth-child(4){animation-delay:.11s}.stagger>*:nth-child(5){animation-delay:.14s}.stagger>*:nth-child(6){animation-delay:.17s}.stagger>*:nth-child(n+7){animation-delay:.2s}
 
 /* ---------- VENTA: review + hold ---------- */
 .review{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
@@ -249,7 +247,11 @@ input{font:inherit;color:inherit}
 @keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
 @keyframes draw{to{stroke-dashoffset:0}}
 .success h3{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-top:10px}
-.success p{color:var(--muted);font-weight:600}
+.success p{color:var(--muted);font-weight:600;padding:0 28px;text-align:center;max-width:440px}
+.success .s-name{color:var(--ink);font-weight:700;font-size:1rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:-2px}
+.success .s-gain{font-size:1rem;font-weight:600;color:var(--muted);padding:0 28px;text-align:center}
+.success .s-gain b{color:var(--selva);font-weight:800;font-size:1.125rem}
+.success .s-sub{font-size:0.8125rem;margin-top:2px}
 .undo-row{display:flex;gap:10px;margin-top:26px;width:min(100% - 48px,360px)}
 .undo-row .btn{flex:1;padding:15px}
 .undo-row .btn.ghost{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
@@ -303,8 +305,6 @@ input{font:inherit;color:inherit}
 .hero.refresh .val{animation:blink .5s}
 .ring.record .ring-fg{stroke:var(--mango)}
 .ring.record .ring-txt b{color:var(--mango)}
-.ring.record{animation:recordpulse 2.4s ease-in-out infinite}
-@keyframes recordpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes blink{50%{opacity:.5}}
 
 /* sparkline en fila */
@@ -460,8 +460,6 @@ input{font:inherit;color:inherit}
 .success .hero-img.wait{visibility:hidden}
 
 /* 4. brillo del hero y rebote del anillo */
-.hero::after{content:'';position:absolute;top:-40%;bottom:-40%;left:-60%;width:40%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.18) 45%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.18) 55%,transparent 100%);transform:skewX(-18deg);animation:shine 1.4s .35s var(--ease) both;pointer-events:none}
-@keyframes shine{to{left:130%}}
 .ring .ring-fg{transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.4,.64,1) .2s}
 .ring-txt b{display:inline-block}
 .hero:not(.refresh) .ring-txt b{animation:pop .6s .9s var(--ease) both}
@@ -617,8 +615,6 @@ input{font:inherit;color:inherit}
 .empty svg{width:64px;height:64px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin:0 auto 12px;display:block}
 
 /* login: latido sutil de la marca */
-.brand-mark{animation:beat 3.2s ease-in-out infinite}
-@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 .key.hit{animation:keyhit .25s var(--ease)}
 @keyframes keyhit{40%{transform:scale(.88)}}
 
@@ -663,3 +659,24 @@ input{font:inherit;color:inherit}
 .outbox::after{content:'›';font-size:1.25rem;font-weight:800;opacity:.6}
 .outbox.err{background:var(--danger-soft);color:var(--danger)}
 @media (prefers-color-scheme:dark){.outbox{color:#FFC65C}}
+
+/* ---------- ORBE: la única celebración de la app, en la pantalla de éxito ----------
+   Tres esferas difuminadas que respiran detrás de la foto: verde de la marca, ámbar,
+   y el color dominante de la foto del producto (--tint). Vive los 10 s de la pantalla. */
+.success{overflow:hidden}
+.success>*:not(.orb){position:relative;z-index:1}
+.orb{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0;animation:orbin .7s var(--ease) .05s forwards}
+.orb i{position:absolute;width:58vmin;height:58vmin;border-radius:50%;filter:blur(42px);opacity:.5;will-change:transform;transform:translateZ(0)}
+.orb .o1{background:var(--selva);left:4%;top:18%;animation:drift1 9s ease-in-out infinite}
+.orb .o2{background:var(--mango);right:2%;top:26%;animation:drift2 11s ease-in-out infinite}
+.orb .o3{background:var(--tint,#3B82F6);left:26%;top:40%;animation:drift3 13s ease-in-out infinite}
+.success.pend .orb .o2{display:none}
+.success.pend .orb i{opacity:.28}
+@keyframes orbin{to{opacity:1}}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(9vmin,-7vmin) scale(1.12)}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1.05)}50%{transform:translate(-10vmin,8vmin) scale(.95)}}
+@keyframes drift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6vmin,10vmin) scale(1.15)}}
+@media (prefers-color-scheme:dark){.orb i{opacity:.42}.success.pend .orb i{opacity:.22}}
+@media (prefers-reduced-motion:reduce){.orb i{animation:none}.orb{opacity:.6;animation:none}}
+.success .s-hito{font-size:0.9375rem;font-weight:800;color:var(--selva-ink);margin-top:2px}
+@media (prefers-color-scheme:dark){.success .s-hito{color:var(--selva)}}
