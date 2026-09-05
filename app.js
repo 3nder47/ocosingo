@@ -1,4 +1,4 @@
-const APP_VERSION='10.4';const APP_BUILD='4 Sep 2026 12:30';
+const APP_VERSION='10.6';const APP_BUILD='5 Sep 2026 17:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -363,6 +363,7 @@ function armarDinero(){
   document.getElementById('mes-wrap').innerHTML=esIrene?'':`
     <div class="section-title">Este mes</div>
     <div class="group">
+      ${fila('cash','Tu ganancia del mes','v-gmes','pos','gMesAlex','','de tus ventas · es tuya')}
       ${fila('sum','Ventas del mes','v-total','','totalMes','grey','<span id="v-total-cmp"></span>','','mes')}
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','piezas vendidas este mes','','mes')}
       ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','gastado en envíos este mes')}
@@ -409,7 +410,7 @@ function renderDinero(d,meses,m){
   const prev=meses.length>1?meses[meses.length-2]:null,cmp=$('v-total-cmp');
   if(cmp)cmp.textContent=prev?`${mesLargo(prev.label).split(' ')[0]} $${pesos(prev.total)} → ${mesActualNombre()} $${pesos(d.ventasTotalesMes)}`:'';
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar`;
-  $('h-hoy').textContent='Hoy $'+pesos(d.ventasHoy);
+  $('h-hoy').textContent='Hoy $'+pesos(d.ventasHoyTotal!=null?d.ventasHoyTotal:d.ventasHoy);
   const rc=$('h-racha');if(rc)rc.remove();$('h-chips').insertAdjacentHTML('beforeend',rachaChip());
   }
   renderMeta();
@@ -417,6 +418,7 @@ function renderDinero(d,meses,m){
   if(!esIrene){
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
   tick($('v-moto'),d.gastoMotomandado);
+  tick($('v-gmes'),(state.impulso||{}).gananciaMes||0);
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
   }
   const c=$('chart');if(!c)return;
@@ -442,7 +444,7 @@ function renderNegocio(){
     </div>`;
 }
 /* Racha: solo se muestra cuando existe. Nunca lo contrario ("llevas N días sin vender"). */
-function rachaChip(){const r=(state.impulso||{}).racha||0;return r>=2?`<span class="chip" id="h-racha">🔥 ${r} días seguidos vendiendo</span>`:'';}
+function rachaChip(){const im=state.impulso||{},r=im.racha||0;if(r<2)return'';const u=im.rachaUnidad==='semanas'?`${r} semanas seguidas vendiendo`:`${r} días seguidos vendiendo`;return`<span class="chip" id="h-racha"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:4px"><path d="M12 3c1 3 4 4 4 8a4 4 0 0 1-8 0c0-1 .5-2 1-2.5 0 1.5 1 2.5 2 2.5-1-3 0-5 1-8z"/></svg>${u}</span>`;}
 /* Barra del hero: la ganancia del usuario contra SU meta del mes. La distancia se dice en ventas, no solo en pesos. */
 function renderMeta(){
   const $=id=>document.getElementById(id),bar=$('h-bar');if(!bar)return;
@@ -688,7 +690,7 @@ function renderStrips(q){
   const rapidos=(state.ofrecer||[]).filter(p=>p.vendidos60>0).map(p=>baseD.find(x=>mismoProd(x,p))&&Object.assign({},baseD.find(x=>mismoProd(x,p)),{vendidos60:p.vendidos60})).filter(Boolean).slice(0,8);
   const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),rapidos.map(p=>p.descripcion+p.stock)]);
   if(w.dataset.firma===firma)return;w.dataset.firma=firma;
-  w.innerHTML=(rapidos.length?`<div class="section-title">Sale rápido <span class="hint">Toca para vender o compartir</span></div>
+  w.innerHTML=(rapidos.length?`<div class="section-title">Lo que más sale <span class="hint">Toca para vender o compartir</span></div>
     <div class="strip-h stagger">${rapidos.map(p=>miniCard(p,`<span class="tag n">${p.vendidos60} en 60 días</span>`)).join('')}</div>`:'')+
     (bajos.length?`<div class="section-title">Por agotarse <span class="hint">${bajos.length} producto${bajos.length===1?'':'s'}</span></div>
     <div class="strip-h stagger">${bajos.map(p=>miniCard(p,p.stock===1?'<span class="tag">Última</span>':'<span class="tag two">Quedan 2</span>')).join('')}</div>`:'')+
@@ -869,6 +871,7 @@ function setupHold(){
 }
 function confirmarVenta(){
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
+  const resumen={precio:precioVenta()+(Number(state.cobro)||0),ganancia:gananciaEst()};resumen.hito=hitoVenta(resumen.ganancia);
   const venta={ventaID:uuid(),descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
   const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
   const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
@@ -880,7 +883,7 @@ function confirmarVenta(){
     // descuenta 1 localmente para que el catálogo se vea al día aunque tarde la red
     const it=state.catalogo.find(x=>mismoProd(x,state.producto)&&x.categoria===state.producto.categoria);
     if(it){it.stock--;if(it.stock<=0)state.catalogo=state.catalogo.filter(x=>x!==it);}
-    celebrar(id,vendido,ventaID,pendiente);state.producto=null;state.vendedor=null;state.metodo=null;
+    celebrar(id,vendido,ventaID,pendiente,resumen);state.producto=null;state.vendedor=null;state.metodo=null;
   };
   apiPost('registrarVenta',{venta}).then(r=>{
     if(r.success)exito(r.detalle.id,r.detalle.ventaID||venta.ventaID,false);
@@ -893,15 +896,35 @@ function confirmarVenta(){
     exito('',venta.ventaID,true);
   });
 }
-function celebrar(id,p,ventaID,pendiente){
+
+/* Una sola línea para la pantalla de éxito: lo más fuerte que aplique a ESTA venta.
+   state.impulso trae el estado de ANTES de la venta, así que se le suma la ganancia nueva. */
+function hitoVenta(g){
+  const im=state.impulso;if(!im)return'';
+  const mes=mesActualNombre(),antes=Number(im.gananciaMes)||0,ahora=antes+(Number(g)||0),n=(Number(im.ventasMes)||0)+1;
+  const meta=Number(im.meta)||0,rec=Number(im.record)||0;
+  if(meta>0&&antes<meta&&ahora>=meta)return`Con esta cumples tu meta de ${mes}`;
+  if(rec>0&&antes<=rec&&ahora>rec)return`Con esta superas tu mejor mes`;
+  if(meta>0)return`Con esta llevas $${pesos(ahora)} de tu meta de $${pesos(meta)}`;
+  if(n===1)return`Primera venta de ${mes}`;
+  if(ahora>0)return`Con esta ya llevas $${pesos(ahora)} este mes`;
+  return'';
+}
+function celebrar(id,p,ventaID,pendiente,resumen){
   const s=document.getElementById('success');
-  const colors=['#1D9E75','#F59E0B','#E5484D','#3B82F6','#A855F7'];
   const visual=p?`${thumb(p,'hero-img')}<div class="badge-ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>`
     :`<div class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>`;
-  s.innerHTML=Array.from({length:26},(_,i)=>`<div class="confetti" style="left:50%;top:45%;background:${colors[i%5]};--dx:${(Math.random()-.5)*360}px;--dy:${(Math.random()-.5)*360}px;animation-delay:${Math.random()*.2}s"></div>`).join('')+
-    `${visual}<h3>${pendiente?'Venta guardada en el teléfono':'Venta registrada'}</h3><p>${p?esc(p.descripcion)+' · ':''}${pendiente?'se enviará sola cuando haya señal':esc(id)}</p>
+  s.classList.toggle('pend',!!pendiente);s.style.removeProperty('--tint');
+  if(p&&p.imagen)tintDesde(p.imagen,s);   // la tercera esfera toma el color de la foto del producto
+  s.innerHTML=`<div class="orb"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>`+
+    `${visual}<h3>${pendiente?'Venta guardada en el teléfono':'Venta registrada'}</h3>
+    ${p?`<p class="s-name">${esc(p.descripcion)}</p>`:''}
+    ${resumen?`<div class="s-gain">$${money(resumen.precio)}${resumen.ganancia!=null?` · <b>+$${money(resumen.ganancia)}</b> ganancia`:''}</div>`:''}
+    ${resumen&&resumen.hito?`<p class="s-hito">${esc(resumen.hito)}</p>`:''}
+    <p class="s-sub">${pendiente?'Se enviará sola cuando haya señal':esc(id)}</p>
     <div class="undo-row"><button class="btn ghost" id="btn-undo" onclick="deshacerVenta()">Deshacer · <span id="undo-n">10</span></button><button class="btn primary" onclick="cerrarExito()">Listo</button></div>`;
   s.classList.remove('hidden');buzz([30,40,60]);
+  if(p&&p.imagen)tintDesde(p.imagen,s);   // la esfera toma el color del producto
   // la foto "vuela" desde la hoja de venta hasta su lugar en la pantalla de éxito
   const fly=p&&p._fly,dest=s.querySelector('.hero-img');
   if(fly&&dest&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
@@ -1096,7 +1119,8 @@ const EXPLICA={
     f:()=>[ficha('precio'),op('+'),ficha('extra'),op('−'),ficha('costo','a Alex','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('ganancia','de Irene','res')],ej:v=>v.vendedor==='Irene'},
   gMama:{t:'Ganancia de Mamá',p:'Igual que Irene: Mamá <b>se queda</b> la ganancia de lo que vende y a Alex le regresa el costo.',
     f:()=>[ficha('precio'),op('+'),ficha('extra'),op('−'),ficha('costo','a Alex','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('ganancia','de Mamá','res')],ej:v=>v.vendedor==='Mamá'},
-  hoy:{t:'Hoy',p:'Suma de las ventas registradas <b>hoy</b> que aún no se liquidan (precio + extra).',f:null},
+  hoy:{t:'Hoy',p:'Todo lo vendido <b>hoy</b> en la tienda (precio + extra), liquidado o no, de cualquier vendedor.',f:null},
+  gMesAlex:{t:'Tu ganancia del mes',p:'Lo que <b>tú</b> has ganado este mes con tus propias ventas: precio + extra − costo − moto. Es la misma cifra que se compara contra tu meta.',f:null},
   moto:{t:'Motomandado del mes',p:'Todo lo gastado en envíos este mes. <b>Es un gasto</b>: ese dinero ya se le pagó al repartidor.',f:null},
   totalMes:{t:'Ventas del mes',p:'Todo lo vendido este mes (precio + extra), liquidado o no. La línea muestra los últimos 7 días. <b>Toca la fila para ver la lista.</b>',f:null},
   artMes:{t:'Artículos vendidos',p:'Cuántas piezas se vendieron este mes, liquidadas o no.',f:null},
