@@ -1,4 +1,4 @@
-const APP_VERSION='10.6';const APP_BUILD='5 Sep 2026 17:00';
+const APP_VERSION='10.7';const APP_BUILD='5 Sep 2026 19:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -327,6 +327,7 @@ function cargarDinero(){
     if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
+    if(Array.isArray(d.cortes))state.cortes=d.cortes;
     renderDinero(d.dashboard,d.ventasMes||[],m);fin(m.stale);
   },()=>{hero.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');fin(false);});
   apiCached('misVentas',{vendedor:state.usuario},(d,m)=>{
@@ -346,6 +347,7 @@ function armarDinero(){
         </div>
       </div>
       <div class="sub" id="h-chips">${esIrene?'':'<span class="chip" id="h-pend">—</span><span class="chip tap" id="h-hoy" onclick="explicar(\'hoy\')">Hoy $0</span>'}</div>
+      <div class="sub" id="h-cortes"></div>
       <div class="hbar tap" id="h-bar" onclick="abrirMeta()">
         <div class="hbar-h"><span id="h-bar-t">Meta de ${mesActualNombre()}</span><b class="num" id="h-bar-v">—</b></div>
         <div class="hbar-track"><i id="h-bar-i"></i></div>
@@ -404,7 +406,8 @@ function renderDinero(d,meses,m){
     tick($('h-val'),o?o.gMesTotal:0);
     $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')+rachaChip()||'<span class="chip">Aún sin ventas este mes</span>';
     tick($('tc-val'),d.porTransferir);
-    $('tc-sub').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
+    $('tc-sub').textContent=d.cortesAbiertos?`Corte abierto: faltan $${pesos(d.saldoCortes)}${d.sinCorte>0?` · nuevas $${pesos(d.sinCorte)}`:''}`:`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
+    renderChipsCortes(d);
   }else{
   tick($('h-val'),d.porTransferir);
   const prev=meses.length>1?meses[meses.length-2]:null,cmp=$('v-total-cmp');
@@ -412,8 +415,9 @@ function renderDinero(d,meses,m){
   $('h-pend').textContent=`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar`;
   $('h-hoy').textContent='Hoy $'+pesos(d.ventasHoyTotal!=null?d.ventasHoyTotal:d.ventasHoy);
   const rc=$('h-racha');if(rc)rc.remove();$('h-chips').insertAdjacentHTML('beforeend',rachaChip());
+  renderChipsCortes(d);
   }
-  renderMeta();
+  renderMeta();renderCortes();
   renderNegocio();
   if(!esIrene){
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
@@ -653,6 +657,7 @@ function cargarCatalogo(){
     if(Array.isArray(d.ofrecer))state.ofrecer=d.ofrecer;
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
+    if(Array.isArray(d.cortes))state.cortes=d.cortes;
     state._dash=d.dashboard;state._meses=d.ventasMes||[];
     if(Array.isArray(d.catalogo)){const firma=JSON.stringify(d.catalogo)+outboxFirma();if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=aplicarOutbox(d.catalogo);renderCats();renderCatalogo();}else renderStrips(document.getElementById('search').value.trim().toLowerCase());}
     if(!m.stale)listo();
@@ -858,11 +863,11 @@ function refrescarOpciones(){
 }
 function revisar(){if(!state.vendedor||!state.metodo)return;buzz(12);guardarInputs();state.paso=2;pintarVenta();document.querySelector('#sheet-venta .sheet').scrollTo({top:0});}
 function cerrarVenta(){const o=document.getElementById('venta-titulo');o.style.display='';o.previousElementSibling.style.display='';document.getElementById('sheet-venta').classList.add('hidden');state.cobro='';state.gastos='';state.paso=1;state.precioTipo='normal';}
-function setupHold(){
-  const b=document.getElementById('hold');let t,tics=[];
+function setupHold(fn,id){
+  fn=fn||confirmarVenta;const b=document.getElementById(id||'hold');if(!b)return;let t,tics=[];
   const down=e=>{e.preventDefault();if(b.disabled)return;buzz(15);b.classList.add('go');
     tics=[300,600].map(ms=>setTimeout(()=>buzz(6),ms));
-    t=setTimeout(()=>{b.disabled=true;buzz(45);confirmarVenta();},900);};
+    t=setTimeout(()=>{b.disabled=true;buzz(45);fn();},900);};
   const up=()=>{clearTimeout(t);tics.forEach(clearTimeout);b.classList.remove('go');};
   b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointerleave',up);b.addEventListener('pointercancel',up);
   // Bloquea el menú contextual del navegador (Samsung Internet / Chrome) al mantener presionado
@@ -1128,6 +1133,7 @@ const EXPLICA={
   negocio:{t:'Tu ganancia del mes',p:'Suma de <b>tu mercancía</b> (precio + extra − costo − moto, porque el costo lo pagaste tú) más lo que ganas <b>vendiendo la mercancía de Alex</b> (precio + extra − costo − moto; el costo se le regresa a él). Todo esto es tuyo.',f:null},
   inversion:{t:'Inversión en tu mercancía',p:'La suma de lo que <b>has pagado</b> por todos tus productos, vendidos o en stock. Cada vez que vendes una pieza recuperas lo que te costó; lo demás es ganancia.',f:null},
   stockIrene:{t:'Si vendes todo tu stock',p:'Lo que cobrarías vendiendo <b>todas</b> tus piezas al precio que les pusiste. Abajo dice cuánto te costaron y cuánto ganarías: la diferencia entre las dos.',f:null},
+  corte:{t:'Cortes',p:'Un <b>corte</b> congela las ventas pendientes bajo un número. Lo cierra Alex cuando ya se juntó una cantidad. Desde ese momento, lo que se venda entra al siguiente corte. Cada corte se paga con uno o varios <b>abonos</b>; cuando queda pagado, sus ventas se marcan como liquidadas solas.',f:null},
   hero:{t:()=>state.usuario==='Alex'?'Irene te debe':'Le debes a Alex',p:'Es la suma de: ganancia de Alex en sus ventas en efectivo <b>+</b> costo de lo que vendieron Irene y Mamá <b>−</b> moto que puso Irene. <b>Toca el monto</b> para ver venta por venta.',f:()=>[ficha('ganancia Alex','efectivo'),op('+'),ficha('costo','Irene y Mamá'),op('−'),ficha('moto','puso Irene','neg'),op('='),ficha('total','por transferir','res')]}
 };
 function explicar(k){
@@ -1170,21 +1176,26 @@ function abrirDetalle(tipo,copiar){
   buzz();const body=document.getElementById('detalle-body'),t=document.getElementById('detalle-titulo');
   const L=state.detalle||[];
   if(tipo==='transferencia'){
-    const pend=L.filter(v=>v.estatusTransferencia==='No transferido');
+    const todasPend=L.filter(v=>v.estatusTransferencia==='No transferido');
+    const abiertos=(state.cortes||[]).filter(c=>c.estado!=='Pagado');
+    const pend=todasPend.filter(v=>!v.corte);   // solo las nuevas, sin corte: es lo que formaría el siguiente corte
     const g={a:[],b:[],c:[]};pend.forEach(v=>{const x=aporte(v);if(x.monto||x.tipo!=='c')g[x.tipo].push({v,monto:x.monto});});
     const sum=k=>g[k].reduce((s,x)=>s+x.monto,0);const A=sum('a'),B=sum('b'),C=-sum('c'),T=A+B-C,base=A+B+C||1;
     const esAlex=state.usuario==='Alex';
     t.textContent=esAlex?'Irene te debe':'Le debes a Alex';
     const grupo=(k,titulo,sub,fn)=>g[k].length?`<div class="det-sub">${titulo}<b>${k==='c'?'−':''}$${pesos(Math.abs(sum(k)))}</b></div><div class="group">${g[k].map(x=>filaVenta(x.v,x.monto,fn(x.v),fichasAporte(x.v))).join('')}</div>`:'';
+    const saldoC=abiertos.reduce((s,c)=>s+c.saldo,0),deuda=T+saldoC;
     body.innerHTML=`
-      <div class="det-total"><div><small>${pend.length} venta${pend.length===1?'':'s'} sin liquidar</small>Total</div><b class="num">$${pesos(T)}</b></div>
-      ${donutHTML(A,B,C,T)}
-      <div class="det-btn"><button class="btn primary" onclick="copiarResumen()">Copiar resumen</button><button class="btn ghost" onclick="cerrarDetalle()">Cerrar</button></div>
+      <div class="det-total"><div><small>${abiertos.length?`${abiertos.length} corte${abiertos.length===1?'':'s'} abierto${abiertos.length===1?'':'s'} · faltan $${pesos(saldoC)}${pend.length?` · ${pend.length} venta${pend.length===1?'':'s'} nueva${pend.length===1?'':'s'}`:''}`:`${pend.length} venta${pend.length===1?'':'s'} sin liquidar`}</small>Total</div><b class="num">$${pesos(deuda)}</b></div>
+      ${abiertos.length?`<div class="det-sub">Cortes abiertos <span class="tap" onclick="explicar('corte')" style="text-transform:none;letter-spacing:0;font-weight:600">¿qué es? ›</span></div><div class="group">${abiertos.map(filaCorte).join('')}</div>`:''}
+      ${pend.length?`<div class="det-sub" style="padding-top:14px">${abiertos.length?'Nuevas desde el corte':'Pendiente'}<b>$${pesos(T)}</b></div>`:''}
+      ${pend.length?donutHTML(A,B,C,T):''}
+      <div class="det-btn">${esAlex&&pend.length?`<button class="btn primary" onclick="abrirCerrar()">Cerrar corte</button>`:''}<button class="btn ${esAlex&&pend.length?'ghost':'primary'}" onclick="copiarResumen()">Copiar resumen</button></div>
       ${grupo('a','Ventas de Alex en efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
       ${grupo('b','Costo de lo vendido por Irene y Mamá','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
       ${grupo('c','Moto que puso Irene · se descuenta','',v=>`Alex · pagado por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
-      ${pend.length?'':vacio('leaf','Nada pendiente','Todo está liquidado.')}`;
-    state._resumen={A,B,C,T,n:pend.length,g};
+      ${pend.length||abiertos.length?'':vacio('leaf','Nada pendiente','Todo está liquidado.')}`;
+    state._resumen={A,B,C,T,n:pend.length,g,abiertos};
     if(copiar){copiarResumen();return;}
   }else{
     const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);
@@ -1206,8 +1217,94 @@ function cerrarDetalle(){document.getElementById('sheet-detalle').classList.add(
 function copiarResumen(){
   const r=state._resumen;if(!r)return;
   const lin=(k,tit)=>r.g[k].length?`\n${tit}:\n`+r.g[k].map(x=>`• ${x.v.descripcion} (${x.v.vendedor}) ${x.monto<0?'−':''}$${money(Math.abs(x.monto))}`).join('\n'):'';
-  const txt=`Kiosko · ${formatDate(new Date())}\nPor transferir a Alex: $${money(r.T)} (${r.n} ventas)`+lin('a','Ventas de Alex en efectivo')+lin('b','Costo de lo vendido por Irene y Mamá')+lin('c','Moto que puso Irene (se descuenta)');
+  const cab=(r.abiertos||[]).map(c=>`• ${c.id} (${diaLabel(c.fecha)}): faltan $${money(c.saldo)} de $${money(c.total)}`).join('\n');
+  const txt=`Kiosko · ${formatDate(new Date())}`+(cab?`\nCortes abiertos:\n${cab}\n`:'')+`\n${cab?'Nuevas sin corte':'Por transferir a Alex'}: $${money(r.T)} (${r.n} ventas)`+lin('a','Ventas de Alex en efectivo')+lin('b','Costo de lo vendido por Irene y Mamá')+lin('c','Moto que puso Irene (se descuenta)');
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{buzz(12);toast('Resumen copiado, pégalo en WhatsApp');}).catch(()=>toast('No se pudo copiar','err'));
+}
+
+
+/* ---------- CORTES ----------
+   Alex cierra un corte: las ventas pendientes de su mercancía se congelan bajo un número.
+   Luego registra pagos (abonos o total). Al completarse, las ventas pasan a liquidadas solas. */
+const ESTADO_CORTE={'Por pagar':['mango','Por pagar'],'Parcial':['mango','Parcial'],'Pagado':['selva','Pagado']};
+function filaCorte(c){
+  const [cls,txt]=ESTADO_CORTE[c.estado]||['grey',c.estado];
+  return`<div class="row tap" onclick="abrirCorte('${c.id}')"><div class="ico ${c.estado==='Pagado'?'':'mango'}">${ICONS.cash}</div><div class="t"><b>${c.id} · ${diaLabel(c.fecha)}</b><small>${c.n} venta${c.n===1?'':'s'} · <span class="status ${cls}">${txt}</span>${c.estado==='Parcial'?` · pagado $${pesos(c.pagado)}`:''}</small></div><div class="v num ${c.estado==='Pagado'?'':'pos'}">${c.estado==='Pagado'?'$'+pesos(c.total):'$'+pesos(c.saldo)}</div></div>`;
+}
+function renderChipsCortes(d){
+  const w=document.getElementById('h-cortes');if(!w)return;
+  const abiertos=(state.cortes||[]).filter(c=>c.estado!=='Pagado');
+  if(!abiertos.length){w.innerHTML='';w.style.display='none';return;}
+  w.style.display='';
+  w.innerHTML=abiertos.map(c=>`<span class="chip tap" onclick="abrirCorte('${c.id}')">${c.id} · faltan $${pesos(c.saldo)}</span>`).join('')+(d&&d.sinCorte>0?`<span class="chip tap" onclick="abrirDetalle('transferencia')">Nuevas $${pesos(d.sinCorte)}</span>`:'');
+}
+function renderCortes(){
+  const w=document.getElementById('cortes-wrap');if(!w)return;
+  const L=state.cortes||[];
+  const firma=JSON.stringify(L.map(c=>c.id+c.estado+c.pagado))+state.usuario;if(w.dataset.firma===firma)return;w.dataset.firma=firma;
+  if(!L.length){w.innerHTML='';return;}
+  w.innerHTML=`<div class="section-title">Cortes <span class="hint tap" onclick="explicar('corte')">¿Qué es un corte? ›</span></div><div class="group">${L.slice(0,5).map(filaCorte).join('')}</div>`;
+}
+function abrirCorte(id){
+  buzz();const body=document.getElementById('corte-body'),t=document.getElementById('corte-titulo');
+  t.textContent='Corte '+id;body.innerHTML='<div class="sk" style="height:120px"></div><div class="sk" style="height:200px;margin-top:10px"></div>';
+  document.getElementById('sheet-corte').classList.remove('hidden');document.querySelector('#sheet-corte .sheet').scrollTo({top:0});
+  apiCached('cortes',{},(L)=>{const c=(L||[]).find(x=>x.id===id);if(!c){body.innerHTML=vacio('search','No se encontró el corte');return;}pintarCorte(c);},()=>{body.innerHTML=vacio('wifi','No se pudo cargar','Revisa la conexión.');});
+}
+function pintarCorte(c){
+  const body=document.getElementById('corte-body'),esAlex=state.usuario==='Alex';
+  const [cls,txt]=ESTADO_CORTE[c.estado]||['grey',c.estado];
+  const hh=t=>new Date(t).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const pagos=(c.pagos||[]).slice().sort((a,b)=>b.fecha-a.fecha);
+  body.innerHTML=`
+    <div class="det-total"><div><small>${c.n} venta${c.n===1?'':'s'} · cerrado ${diaLabel(c.fecha)} · <span class="status ${cls}">${txt}</span></small>${c.estado==='Pagado'?'Total':'Falta por pagar'}</div><b class="num">$${pesos(c.estado==='Pagado'?c.total:c.saldo)}</b></div>
+    ${c.estado!=='Pagado'?`<div class="review" style="margin-bottom:12px"><div class="row"><div class="t"><b>Total del corte</b></div><div class="v num">$${money(c.total)}</div></div><div class="row"><div class="t"><b>Pagado</b></div><div class="v num">$${money(c.pagado)}</div></div><div class="row total"><div class="t"><b>Saldo</b></div><div class="v num">$${money(c.saldo)}</div></div></div>`:''}
+    ${esAlex&&c.saldo>0?`<div class="field" style="margin-top:0"><label>Registrar pago</label><div class="money"><span>$</span><input id="pago-monto" type="number" inputmode="decimal" step="0.01" placeholder="${money(c.saldo)}" value="${c.saldo}"></div><input id="pago-nota" class="pago-nota" placeholder="Nota (opcional): 'mis papás tomaron $500'" autocomplete="off"><button class="btn primary" id="pago-btn" onclick="guardarPago('${c.id}')">Registrar pago</button><div class="quick-hint" style="text-align:center">Regístralo cuando veas el dinero en tu cuenta. Si es menor al saldo, queda como abono.</div></div>`:''}
+    ${pagos.length?`<div class="det-sub">Pagos<b>$${pesos(c.pagado)}</b></div><div class="group">${pagos.map(p=>`<div class="row"><div class="ico">${ICONS.cash}</div><div class="t"><b>$${money(p.monto)}</b><small>${diaLabel(p.fecha)} ${hh(p.fecha)}${p.nota?' · '+esc(p.nota):''}</small></div></div>`).join('')}</div>`:''}
+    <div class="det-sub" style="padding-top:14px">Ventas del corte<b>$${pesos(c.total)}</b></div>
+    ${(c.ventas||[]).length?`<div class="group">${c.ventas.map(v=>filaVenta(v,v.aporte!=null?v.aporte:aporte(v).monto,`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`,fichasAporte(v))).join('')}</div>`:vacio('leaf','Sin detalle','No se encontraron las ventas de este corte.')}
+    <button class="btn ghost" onclick="cerrarCorteSheet()">Cerrar</button>`;
+}
+function cerrarCorteSheet(){document.getElementById('sheet-corte').classList.add('hidden');}
+function guardarPago(id){
+  const monto=Number(document.getElementById('pago-monto').value),nota=(document.getElementById('pago-nota').value||'').trim();
+  if(!(monto>0)){toast('Escribe el monto que recibiste','err');return;}
+  const b=document.getElementById('pago-btn');b.disabled=true;b.textContent='Guardando…';
+  apiPost('registrarPago',{usuario:state.usuario,corteID:id,monto,nota}).then(r=>{
+    if(!r.success){toast(r.error||'No se pudo registrar','err');b.disabled=false;b.textContent='Registrar pago';return;}
+    buzz([20,30,20]);state.dirty=true;state.ventFirma='';
+    toast(r.corte.estado==='Pagado'?`${id} pagado por completo · ${r.liquidadas} venta${r.liquidadas===1?'':'s'} liquidada${r.liquidadas===1?'':'s'}`:`Abono registrado · faltan $${pesos(r.corte.saldo)}`,'ok');
+    state.cortes=(state.cortes||[]).map(c=>c.id===id?Object.assign({},c,r.corte):c);
+    try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}
+    cerrarCorteSheet();cerrarDetalle();cargarDinero();
+  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se guardó','err');b.disabled=false;b.textContent='Registrar pago';});
+}
+/* Hoja para cerrar el corte: resume lo que se va a congelar y pide mantener presionado. */
+function abrirCerrar(){
+  buzz();const r=state._resumen;if(!r||!r.n){toast('No hay ventas nuevas que cortar','err');return;}
+  document.getElementById('cerrar-body').innerHTML=`
+    <p class="exp-p">Se congelan <b>${r.n} venta${r.n===1?'':'s'}</b> bajo un número de corte. Lo que se venda después entra al siguiente. El bloque se escribe en tu hoja <b>Transferencias</b> como siempre.</p>
+    <div class="review">
+      ${r.A?`<div class="row"><div class="t"><b>Ventas de Alex en efectivo</b></div><div class="v num">$${money(r.A)}</div></div>`:''}
+      ${r.B?`<div class="row"><div class="t"><b>Costo de lo de Irene y Mamá</b></div><div class="v num">$${money(r.B)}</div></div>`:''}
+      ${r.C?`<div class="row"><div class="t"><b>Moto que puso Irene</b></div><div class="v num neg">−$${money(r.C)}</div></div>`:''}
+      <div class="row total"><div class="t"><b>Total del corte</b></div><div class="v num">$${money(r.T)}</div></div>
+    </div>
+    <div style="margin-top:18px"><button class="hold" id="hold-corte"><div class="fill"></div><svg class="hold-ring" viewBox="0 0 24 24"><circle class="a" cx="12" cy="12" r="10"/><circle class="b" cx="12" cy="12" r="10"/></svg><span>Mantén presionado para cerrar</span></button><button class="btn ghost" onclick="cerrarCerrar()">Cancelar</button></div>`;
+  document.getElementById('sheet-cerrar').classList.remove('hidden');
+  setupHold(confirmarCerrar,'hold-corte');
+}
+function cerrarCerrar(){document.getElementById('sheet-cerrar').classList.add('hidden');}
+function confirmarCerrar(){
+  const b=document.getElementById('hold-corte');b.querySelector('span').textContent='Cerrando…';
+  apiPost('cerrarCorte',{usuario:state.usuario}).then(r=>{
+    if(!r.success){toast(r.error||'No se pudo cerrar','err');b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para cerrar';return;}
+    buzz([30,40,60]);state.dirty=true;state.ventFirma='';
+    state.cortes=[r.corte].concat(state.cortes||[]);
+    try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}   // que abrirCorte no lea una lista vieja
+    cerrarCerrar();cerrarDetalle();toast(`Corte ${r.corte.id} cerrado · $${pesos(r.corte.total)}`,'ok');cargarDinero();
+    setTimeout(()=>abrirCorte(r.corte.id),400);
+  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se cerró el corte','err');b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para cerrar';});
 }
 
 /* ---------- USUARIO ---------- */
