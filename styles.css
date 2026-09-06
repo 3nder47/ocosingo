@@ -688,3 +688,19 @@ input{font:inherit;color:inherit}
 #pago-btn{margin-top:10px}
 .review .row .v.neg{color:var(--danger)}
 #sheet-corte,#sheet-cerrar{z-index:40}
+
+/* ===== v10.8 · escritorio: las tiras horizontales con mouse ===== */
+/* Con mouse las categorías se acomodan en varias líneas: se ven todas de un vistazo. */
+@media (min-width:700px) and (pointer:fine){
+  .cats{flex-wrap:wrap;overflow-x:visible}
+  .seg{overflow-x:visible}
+}
+/* Las que siguen siendo carrusel (fotos, franjas, logros) se arrastran y muestran barra fina. */
+@media (pointer:fine){
+  .strip-h,.logros,.cats{scrollbar-width:thin;scrollbar-color:var(--line) transparent;cursor:grab}
+  .strip-h::-webkit-scrollbar,.logros::-webkit-scrollbar,.cats::-webkit-scrollbar{display:block;height:6px}
+  .strip-h::-webkit-scrollbar-thumb,.logros::-webkit-scrollbar-thumb,.cats::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+  .strip-h::-webkit-scrollbar-track,.logros::-webkit-scrollbar-track,.cats::-webkit-scrollbar-track{background:transparent}
+  .arrastrando{cursor:grabbing;scroll-behavior:auto;user-select:none}
+  .arrastrando *{pointer-events:none}
+}
