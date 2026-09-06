@@ -1,4 +1,4 @@
-const APP_VERSION='10.9';const APP_BUILD='6 Sep 2026 12:00';
+const APP_VERSION='11.0';const APP_BUILD='6 Sep 2026 14:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -708,8 +708,34 @@ function renderCats(){
   const counts={};base.forEach(p=>counts[p.categoria]=(counts[p.categoria]||0)+p.stock);
   const cats=['Todas',...Object.keys(counts).sort()];
   if(!cats.includes(state.cat))state.cat='Todas';
-  document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" data-c="${esc(c)}" onclick="setCat(this.dataset.c)">${esc(c)}<span class="n">${c==='Todas'?base.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
+  const chips=cats.map(c=>`<button class="cat ${state.cat===c?'on':''}" data-c="${esc(c)}" onclick="setCat(this.dataset.c)">${esc(c)}<span class="n">${c==='Todas'?base.reduce((a,p)=>a+p.stock,0):counts[c]}</span></button>`).join('');
+  // Con 11 categorías la tira obliga a deslizar a ciegas: este botón abre el mosaico completo.
+  const ver=cats.length>4?`<button class="cat ver-cats" onclick="abrirCats()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>Ver todas</button>`:'';
+  document.getElementById('cats').innerHTML=chips+ver;
 }
+
+/* ---------- MOSAICO DE CATEGORÍAS ----------
+   Las 11 categorías de un vistazo, con foto y cuántas piezas hay. Evita deslizar
+   la tira a ciegas para llegar a la última. Mismo lenguaje que el catálogo público. */
+function abrirCats(){
+  buzz();
+  const base=state.catalogo.filter(filtroDueno);
+  const counts={},foto={};
+  base.forEach(p=>{counts[p.categoria]=(counts[p.categoria]||0)+p.stock;if(!foto[p.categoria]&&p.imagen)foto[p.categoria]=p.imagen;});
+  const cats=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  const total=base.reduce((a,p)=>a+p.stock,0);
+  const tile=(c,n,img)=>`<button class="ctile ${state.cat===c?'on':''}" data-c="${esc(c)}" onclick="elegirCat(this.dataset.c)" style="--ph:${phColor(c)}">
+      ${img?`<img src="${esc(img)}" alt="" loading="lazy" onload="this.classList.add('ok')">`:catIcon(c).replace('<svg','<svg class="ph"')}
+      <div class="vel"></div><div class="tx"><b>${esc(c)}</b><small>${n} pieza${n===1?'':'s'}</small></div></button>`;
+  document.getElementById('cats-body').innerHTML=
+    `<button class="ctile todas ${state.cat==='Todas'?'on':''}" onclick="elegirCat('Todas')"><div class="tx"><b>Todo el inventario</b><small>${total} pieza${total===1?'':'s'} · ${base.length} producto${base.length===1?'':'s'}</small></div></button>
+     <div class="ctiles">${cats.map(c=>tile(c,counts[c],foto[c])).join('')}</div>`;
+  document.getElementById('sheet-cats').classList.remove('hidden');
+  document.querySelector('#sheet-cats .sheet').scrollTo({top:0});
+}
+function cerrarCats(){document.getElementById('sheet-cats').classList.add('hidden');}
+function elegirCat(c){cerrarCats();setCat(c);window.scrollTo({top:0,behavior:'smooth'});}
+
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
 function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
 function miniCard(p,tag){
