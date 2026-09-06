@@ -1,4 +1,4 @@
-const APP_VERSION='10.7';const APP_BUILD='5 Sep 2026 19:00';
+const APP_VERSION='10.8';const APP_BUILD='6 Sep 2026 10:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -145,6 +145,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }));
   setupPullToRefresh();
   setupSwipeSheets();
+  setupArrastre();
   entrarRecordado();
   renderOutbox();enviarPendientes();
   window.addEventListener('online',()=>enviarPendientes());
@@ -177,6 +178,34 @@ function setupSwipeSheets(){
     };
     sh.addEventListener('touchend',fin);sh.addEventListener('touchcancel',fin);
   });
+}
+
+
+/* Arrastrar con el mouse las tiras horizontales (en el teléfono se deslizan con el dedo;
+   en escritorio no había forma de llegar a las categorías de más allá del borde). */
+function setupArrastre(){
+  const SEL='.cats,.strip-h,.logros,.seg,.gal-track';
+  let el=null,x0=0,sl0=0,movido=false;
+  document.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch')return;
+    const t=e.target.closest(SEL);
+    if(!t||t.scrollWidth<=t.clientWidth+2)return;
+    el=t;x0=e.clientX;sl0=t.scrollLeft;movido=false;t.classList.add('arrastrando');
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!el)return;
+    const d=e.clientX-x0;
+    if(!movido&&Math.abs(d)<4)return;
+    movido=true;e.preventDefault();el.scrollLeft=sl0-d;
+  });
+  const fin=e=>{
+    if(!el)return;
+    el.classList.remove('arrastrando');
+    if(movido&&e){const s=e.target.closest('button,.row.tap,.cat,.mini,.lgc');if(s){const tragar=ev=>{ev.stopPropagation();ev.preventDefault();};s.addEventListener('click',tragar,{capture:true,once:true});setTimeout(()=>s.removeEventListener('click',tragar,{capture:true}),0);}}
+    el=null;
+  };
+  document.addEventListener('pointerup',fin);document.addEventListener('pointercancel',fin);
+  document.addEventListener('pointerleave',fin);
 }
 
 const buzz=(ms=8)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
