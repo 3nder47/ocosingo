@@ -680,3 +680,11 @@ input{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){.orb i{animation:none}.orb{opacity:.6;animation:none}}
 .success .s-hito{font-size:0.9375rem;font-weight:800;color:var(--selva-ink);margin-top:2px}
 @media (prefers-color-scheme:dark){.success .s-hito{color:var(--selva)}}
+
+/* ===== v10.7 · cortes ===== */
+.status.grey{background:var(--card-2);color:var(--muted)}
+.pago-nota{width:100%;margin-top:8px;padding:12px 16px;border-radius:14px;background:var(--card);box-shadow:var(--shadow);font-size:0.9375rem;font-weight:600;border:2px solid transparent}
+.pago-nota:focus{border-color:var(--selva);outline:none}
+#pago-btn{margin-top:10px}
+.review .row .v.neg{color:var(--danger)}
+#sheet-corte,#sheet-cerrar{z-index:40}
