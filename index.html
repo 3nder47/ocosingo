@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=10.6">
+<link rel="stylesheet" href="styles.css?v=10.7">
 </head>
 <body>
 
@@ -58,6 +58,7 @@
     <div id="view-ventas" class="view hidden">
       <div id="dinero-hero"></div>
       <div id="dinero-cuenta"></div>
+      <div id="cortes-wrap"></div>
       <div id="neg-wrap"></div>
       <div id="logros"></div>
       <div id="mes-wrap"></div>
@@ -139,6 +140,20 @@
     <div id="detalle-body"></div>
   </div>
 </div>
+<div id="sheet-corte" class="overlay hidden" onclick="if(event.target===this)cerrarCorteSheet()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h3 id="corte-titulo">Corte</h3>
+    <div id="corte-body"></div>
+  </div>
+</div>
+<div id="sheet-cerrar" class="overlay hidden" onclick="if(event.target===this)cerrarCerrar()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h3>Cerrar corte</h3>
+    <div id="cerrar-body"></div>
+  </div>
+</div>
 <div id="sheet-outbox" class="overlay hidden" onclick="if(event.target===this)cerrarOutbox()">
   <div class="sheet">
     <div class="handle"></div>
@@ -171,6 +186,6 @@
 </div>
 
 <script src="config.js"></script>
-<script src="app.js?v=10.6"></script>
+<script src="app.js?v=10.7"></script>
 </body>
 </html>
