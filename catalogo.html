@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F2F3F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0D13" media="(prefers-color-scheme: dark)">
+<title>Kiosko · Catálogo</title>
+<meta name="description" content="Audífonos, smartwatch, bocinas y más. Envío en Ocosingo.">
+<!-- Vista previa al mandar el link por Messenger o WhatsApp -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kiosko · Catálogo">
+<meta property="og:description" content="Audífonos, smartwatch, bocinas y más. Envío en Ocosingo.">
+<meta property="og:image" content="icons/icon-512.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#F2F3F7; --card:#FFFFFF; --card-2:#F7F8FB;
+  --ink:#0F1222; --muted:#6B7080; --line:rgba(15,18,34,.08);
+  --selva:#1D9E75; --selva-soft:#E3F5EE; --selva-ink:#0F5C44;
+  --mango:#F59E0B;
+  --shadow:0 1px 2px rgba(15,18,34,.04),0 8px 24px -12px rgba(15,18,34,.12);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --bg:#0B0D13; --card:#161923; --card-2:#20242F;
+    --ink:#F5F6FA; --muted:#9298A8; --line:rgba(255,255,255,.09);
+    --selva:#34C48F; --selva-soft:rgba(52,196,143,.16); --selva-ink:#9DEBD0;
+    --shadow:0 1px 0 rgba(255,255,255,.03),0 10px 30px -14px rgba(0,0,0,.6);
+  }
+  .card,.search,.cat,.head-in{border:1px solid var(--line)}
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,Inter,Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* encabezado */
+.head{padding:26px 0 6px}
+.head-in{display:flex;align-items:center;gap:14px}
+.mark{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#1D9E75,#10261F);
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.25rem;letter-spacing:-.04em;flex-shrink:0;
+  box-shadow:0 12px 32px -12px rgba(29,158,117,.6)}
+.head h1{font-size:1.625rem;font-weight:800;letter-spacing:-.035em;line-height:1.1}
+.head p{font-size:0.875rem;color:var(--muted);font-weight:600;margin-top:2px}
+
+/* buscador y categorías */
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:12px 14px;
+  box-shadow:var(--shadow);margin:18px 0 6px}
+.search svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.search input{flex:1;border:0;background:none;outline:0;font-size:1rem;font-weight:500;min-width:0}
+.search input::placeholder{color:var(--muted)}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cats::-webkit-scrollbar{display:none}
+@media (min-width:700px) and (pointer:fine){.cats{flex-wrap:wrap;overflow-x:visible}}
+.cat{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:var(--card);
+  box-shadow:var(--shadow);font-size:0.8125rem;font-weight:700;color:var(--muted);border:2px solid transparent;
+  transition:all .2s var(--ease)}
+.cat:active{transform:scale(.94)}
+.cat.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cat .n{font-size:0.75rem;padding:2px 7px;border-radius:999px;background:var(--card-2);color:var(--muted)}
+.cat.on .n{background:rgba(255,255,255,.18);color:var(--bg)}
+@media (prefers-color-scheme:dark){.cat.on{background:#F5F6FA;color:#0B0D13;border-color:#F5F6FA}.cat.on .n{background:rgba(0,0,0,.12);color:#0B0D13}}
+
+/* rejilla */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;padding-top:6px}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
+  position:relative;transition:transform .18s var(--ease),box-shadow .18s var(--ease);animation:rise .4s var(--ease) both}
+@media (pointer:fine){.card:hover{transform:translateY(-3px);box-shadow:0 4px 8px rgba(15,18,34,.05),0 18px 40px -18px rgba(15,18,34,.28)}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.ph{position:relative;aspect-ratio:1/1;background:var(--card-2);overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
+.ph img.ok{opacity:1}
+.ultima{position:absolute;top:8px;left:8px;font-size:0.6875rem;font-weight:800;padding:4px 8px;border-radius:999px;
+  background:var(--mango);color:#1a1200;text-transform:uppercase;letter-spacing:.05em}
+.info{padding:12px 13px 13px;display:flex;flex-direction:column;gap:8px;flex:1}
+.info b{font-size:0.875rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;min-height:2.3em}
+.precio{font-size:1.25rem;font-weight:800;color:var(--selva);letter-spacing:-.03em;margin-top:auto}
+.wa{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;
+  background:var(--selva-soft);color:var(--selva-ink);font-size:0.8125rem;font-weight:800;transition:transform .15s var(--ease)}
+.wa:active{transform:scale(.96)}
+.wa svg{width:17px;height:17px;fill:currentColor;flex-shrink:0}
+
+/* estados */
+.msg{text-align:center;padding:70px 20px;color:var(--muted);font-size:0.9375rem;font-weight:600}
+.msg b{display:block;color:var(--ink);font-size:1.0625rem;margin-bottom:6px}
+.sk{border-radius:18px;background:var(--card);height:250px;position:relative;overflow:hidden}
+.sk::after{content:'';position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(100deg,transparent 20%,rgba(29,158,117,.10) 50%,transparent 80%);animation:sh 1.4s ease-in-out infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+.pie{text-align:center;padding:34px 20px 10px;color:var(--muted);font-size:0.8125rem;font-weight:600;line-height:1.6}
+.pie a{color:var(--selva);font-weight:800}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="head">
+    <div class="head-in">
+      <div class="mark">Ki</div>
+      <div>
+        <h1>Kiosko</h1>
+        <p>Lo que tenemos disponible hoy · Ocosingo</p>
+      </div>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar producto" autocomplete="off">
+    </div>
+    <div class="cats" id="cats"></div>
+  </div>
+  <div id="lista"></div>
+  <div class="pie">
+    Los precios pueden cambiar sin aviso. Disponibilidad sujeta a existencias.<br>
+    ¿Buscas algo que no está aquí? <a id="pie-wa" href="#">Escríbenos por WhatsApp</a>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+/* Catálogo público de Kiosko.
+   Llama a la acción catalogoPublico del backend, que no lleva token porque no devuelve
+   nada privado: solo descripción, categoría, precio, foto y si es la última pieza. */
+const WA='525614842235';                       // WhatsApp de Alex, con lada de país
+const API=(window.OC_CONFIG||{}).API_URL||'';  // la URL vive en config.js, el token no se usa aquí
+const CACHE='kiosko:catalogo';
+
+let productos=[],cat='Todas';
+
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const pesos=n=>(Math.round(Number(n)||0)).toLocaleString('es-MX');
+const slug=s=>norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const waLink=(txt)=>`https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
+
+document.getElementById('pie-wa').href=waLink('Hola, ¿tienen algo más disponible?');
+document.getElementById('q').addEventListener('input',render);
+
+function pintarCats(){
+  const c={};
+  productos.forEach(p=>c[p.categoria]=(c[p.categoria]||0)+1);
+  const lista=['Todas',...Object.keys(c).sort()];
+  if(!lista.includes(cat))cat='Todas';
+  document.getElementById('cats').innerHTML=lista.map(x=>
+    `<button class="cat ${cat===x?'on':''}" data-c="${esc(x)}">${esc(x)}<span class="n">${x==='Todas'?productos.length:c[x]}</span></button>`).join('');
+  document.querySelectorAll('#cats .cat').forEach(b=>b.onclick=()=>{
+    cat=b.dataset.c;
+    history.replaceState(null,'',cat==='Todas'?location.pathname:'#'+slug(cat));
+    pintarCats();render();
+  });
+}
+
+function render(){
+  const q=norm(document.getElementById('q').value.trim());
+  const palabras=q?q.split(/\s+/):[];
+  const l=productos.filter(p=>{
+    if(cat!=='Todas'&&p.categoria!==cat)return false;
+    if(!palabras.length)return true;
+    const texto=norm(p.descripcion+' '+p.categoria);
+    return palabras.every(w=>texto.includes(w));
+  });
+  const el=document.getElementById('lista');
+  if(!l.length){
+    el.innerHTML=`<div class="msg"><b>Nada con ese nombre</b>Prueba con otra palabra o mira todas las categorías.</div>`;
+    return;
+  }
+  el.innerHTML=`<div class="grid">${l.map((p,i)=>`
+    <div class="card" style="animation-delay:${Math.min(i,8)*30}ms">
+      <div class="ph">${p.ultima?'<span class="ultima">Última pieza</span>':''}
+        <img src="${esc(p.imagen)}" alt="${esc(p.descripcion)}" loading="lazy" decoding="async"
+             onload="this.classList.add('ok')" onerror="this.closest('.card').remove()">
+      </div>
+      <div class="info">
+        <b>${esc(p.descripcion)}</b>
+        <div class="precio">$${pesos(p.precio)}</div>
+        <a class="wa" target="_blank" rel="noopener"
+           href="${esc(waLink('Hola, me interesa: '+p.descripcion+' ($'+pesos(p.precio)+')'))}">
+          <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>
+          Preguntar
+        </a>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function pintar(l){
+  productos=l;
+  const h=location.hash.replace('#','');
+  if(h){const m=l.map(p=>p.categoria).find(c=>slug(c)===h);if(m)cat=m;}
+  pintarCats();render();
+}
+
+function cargar(){
+  document.getElementById('lista').innerHTML='<div class="grid">'+Array.from({length:8},()=>'<div class="sk"></div>').join('')+'</div>';
+  let previo=null;
+  try{const c=localStorage.getItem(CACHE);if(c)previo=JSON.parse(c);}catch(e){}
+  if(previo&&previo.length)pintar(previo);   // muestra la copia local al instante y refresca detrás
+  if(!API){document.getElementById('lista').innerHTML='<div class="msg"><b>Falta configurar la dirección</b>Avísale a Alex.</div>';return;}
+  fetch(API+'?accion=catalogoPublico',{redirect:'follow'})
+    .then(r=>r.json())
+    .then(j=>{
+      if(!j.ok||!Array.isArray(j.data))throw new Error(j.error||'respuesta inesperada');
+      try{localStorage.setItem(CACHE,JSON.stringify(j.data));}catch(e){}
+      pintar(j.data);
+    })
+    .catch(()=>{
+      if(previo&&previo.length)return;       // ya hay algo en pantalla, no se estorba
+      document.getElementById('lista').innerHTML=
+        `<div class="msg"><b>No se pudo cargar el catálogo</b>Revisa tu conexión o <a href="${waLink('Hola, no me carga el catálogo')}" style="color:var(--selva);font-weight:800">escríbenos</a>.</div>`;
+    });
+}
+cargar();
+window.addEventListener('hashchange',()=>{if(productos.length)pintar(productos);});
+</script>
+</body>
+</html>
