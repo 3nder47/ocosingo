@@ -34,9 +34,7 @@
     --selva:#34C48F; --selva-soft:rgba(52,196,143,.16); --selva-ink:#9DEBD0;
     --shadow:0 1px 0 rgba(255,255,255,.03),0 10px 30px -14px rgba(0,0,0,.6);
   }
-  .card,.search,.cat,.envio,.sheet,.f-envio{border:1px solid var(--line)}
-  .cat.on{background:#F5F6FA;color:#0B0D13;border-color:#F5F6FA}
-  .cat.on .n{background:rgba(0,0,0,.12);color:#0B0D13}
+  .card,.search,.envio,.sheet,.f-envio,.tile,.volver{border:1px solid var(--line)}
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,Inter,Roboto,sans-serif;
@@ -47,21 +45,21 @@ a{color:inherit;text-decoration:none}
 .wrap{max-width:1060px;margin:0 auto;padding:0 16px}
 
 /* ---------- encabezado ---------- */
-.head{padding:24px 0 4px}
+.head{padding:22px 0 2px}
 .head-in{display:flex;align-items:center;gap:14px}
-.mark{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#1D9E75,#10261F);
-  display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.25rem;letter-spacing:-.04em;flex-shrink:0;
+.mark{width:50px;height:50px;border-radius:16px;background:linear-gradient(135deg,#1D9E75,#10261F);
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.1875rem;letter-spacing:-.04em;flex-shrink:0;
   box-shadow:0 12px 32px -12px rgba(29,158,117,.6)}
-.head h1{font-size:1.625rem;font-weight:800;letter-spacing:-.035em;line-height:1.1}
-.head p{font-size:0.875rem;color:var(--muted);font-weight:600;margin-top:2px}
-.envio{display:flex;align-items:center;gap:12px;margin-top:16px;padding:13px 16px;border-radius:16px;
+.head h1{font-size:1.5rem;font-weight:800;letter-spacing:-.035em;line-height:1.1}
+.head p{font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:2px}
+.envio{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 15px;border-radius:16px;
   background:var(--selva-soft);color:var(--selva-ink)}
 .envio svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .envio b{display:block;font-size:0.875rem;font-weight:800}
 .envio small{display:block;font-size:0.75rem;font-weight:600;opacity:.85;margin-top:1px}
 
-/* ---------- buscador pegajoso ---------- */
-.barra{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -16px;padding:14px 16px 2px}
+/* ---------- buscador ---------- */
+.barra{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -16px;padding:14px 16px 10px}
 .search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .search svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
 .search input{flex:1;border:0;background:none;outline:0;font-size:1rem;font-weight:500;min-width:0;color:inherit}
@@ -69,23 +67,36 @@ a{color:inherit;text-decoration:none}
 .search .x{width:26px;height:26px;border-radius:50%;background:var(--card-2);color:var(--muted);font-weight:800;font-size:0.75rem;flex-shrink:0;display:none}
 .search.lleno .x{display:block}
 
-/* ---------- categorías con foto ---------- */
-.cats{display:flex;gap:9px;overflow-x:auto;padding:12px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.cats::-webkit-scrollbar{display:none}
-@media (pointer:fine){.cats{cursor:grab}}
-.cats.arrastrando{cursor:grabbing;user-select:none}
-.cats.arrastrando *{pointer-events:none}
-.cat{flex-shrink:0;display:flex;align-items:center;gap:9px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--card);
-  box-shadow:var(--shadow);font-size:0.8125rem;font-weight:700;color:var(--muted);border:2px solid transparent;transition:all .2s var(--ease)}
-.cat:active{transform:scale(.95)}
-.cat.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.cat i{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--card-2);display:block}
-.cat i img{width:100%;height:100%;object-fit:cover}
-.cat.todas{padding-left:14px}
-.cat .n{font-size:0.75rem;padding:2px 7px;border-radius:999px;background:var(--card-2);color:var(--muted)}
-.cat.on .n{background:rgba(255,255,255,.18);color:var(--bg)}
+/* ---------- títulos de sección ---------- */
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:20px 2px 10px}
+.sec h2{font-size:1.0625rem;font-weight:800;letter-spacing:-.025em}
+.sec button{font-size:0.8125rem;font-weight:800;color:var(--selva)}
 
-/* ---------- rejilla ---------- */
+/* ---------- portada: mosaico de categorías ---------- */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:560px){.tiles{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:860px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;background:var(--card);box-shadow:var(--shadow);
+  text-align:left;transition:transform .18s var(--ease);animation:rise .4s var(--ease) both}
+.tile:active{transform:scale(.97)}
+@media (pointer:fine){.tile:hover{transform:translateY(-3px)}}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
+.tile img.ok{opacity:1}
+.tile .vel{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 40%,rgba(0,0,0,.72) 100%)}
+.tile .tx{position:absolute;left:13px;right:13px;bottom:11px;color:#fff}
+.tile .tx b{display:block;font-size:0.9375rem;font-weight:800;line-height:1.25;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.tile .tx small{display:block;font-size:0.75rem;font-weight:700;opacity:.9;margin-top:2px}
+
+/* ---------- franjas horizontales ---------- */
+.strip{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px;scroll-snap-type:x proximity;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.strip::-webkit-scrollbar{display:none}
+@media (pointer:fine){.strip,.cats{cursor:grab}}
+.arrastrando{cursor:grabbing!important;user-select:none}
+.arrastrando *{pointer-events:none}
+.strip .card{flex:0 0 152px;scroll-snap-align:start}
+
+/* ---------- tarjeta de producto ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px;padding-top:4px}
 .card{background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
   text-align:left;position:relative;transition:transform .18s var(--ease),box-shadow .18s var(--ease);animation:rise .4s var(--ease) both}
@@ -95,16 +106,27 @@ a{color:inherit;text-decoration:none}
 .ph{position:relative;aspect-ratio:1/1;background:var(--card-2);overflow:hidden}
 .ph img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
 .ph img.ok{opacity:1}
-.ultima{position:absolute;top:9px;left:9px;font-size:0.6875rem;font-weight:800;padding:4px 9px;border-radius:999px;
-  background:var(--mango);color:#1a1200;text-transform:uppercase;letter-spacing:.05em;z-index:1}
+.tag{position:absolute;top:9px;left:9px;font-size:0.6875rem;font-weight:800;padding:4px 9px;border-radius:999px;
+  text-transform:uppercase;letter-spacing:.05em;z-index:1}
+.tag.ult{background:var(--mango);color:#1a1200}
+.tag.new{background:var(--ink);color:var(--bg)}
 .mas{position:absolute;bottom:9px;right:9px;font-size:0.6875rem;font-weight:800;padding:4px 9px;border-radius:999px;
   background:rgba(0,0,0,.5);color:#fff;backdrop-filter:blur(4px)}
-.info{padding:12px 13px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
-.info b{font-size:0.875rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+.info{padding:11px 12px 13px;display:flex;flex-direction:column;gap:4px;flex:1}
+.info b{font-size:0.8438rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
   overflow:hidden;min-height:2.3em}
-.precio{font-size:1.25rem;font-weight:800;color:var(--selva);letter-spacing:-.03em;margin-top:auto}
+.precio{font-size:1.1875rem;font-weight:800;color:var(--selva);letter-spacing:-.03em;margin-top:auto}
 
-/* ---------- ficha del producto ---------- */
+/* ---------- vista de categoría ---------- */
+.volver{display:inline-flex;align-items:center;gap:8px;padding:10px 16px 10px 12px;border-radius:999px;background:var(--card);
+  box-shadow:var(--shadow);font-size:0.875rem;font-weight:800;margin:4px 0 2px}
+.volver svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.volver:active{transform:scale(.96)}
+.titulo{padding:14px 2px 4px}
+.titulo h2{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.titulo small{display:block;font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:3px}
+
+/* ---------- ficha ---------- */
 .overlay{position:fixed;inset:0;background:rgba(15,18,34,.45);backdrop-filter:blur(4px);z-index:40;
   display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
 @keyframes fade{from{opacity:0}}
@@ -133,9 +155,9 @@ a{color:inherit;text-decoration:none}
 .cerrar{width:100%;padding:14px;color:var(--muted);font-weight:700;font-size:0.9375rem;margin-top:4px}
 
 /* ---------- estados ---------- */
-.msg{text-align:center;padding:70px 20px;color:var(--muted);font-size:0.9375rem;font-weight:600}
+.msg{text-align:center;padding:64px 20px;color:var(--muted);font-size:0.9375rem;font-weight:600}
 .msg b{display:block;color:var(--ink);font-size:1.0625rem;margin-bottom:6px}
-.sk{border-radius:20px;background:var(--card);height:248px;position:relative;overflow:hidden}
+.sk{border-radius:20px;background:var(--card);height:150px;position:relative;overflow:hidden}
 .sk::after{content:'';position:absolute;inset:0;transform:translateX(-100%);
   background:linear-gradient(100deg,transparent 20%,rgba(29,158,117,.10) 50%,transparent 80%);animation:sh 1.4s ease-in-out infinite}
 @keyframes sh{to{transform:translateX(100%)}}
@@ -147,7 +169,7 @@ a{color:inherit;text-decoration:none}
 <body>
 
 <div class="wrap">
-  <div class="head">
+  <div class="head" id="head">
     <div class="head-in">
       <div class="mark">Ki</div>
       <div>
@@ -167,10 +189,9 @@ a{color:inherit;text-decoration:none}
       <input id="q" type="search" placeholder="Buscar producto" autocomplete="off">
       <button class="x" id="q-x" aria-label="Borrar">&#10005;</button>
     </div>
-    <div class="cats" id="cats"></div>
   </div>
 
-  <div id="lista"></div>
+  <div id="vista"></div>
 
   <div class="pie">
     Los precios pueden cambiar sin aviso. Disponibilidad sujeta a existencias.<br>
@@ -183,15 +204,17 @@ a{color:inherit;text-decoration:none}
 <script src="config.js"></script>
 <script>
 /* Catálogo público de Kiosko.
-   Llama a catalogoPublico, la única acción del backend sin token: devuelve solo descripción,
-   categoría, precio, fotos, si es la última pieza y a qué WhatsApp escribe el cliente.
-   Nunca costos, ni cuántas piezas quedan, ni de quién es la mercancía. */
+   Estructura: una portada que orienta (categorías en mosaico + Novedades + Últimas piezas)
+   y de ahí se entra a una categoría. Nada de una lista infinita de 60 productos.
+   Los datos vienen de catalogoPublico, la única acción del backend sin token: descripción,
+   categoría, precio, fotos, si es la última pieza y a qué WhatsApp escribe el cliente. */
 const API=(window.OC_CONFIG||{}).API_URL||'';
 const WA_GENERAL='525614842235';
 const CACHE='kiosko:catalogo';
 const URL_BASE=location.origin+location.pathname;
+const DIAS_NUEVO=45;
 
-let productos=[],cat='Todas',abierto=null;
+var productos=[],cat=null,abierto=null;
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -199,58 +222,92 @@ const pesos=n=>(Math.round(Number(n)||0)).toLocaleString('es-MX');
 const slug=s=>norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const fotos=p=>[p.imagen].concat(p.extras||[]).filter(Boolean);
 const waLink=(num,txt)=>'https://wa.me/'+num+'?text='+encodeURIComponent(txt);
+const esNuevo=p=>p.agregado&&(Date.now()-p.agregado)<DIAS_NUEVO*864e5;
 
 document.getElementById('pie-wa').href=waLink(WA_GENERAL,'Hola, ¿tienen algo más disponible?');
 
 const q=document.getElementById('q'),caja=document.getElementById('search-box');
-q.addEventListener('input',function(){caja.classList.toggle('lleno',!!q.value);render();});
-document.getElementById('q-x').onclick=function(){q.value='';caja.classList.remove('lleno');render();q.focus();};
+q.addEventListener('input',function(){caja.classList.toggle('lleno',!!q.value);pintar();});
+document.getElementById('q-x').onclick=function(){q.value='';caja.classList.remove('lleno');pintar();q.focus();};
 
-/* Categorías, con la foto de un producto como ícono */
-function pintarCats(){
+/* ---------- piezas de HTML ---------- */
+function tarjeta(p,i){
+  const n=fotos(p).length;
+  const tag=p.ultima?'<span class="tag ult">Última pieza</span>':(esNuevo(p)?'<span class="tag new">Nuevo</span>':'');
+  return '<button class="card" data-s="'+esc(slug(p.descripcion))+'" style="animation-delay:'+(Math.min(i||0,8)*30)+'ms">'+
+    '<div class="ph">'+tag+(n>1?'<span class="mas">'+n+' fotos</span>':'')+
+    '<img src="'+esc(p.imagen)+'" alt="'+esc(p.descripcion)+'" loading="lazy" decoding="async" '+
+    'onload="this.classList.add(\'ok\')" onerror="this.closest(\'.card\').remove()"></div>'+
+    '<div class="info"><b>'+esc(p.descripcion)+'</b><div class="precio">$'+pesos(p.precio)+'</div></div></button>';
+}
+function seccion(titulo,lista,verCat){
+  if(!lista.length)return '';
+  return '<div class="sec"><h2>'+esc(titulo)+'</h2>'+
+    (verCat?'<button data-ver="'+esc(verCat)+'">Ver todo</button>':'')+'</div>'+
+    '<div class="strip">'+lista.map(tarjeta).join('')+'</div>';
+}
+function mosaico(){
   const c={},foto={};
   productos.forEach(function(p){c[p.categoria]=(c[p.categoria]||0)+1;if(!foto[p.categoria])foto[p.categoria]=p.imagen;});
-  const lista=['Todas'].concat(Object.keys(c).sort());
-  if(lista.indexOf(cat)<0)cat='Todas';
-  document.getElementById('cats').innerHTML=lista.map(function(x){
-    const ico=x==='Todas'?'':'<i><img src="'+esc(foto[x])+'" alt="" loading="lazy"></i>';
-    return '<button class="cat '+(x==='Todas'?'todas':'')+' '+(cat===x?'on':'')+'" data-c="'+esc(x)+'">'+ico+esc(x)+
-      '<span class="n">'+(x==='Todas'?productos.length:c[x])+'</span></button>';
-  }).join('');
-  Array.prototype.forEach.call(document.querySelectorAll('#cats .cat'),function(b){
-    b.onclick=function(){
-      cat=b.dataset.c;
-      history.replaceState(null,'',cat==='Todas'?URL_BASE:'#'+slug(cat));
-      pintarCats();render();window.scrollTo({top:0,behavior:'smooth'});
-    };
-  });
+  const cats=Object.keys(c).sort(function(a,b){return c[b]-c[a];});
+  return '<div class="sec"><h2>Categorías</h2></div><div class="tiles">'+cats.map(function(x,i){
+    return '<button class="tile" data-ver="'+esc(x)+'" style="animation-delay:'+(Math.min(i,8)*30)+'ms">'+
+      '<img src="'+esc(foto[x])+'" alt="" loading="lazy" onload="this.classList.add(\'ok\')">'+
+      '<div class="vel"></div><div class="tx"><b>'+esc(x)+'</b><small>'+c[x]+' producto'+(c[x]===1?'':'s')+'</small></div></button>';
+  }).join('')+'</div>';
 }
 
-function render(){
+/* ---------- la vista que toca ---------- */
+function pintar(){
+  const el=document.getElementById('vista');
   const t=norm(q.value.trim()),palabras=t?t.split(/\s+/):[];
-  const l=productos.filter(function(p){
-    if(cat!=='Todas'&&p.categoria!==cat)return false;
-    if(!palabras.length)return true;
-    const texto=norm(p.descripcion+' '+p.categoria);
-    return palabras.every(function(w){return texto.indexOf(w)>-1;});
-  });
-  const el=document.getElementById('lista');
-  if(!l.length){el.innerHTML='<div class="msg"><b>Nada con ese nombre</b>Prueba con otra palabra o mira todas las categorías.</div>';return;}
-  el.innerHTML='<div class="grid">'+l.map(function(p,i){
-    const n=fotos(p).length;
-    return '<button class="card" data-s="'+esc(slug(p.descripcion))+'" style="animation-delay:'+(Math.min(i,8)*30)+'ms">'+
-      '<div class="ph">'+(p.ultima?'<span class="ultima">Última pieza</span>':'')+
-      (n>1?'<span class="mas">'+n+' fotos</span>':'')+
-      '<img src="'+esc(p.imagen)+'" alt="'+esc(p.descripcion)+'" loading="lazy" decoding="async" '+
-      'onload="this.classList.add(\'ok\')" onerror="this.closest(\'.card\').remove()"></div>'+
-      '<div class="info"><b>'+esc(p.descripcion)+'</b><div class="precio">$'+pesos(p.precio)+'</div></div></button>';
-  }).join('')+'</div>';
+
+  /* 1. Buscando: resultados y nada más */
+  if(palabras.length){
+    const l=productos.filter(function(p){
+      const texto=norm(p.descripcion+' '+p.categoria);
+      return palabras.every(function(w){return texto.indexOf(w)>-1;});
+    });
+    el.innerHTML=l.length
+      ?'<div class="titulo"><h2>Resultados</h2><small>'+l.length+' producto'+(l.length===1?'':'s')+'</small></div><div class="grid">'+l.map(tarjeta).join('')+'</div>'
+      :'<div class="msg"><b>Nada con ese nombre</b>Prueba con otra palabra o borra la búsqueda para ver las categorías.</div>';
+    cablear();return;
+  }
+
+  /* 2. Dentro de una categoría */
+  if(cat){
+    const l=productos.filter(function(p){return p.categoria===cat;});
+    el.innerHTML='<button class="volver" id="volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Todas las categorías</button>'+
+      '<div class="titulo"><h2>'+esc(cat)+'</h2><small>'+l.length+' producto'+(l.length===1?'':'s')+' disponible'+(l.length===1?'':'s')+'</small></div>'+
+      '<div class="grid">'+l.map(tarjeta).join('')+'</div>';
+    cablear();return;
+  }
+
+  /* 3. Portada */
+  const nuevos=productos.filter(esNuevo).sort(function(a,b){return b.agregado-a.agregado;}).slice(0,10);
+  const ultimas=productos.filter(function(p){return p.ultima;}).slice(0,10);
+  el.innerHTML=seccion('Novedades',nuevos)+mosaico()+seccion('Últimas piezas',ultimas);
+  cablear();
+}
+
+function cablear(){
   Array.prototype.forEach.call(document.querySelectorAll('.card'),function(b){
     b.onclick=function(){abrir(b.dataset.s);};
   });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ver]'),function(b){
+    b.onclick=function(){irCat(b.dataset.ver);};
+  });
+  const v=document.getElementById('volver');
+  if(v)v.onclick=function(){irCat(null);};
+  Array.prototype.forEach.call(document.querySelectorAll('.strip'),arrastrable);
+}
+function irCat(c){
+  cat=c;
+  history.replaceState(null,'',c?'#'+slug(c):URL_BASE);
+  pintar();window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* Ficha del producto */
+/* ---------- ficha del producto ---------- */
 function abrir(s){
   const p=productos.filter(function(x){return slug(x.descripcion)===s;})[0];
   if(!p)return;
@@ -263,7 +320,7 @@ function abrir(s){
   document.getElementById('ficha').innerHTML=
     '<div class="overlay" id="ov"><div class="sheet">'+
       '<div class="handle"></div>'+
-      '<div class="gal">'+(p.ultima?'<span class="ultima">Última pieza</span>':'')+
+      '<div class="gal">'+(p.ultima?'<span class="tag ult">Última pieza</span>':'')+
         '<div class="gal-track" id="gal">'+fs.map(function(u){return '<img src="'+esc(u)+'" alt="'+esc(p.descripcion)+'" loading="lazy">';}).join('')+'</div>'+
         (fs.length>1?'<div class="gal-dots" id="dots">'+fs.map(function(_,i){return '<i class="'+(i?'':'on')+'"></i>';}).join('')+'</div>':'')+
       '</div>'+
@@ -286,50 +343,52 @@ function abrir(s){
 }
 function cerrar(){
   abierto=null;document.getElementById('ficha').innerHTML='';document.body.style.overflow='';
-  history.replaceState(null,'',cat==='Todas'?URL_BASE:'#'+slug(cat));
+  history.replaceState(null,'',cat?'#'+slug(cat):URL_BASE);
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&abierto)cerrar();});
 
-/* Arrastrar las categorías con mouse (en el teléfono se deslizan con el dedo) */
-(function(){
-  const el=document.getElementById('cats');var x0=0,sl0=0,act=false,mov=false;
+/* Arrastrar franjas con mouse (con el dedo ya se deslizan) */
+function arrastrable(el){
+  if(el.dataset.drag)return;el.dataset.drag='1';
+  var x0=0,sl0=0,act=false,mov=false;
   el.addEventListener('pointerdown',function(e){if(e.pointerType==='touch')return;act=true;mov=false;x0=e.clientX;sl0=el.scrollLeft;});
   el.addEventListener('pointermove',function(e){
-    if(!act)return;const d=e.clientX-x0;
+    if(!act)return;var d=e.clientX-x0;
     if(!mov&&Math.abs(d)<4)return;
     mov=true;el.classList.add('arrastrando');e.preventDefault();el.scrollLeft=sl0-d;
   });
-  const fin=function(){act=false;setTimeout(function(){el.classList.remove('arrastrando');},0);};
+  var fin=function(){act=false;setTimeout(function(){el.classList.remove('arrastrando');},0);};
   el.addEventListener('pointerup',fin);el.addEventListener('pointerleave',fin);el.addEventListener('pointercancel',fin);
-})();
+}
 
-function pintar(l){
+/* ---------- carga ---------- */
+function entrar(l){
   productos=l;
-  const h=decodeURIComponent(location.hash.replace('#',''));
-  if(h.indexOf('p=')===0){pintarCats();render();abrir(h.slice(2));return;}
+  var h=decodeURIComponent(location.hash.replace('#',''));
+  if(h.indexOf('p=')===0){pintar();abrir(h.slice(2));return;}
   if(h){
-    const m=l.map(function(p){return p.categoria;}).filter(function(c){return slug(c)===h;})[0];
+    var m=l.map(function(p){return p.categoria;}).filter(function(c){return slug(c)===h;})[0];
     if(m)cat=m;
   }
-  pintarCats();render();
+  pintar();
 }
 function cargar(){
-  document.getElementById('lista').innerHTML='<div class="grid">'+
-    Array.apply(null,{length:8}).map(function(){return '<div class="sk"></div>';}).join('')+'</div>';
+  document.getElementById('vista').innerHTML='<div class="sec"><h2>Cargando…</h2></div><div class="tiles">'+
+    Array.apply(null,{length:6}).map(function(){return '<div class="sk"></div>';}).join('')+'</div>';
   var previo=null;
   try{var c=localStorage.getItem(CACHE);if(c)previo=JSON.parse(c);}catch(e){}
-  if(previo&&previo.length)pintar(previo);
-  if(!API){document.getElementById('lista').innerHTML='<div class="msg"><b>Falta configurar la dirección</b>Avísale a Alex.</div>';return;}
+  if(previo&&previo.length)entrar(previo);
+  if(!API){document.getElementById('vista').innerHTML='<div class="msg"><b>Falta configurar la dirección</b>Avísale a Alex.</div>';return;}
   fetch(API+'?accion=catalogoPublico',{redirect:'follow'})
     .then(function(r){return r.json();})
     .then(function(j){
       if(!j.ok||!Array.isArray(j.data))throw new Error(j.error||'respuesta inesperada');
       try{localStorage.setItem(CACHE,JSON.stringify(j.data));}catch(e){}
-      if(abierto)productos=j.data;else pintar(j.data);
+      if(abierto)productos=j.data;else entrar(j.data);
     })
     .catch(function(){
       if(previo&&previo.length)return;
-      document.getElementById('lista').innerHTML='<div class="msg"><b>No se pudo cargar el catálogo</b>'+
+      document.getElementById('vista').innerHTML='<div class="msg"><b>No se pudo cargar el catálogo</b>'+
         'Revisa tu conexión o <a href="'+waLink(WA_GENERAL,'Hola, no me carga el catálogo')+'">escríbenos</a>.</div>';
     });
 }
