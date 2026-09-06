@@ -5,10 +5,10 @@
 // - Fotos de producto (Drive): caché primero para siempre (cada subida crea URL nueva) · máx. 120.
 // - Al cambiar de versión, actualizar CACHE y los ?v= de SHELL junto con index.html.
 // UNICO lugar que hay que tocar al subir version, junto con los ?v= de index.html y APP_VERSION de app.js.
-const V = '10.8';
+const V = '10.9';
 const CACHE = 'kiosko-shell-' + V;
 const IMG_CACHE = 'ocosingo-img-v2';
-const SHELL = ['./', './index.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
   // allSettled: si un ícono falla, el resto del shell se precachea igual (addAll era todo o nada)
@@ -78,7 +78,8 @@ self.addEventListener('fetch', e => {
       }).catch(() =>
         caches.match(e.request, { ignoreSearch: true }).then(r => {
           if (r) return r;
-          if (e.request.mode === 'navigate') return caches.match('./index.html');
+          // El catálogo público tiene su propio HTML de respaldo
+          if (e.request.mode === 'navigate') return caches.match(url.pathname.indexOf('catalogo') > -1 ? './catalogo.html' : './index.html');
           return new Response('', { status: 504 });
         })
       )
