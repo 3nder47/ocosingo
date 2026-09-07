@@ -901,3 +901,9 @@ button.bt:active{transform:scale(.97)}
 .bcos .up{background:var(--danger-soft);color:var(--danger)}
 .bcos .down{background:var(--selva-soft);color:var(--selva-ink)}
 .bcos .eq{background:var(--card-2);color:var(--muted)}
+
+/* miniatura de la evolución del costo, en cada fila */
+.an-spark{width:54px;height:20px;flex-shrink:0;margin-right:10px;overflow:visible}
+.an-spark path{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.an-spark.up path{stroke:var(--danger)}.an-spark.up circle{fill:var(--danger)}
+.an-spark.down path{stroke:var(--selva)}.an-spark.down circle{fill:var(--selva)}
