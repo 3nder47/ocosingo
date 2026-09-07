@@ -1,4 +1,4 @@
-const APP_VERSION='11.1';const APP_BUILD='6 Sep 2026 16:00';
+const APP_VERSION='11.3';const APP_BUILD='6 Sep 2026 20:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -1306,12 +1306,12 @@ const AN_EXPLICA={
 function anExp(k){const e=AN_EXPLICA[k];if(!e)return;explicarTexto(e.t,e.p);}
 
 function abrirAnalisis(){
-  buzz();state.anRango=state.anRango||'todo';
+  buzz();state.anRango=state.anRango||'todo';state.anSec=null;
   document.getElementById('sheet-analisis').classList.remove('hidden');
   document.querySelector('#sheet-analisis .sheet').scrollTo({top:0});
   cargarAnalisis();
 }
-function cerrarAnalisis(){document.getElementById('sheet-analisis').classList.add('hidden');}
+function cerrarAnalisis(){document.getElementById('sheet-analisis').classList.add('hidden');state.anSec=null;}
 function anRango(r){if(state.anRango===r)return;buzz();state.anRango=r;cargarAnalisis();}
 function cargarAnalisis(){
   const b=document.getElementById('analisis-body');
@@ -1321,55 +1321,123 @@ function cargarAnalisis(){
 }
 
 function pintarAnalisis(d){
+  state._an=d;
   const b=document.getElementById('analisis-body');
-  const R=d.resumen,esTodo=d.rango!=='12m';
-  b.innerHTML=
-    `<div class="an-seg"><button class="${esTodo?'on':''}" onclick="anRango('todo')">Todo el historial</button><button class="${esTodo?'':'on'}" onclick="anRango('12m')">Últimos 12 meses</button></div>`
-    +anResumen(R)+anCapital(d)+anRotacion(d)+anMargen(d)+anCostos(d);
+  b.innerHTML=state.anSec?anSeccion(d,state.anSec):anPortada(d);
+  anAnimar(b);
+  document.querySelector('#sheet-analisis .sheet').scrollTo({top:0});
+}
+function anAnimar(b){
   b.querySelectorAll('.num[data-v]').forEach(el=>tick(el,Number(el.dataset.v),el.dataset.int?{prefix:'',fmt:entero,dur:900}:{dur:900}));
   requestAnimationFrame(()=>b.querySelectorAll('.an-bar i,.an-fill').forEach(el=>{el.style.width=el.dataset.w;}));
 }
+function anIr(sec){buzz();state.anSec=sec||null;pintarAnalisis(state._an);}
 
-/* 1. Resumen */
-function anResumen(R){
-  return `<div class="an-card hero-an">
-    <div class="an-k">Tu negocio${R.desde?' · desde '+diaLabel(R.desde).replace(/^\w/,c=>c.toUpperCase()):''}</div>
-    <div class="an-tres">
-      <div><small>Vendido</small><b class="num" data-v="${R.vendido}">$0</b></div>
-      <div><small>Ganancia</small><b class="num pos" data-v="${R.utilidad}">$0</b></div>
-      <div><small>Margen</small><b>${R.margen}%</b></div>
+/* ---------- portada: resumen + menú ---------- */
+function anPortada(d){
+  const R=d.resumen,esTodo=d.rango!=='12m';
+  const cap=d.capital||[],rot=d.rotacion||[],mar=d.margen||[],cos=d.costos||[];
+  const viejo=cap.slice().sort((a,b)=>b.diasStock-a.diasStock).filter(x=>x.diasStock>365)[0];
+  const atoradas=rot.filter(x=>x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2);
+  const mejor=mar.filter(x=>x.ventas>=5).sort((a,b)=>b.margen-a.margen)[0];
+  const sube=cos.filter(x=>x.cambio>10).length,baja=cos.filter(x=>x.cambio<-10).length;
+  const chip=cap.slice(0,4).map((x,k)=>`<i style="background:${anColor(k)}" data-w="${(x.capital/(d.capitalTotal||1)*100).toFixed(1)}%"></i>`).join('');
+  return `<div class="an-seg"><button class="${esTodo?'on':''}" onclick="anRango('todo')">Todo el historial</button><button class="${esTodo?'':'on'}" onclick="anRango('12m')">Últimos 12 meses</button></div>
+  <div class="bento">
+
+    <div class="bt w2 dark">
+      <div class="bk">Tu negocio${R.desde?' · desde '+diaLabel(R.desde):''}</div>
+      <div class="an-tres">
+        <div><small>Vendido</small><b class="num" data-v="${R.vendido}">$0</b></div>
+        <div><small>Ganancia</small><b class="num pos" data-v="${R.utilidad}">$0</b></div>
+        <div><small>Margen</small><b>${Math.round(R.margen)}%</b></div>
+      </div>
+      <p class="an-lee">De cada $100 que entraron, <b>$${Math.round(R.margen)} se quedaron contigo</b>. Son ${R.ventas} ventas, ${anMoney(R.porVenta)} de ganancia por venta.</p>
+      <button class="an-que" onclick="anExp('utilidad')">¿Qué es la ganancia? ›</button>
     </div>
-    <p class="an-lee">De cada $100 que entraron, <b>$${Math.round(R.margen)} se quedaron contigo</b>. Son ${R.ventas} ventas, ${anMoney(R.porVenta)} de ganancia por venta en promedio.</p>
-    <button class="an-que" onclick="anExp('utilidad')">¿Qué es la ganancia? ›</button>
+
+    <button class="bt" onclick="anIr('capital')">
+      <div class="bk">Dinero detenido</div>
+      <b class="bnum num" data-v="${d.capitalTotal}">$0</b>
+      <small class="bs">${d.piezasTotal} piezas sin vender</small>
+      <div class="bmix">${chip}</div>
+      <span class="bfl">Ver desglose ›</span>
+    </button>
+
+    <button class="bt ${viejo?'mango':''}" onclick="anIr('capital')">
+      <div class="bk">Lo más viejo</div>
+      <b class="btxt">${viejo?esc(viejo.categoria):'Nada estancado'}</b>
+      <small class="bs">${viejo?anMoney(viejo.capital)+' parados '+anDias(viejo.diasStock):'todo se mueve dentro de lo normal'}</small>
+      <span class="bfl">${viejo?'Qué hacer ›':'Ver detalle ›'}</span>
+    </button>
+
+    <button class="bt ${atoradas.length?'mango':''}" onclick="anIr('rotacion')">
+      <div class="bk">Rotación</div>
+      <b class="bnum">${atoradas.length||'✓'}</b>
+      <small class="bs">${atoradas.length?'categoría'+(atoradas.length===1?'':'s')+' con stock atorado':'nada se está quedando'}</small>
+      <span class="bfl">Ver tiempos ›</span>
+    </button>
+
+    <button class="bt" onclick="anIr('margen')">
+      <div class="bk">Mejor margen</div>
+      <b class="bnum">${mejor?Math.round(mejor.margen)+'%':'—'}</b>
+      <small class="bs">${mejor?esc(mejor.categoria):'sin datos suficientes'}</small>
+      <span class="bfl">Ver todos ›</span>
+    </button>
+
+    <button class="bt w2" onclick="anIr('costos')">
+      <div class="bk">Cómo se movió tu costo</div>
+      <div class="bcos"><span class="up">${sube} subieron</span><span class="down">${baja} bajaron</span><span class="eq">${Math.max(0,cos.length-sube-baja)} estables</span></div>
+      <small class="bs">de ${cos.length} productos que has comprado 3 veces o más</small>
+      <span class="bfl">Ver producto por producto ›</span>
+    </button>
+
   </div>`;
 }
 
-/* 2. Capital detenido */
-function anCapital(d){
-  const L=d.capital;if(!L.length)return '';
+function anSeccion(d,sec){
+  const T={capital:'Dónde está tu dinero',rotacion:'Qué tan rápido sale cada cosa',margen:'Cuánto ganas de verdad',costos:'Cómo se movió tu costo'};
+  const body={capital:anSecCapital,rotacion:anSecRotacion,margen:anSecMargen,costos:anSecCostos}[sec];
+  return `<button class="an-volver" onclick="anIr()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Análisis</button>
+    <div class="an-tit"><h2>${T[sec]}</h2><small>${d.rango==='12m'?'Últimos 12 meses':'Todo el historial'}</small></div>
+    ${body(d)}`;
+}
+
+/* ---------- sección: capital ---------- */
+function anSecCapital(d){
+  const L=d.capital;if(!L.length)return vacio('leaf','Sin stock','No hay piezas sin vender.');
   const T=d.capitalTotal||1;
   const viejo=L.slice().sort((a,b)=>b.diasStock-a.diasStock).filter(x=>x.diasStock>365)[0];
-  const barras=L.map((x,i)=>`<div class="an-row" onclick="buzz()">
-      <span class="an-dot" style="background:${anColor(i)}"></span>
-      <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.piezas} pieza${x.piezas===1?'':'s'} · parado ${anDias(x.diasStock)}</small></div>
-      <div class="an-v">${anMoney(x.capital)}<small>${Math.round(x.capital/T*100)}%</small></div>
-    </div><div class="an-bar"><i data-w="${(x.capital/T*100).toFixed(1)}%" style="background:${anColor(i)}"></i></div>`).join('');
+  const V=(d.viejos||[]).filter(x=>x.dias>180).slice(0,12);
+  const dormido=V.reduce((s,x)=>s+x.capital,0);
   return `<div class="an-card">
-    <div class="an-h"><div><div class="an-k">Dónde está tu dinero</div><b class="an-big num" data-v="${d.capitalTotal}">$0</b>
-      <small class="an-sub">detenidos en ${d.piezasTotal} piezas sin vender</small></div></div>
-    <div class="an-lista">${barras}</div>
-    ${viejo?`<p class="an-lee alerta"><b>${esc(viejo.categoria)}</b> es lo más viejo que tienes: ${anMoney(viejo.capital)} en ${viejo.piezas} pieza${viejo.piezas===1?'':'s'} que llevan ${anDias(viejo.diasStock)} ahí. Rematarlas te devuelve ese dinero para comprar algo que sí salga.</p>`:''}
-    <button class="an-que" onclick="anExp('capital')">¿Por qué importa esto? ›</button>
-  </div>`;
+      <b class="an-big num" data-v="${d.capitalTotal}">$0</b>
+      <small class="an-sub">detenidos en ${d.piezasTotal} piezas sin vender</small>
+      ${anDona(L.map((x,i)=>({v:x.capital,c:anColor(i)})),T)}
+      <div class="an-lista">${L.map((x,i)=>`<div class="an-row">
+        <span class="an-dot" style="background:${anColor(i)}"></span>
+        <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.piezas} pieza${x.piezas===1?'':'s'} · parado ${anDias(x.diasStock)}</small></div>
+        <div class="an-v">${anMoney(x.capital)}<small>${Math.round(x.capital/T*100)}%</small></div>
+      </div><div class="an-bar"><i data-w="${(x.capital/T*100).toFixed(1)}%" style="background:${anColor(i)}"></i></div>`).join('')}</div>
+      ${viejo?`<p class="an-lee alerta"><b>${esc(viejo.categoria)}</b> es lo más viejo: ${anMoney(viejo.capital)} en ${viejo.piezas} pieza${viejo.piezas===1?'':'s'} que llevan ${anDias(viejo.diasStock)} ahí. Rematarlas te devuelve ese dinero.</p>`:''}
+      <button class="an-que" onclick="anExp('capital')">¿Por qué importa esto? ›</button>
+    </div>
+    ${V.length?`<div class="an-card">
+      <div class="an-k">Lo que lleva más tiempo parado</div>
+      <p class="an-sub2">${anMoney(dormido)} en ${V.reduce((s,x)=>s+x.piezas,0)} piezas con más de 6 meses en el inventario. Son las candidatas a rematar.</p>
+      <div class="an-lista">${V.map(x=>`<div class="an-prod">
+        <div class="an-t"><b>${esc(x.descripcion)}</b><small>${esc(x.categoria)} · ${x.piezas} pieza${x.piezas===1?'':'s'} · precio ${anMoney(x.precio)}</small></div>
+        <div class="an-v">${anMoney(x.capital)}<small class="mango">${anDias(x.dias)}</small></div></div>`).join('')}</div>
+    </div>`:''}`;
 }
 
-/* 3. Rotación */
-function anRotacion(d){
-  const L=d.rotacion.filter(x=>x.ventas>0||x.piezas>0);if(!L.length)return '';
+/* ---------- sección: rotación ---------- */
+function anSecRotacion(d){
+  const L=d.rotacion.filter(x=>x.ventas>0||x.piezas>0);if(!L.length)return vacio('leaf','Sin datos');
   const max=Math.max(...L.map(x=>Math.max(x.diasVenta,x.diasStock)),1);
   const atoradas=L.filter(x=>x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2);
+  const rapidas=L.filter(x=>x.ventas>=5).sort((a,b)=>a.diasVenta-b.diasVenta).slice(0,3);
   return `<div class="an-card">
-    <div class="an-k">Qué tan rápido sale cada cosa</div>
     <div class="an-leyenda"><span class="l1">Tarda en venderse</span><span class="l2">Lleva parado hoy</span></div>
     <div class="an-lista">${L.map(x=>`<div class="an-rot">
       <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.ventas} venta${x.ventas===1?'':'s'}${x.piezas?' · '+x.piezas+' en stock':''}</small></div>
@@ -1377,65 +1445,73 @@ function anRotacion(d){
         <div class="an-bar sm"><i class="v" data-w="${(x.diasVenta/max*100).toFixed(1)}%"></i></div><span>${anDias(x.diasVenta)}</span>
         <div class="an-bar sm"><i class="s ${x.piezas&&x.diasStock>x.diasVenta*2?'mal':''}" data-w="${(x.diasStock/max*100).toFixed(1)}%"></i></div><span>${anDias(x.diasStock)}</span>
       </div></div>`).join('')}</div>
-    ${atoradas.length?`<p class="an-lee alerta">En <b>${atoradas.map(x=>esc(x.categoria)).join('</b>, <b>')}</b> lo que te queda lleva parado más del doble de lo que normalmente tarda en venderse. No es que la categoría sea lenta: son esas piezas en concreto las que no salen.</p>`:'<p class="an-lee">Tu stock está dentro de los tiempos normales de venta. Nada se está quedando atorado.</p>'}
+    ${atoradas.length?`<p class="an-lee alerta">En <b>${atoradas.map(x=>esc(x.categoria)).join('</b>, <b>')}</b> lo que queda lleva parado más del doble de lo que tarda en venderse. No es que la categoría sea lenta: son esas piezas las que no salen.</p>`
+      :'<p class="an-lee">Tu stock está dentro de los tiempos normales. Nada se está atorando.</p>'}
+    ${rapidas.length?`<p class="an-lee">Lo que más rápido sale: <b>${rapidas.map(x=>esc(x.categoria)+' ('+anDias(x.diasVenta)+')').join('</b>, <b>')}</b>. Ahí tu dinero da la vuelta más veces al año.</p>`:''}
     <button class="an-que" onclick="anExp('rotacion')">¿Cómo se lee esto? ›</button>
   </div>`;
 }
 
-/* 4. Margen */
-function anMargen(d){
-  const L=d.margen;if(!L.length)return '';
-  const mejor=L.slice().filter(x=>x.ventas>=5).sort((a,b)=>b.margen-a.margen)[0];
-  const peor=L.slice().filter(x=>x.ventas>=5).sort((a,b)=>a.margen-b.margen)[0];
+/* ---------- sección: margen ---------- */
+function anSecMargen(d){
+  const L=d.margen;if(!L.length)return vacio('leaf','Sin ventas en este periodo');
+  const P=d.productos||[],F=d.productosFlojos||[];
+  const mejor=L.filter(x=>x.ventas>=5).sort((a,b)=>b.margen-a.margen)[0];
+  const peor=L.filter(x=>x.ventas>=5).sort((a,b)=>a.margen-b.margen)[0];
   return `<div class="an-card">
-    <div class="an-k">Cuánto ganas de verdad</div>
+    <div class="an-k">Por categoría</div>
     <div class="an-lista">${L.map((x,i)=>`<div class="an-row">
       <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.ventas} venta${x.ventas===1?'':'s'} · ${anMoney(x.porVenta)} por venta</small></div>
-      <div class="an-v pos">${anMoney(x.utilidad)}<small>${x.margen}% margen</small></div>
+      <div class="an-v pos">${anMoney(x.utilidad)}<small>${Math.round(x.margen)}% margen</small></div>
     </div><div class="an-bar"><i class="an-fill" data-w="${Math.min(100,x.margen).toFixed(1)}%" style="background:${anColor(i)}"></i></div>`).join('')}</div>
-    ${mejor&&peor&&mejor!==peor?`<p class="an-lee">Tu mejor margen está en <b>${esc(mejor.categoria)}</b> (${mejor.margen}%) y el más bajo en <b>${esc(peor.categoria)}</b> (${peor.margen}%). Ojo: margen alto con pocas ventas puede dejar menos dinero que margen bajo con muchas.</p>`:''}
+    ${mejor&&peor&&mejor!==peor?`<p class="an-lee">Tu mejor margen está en <b>${esc(mejor.categoria)}</b> (${Math.round(mejor.margen)}%) y el más bajo en <b>${esc(peor.categoria)}</b> (${Math.round(peor.margen)}%). Margen alto con pocas ventas puede dejar menos dinero que margen bajo con muchas.</p>`:''}
     <button class="an-que" onclick="anExp('margen')">¿Qué es el margen? ›</button>
-  </div>`;
+  </div>
+  ${P.length?`<div class="an-card"><div class="an-k">Los que más ganancia te han dejado</div>
+    <div class="an-lista">${P.slice(0,12).map((x,i)=>`<div class="an-prod">
+      <span class="an-pos">${i+1}</span>
+      <div class="an-t"><b>${esc(x.descripcion)}</b><small>${x.ventas} venta${x.ventas===1?'':'s'} · ${Math.round(x.margen)}% margen</small></div>
+      <div class="an-v pos">${anMoney(x.utilidad)}<small>${anMoney(x.porVenta)} c/u</small></div></div>`).join('')}</div></div>`:''}
+  ${F.length?`<div class="an-card"><div class="an-k">Los de margen más bajo</div>
+    <p class="an-sub2">Con 3 ventas o más. Aquí es donde subir el precio o dejar de reponer cambia más tu ganancia.</p>
+    <div class="an-lista">${F.map(x=>`<div class="an-prod">
+      <div class="an-t"><b>${esc(x.descripcion)}</b><small>${esc(x.categoria)} · ${x.ventas} ventas</small></div>
+      <div class="an-v"><span class="an-chg ${x.margen<25?'up':'down'}">${Math.round(x.margen)}%</span><small>${anMoney(x.porVenta)} c/u</small></div></div>`).join('')}</div></div>`:''}`;
 }
 
-/* 5. Evolución de costos */
-function anCostos(d){
-  const L=d.costos;if(!L.length)return '';
+/* ---------- sección: costos ---------- */
+function anSecCostos(d){
+  const L=d.costos;if(!L.length)return vacio('leaf','Sin historial suficiente','Hacen falta productos comprados 3 veces o más.');
   state._anCostos=L;
-  const sube=L.filter(x=>x.cambio>10).length,baja=L.filter(x=>x.cambio<-10).length;
-  return `<div class="an-card">
-    <div class="an-k">Cómo se movió tu costo</div>
-    <p class="an-sub2">${L.length} productos que has comprado 3 veces o más. ${sube} subieron y ${baja} bajaron más de 10%.</p>
-    <div class="an-lista">${L.slice(0,12).map((x,i)=>`<button class="an-cst" onclick="anVerCosto(${i})">
+  const sube=L.filter(x=>x.cambio>10),baja=L.filter(x=>x.cambio<-10);
+  const fila=(x)=>`<button class="an-cst" onclick="anVerCosto(${L.indexOf(x)})">
       <div class="an-t"><b>${esc(x.descripcion)}</b><small>${x.compras} compras · ${anMoney(x.primero)} → ${anMoney(x.ultimo)}</small></div>
-      <span class="an-chg ${x.cambio>0?'up':'down'}">${x.cambio>0?'+':''}${Math.round(x.cambio)}%</span>
-    </button>`).join('')}</div>
-    <button class="an-que" onclick="anExp('costos')">¿Para qué me sirve? ›</button>
-  </div>`;
+      <span class="an-chg ${x.cambio>0?'up':'down'}">${x.cambio>0?'+':''}${Math.round(x.cambio)}%</span></button>`;
+  return `<div class="an-card">
+      <p class="an-sub2">${L.length} productos comprados 3 veces o más. Toca uno para ver su historia completa.</p>
+      <div class="an-dosk"><div><b class="up">${sube.length}</b><small>se encarecieron<br>más de 10%</small></div>
+        <div><b class="down">${baja.length}</b><small>se abarataron<br>más de 10%</small></div></div>
+      <button class="an-que" onclick="anExp('costos')">¿Para qué me sirve? ›</button>
+    </div>
+    ${sube.length?`<div class="an-card"><div class="an-k">Se encarecieron</div>
+      <p class="an-sub2">Si repones alguno, revisa que tu precio siga dejándote margen.</p>
+      <div class="an-lista">${sube.map(fila).join('')}</div></div>`:''}
+    ${baja.length?`<div class="an-card"><div class="an-k">Se abarataron</div>
+      <p class="an-sub2">Si tienes piezas viejas de estos compradas caro, tu ganancia en ellas es menor de la que crees.</p>
+      <div class="an-lista">${baja.map(fila).join('')}</div></div>`:''}
+    <div class="an-card"><div class="an-k">Estables</div>
+      <div class="an-lista">${L.filter(x=>x.cambio<=10&&x.cambio>=-10).map(fila).join('')||'<p class="an-sub2">Ninguno.</p>'}</div></div>`;
 }
-function anVerCosto(i){
-  const p=(state._anCostos||[])[i];if(!p)return;buzz();
-  const s=p.serie,W=300,H=120,P={t:14,b:24,l:8,r:8};
-  const min=Math.min(...s.map(x=>x.costo)),max=Math.max(...s.map(x=>x.costo)),rg=(max-min)||1;
-  const px=k=>P.l+(s.length<2?0:k*((W-P.l-P.r)/(s.length-1)));
-  const py=v=>P.t+(H-P.t-P.b)*(1-(v-min)/rg);
-  const pts=s.map((x,k)=>[px(k),py(x.costo)]);
-  const linea=pts.map((q,k)=>(k?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
-  const area=linea+` L${pts[pts.length-1][0].toFixed(1)},${H-P.b} L${pts[0][0].toFixed(1)},${H-P.b} Z`;
-  const f=t=>{const dt=new Date(t);return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][dt.getMonth()]+" '"+String(dt.getFullYear()).slice(2);};
-  document.getElementById('exp-titulo').textContent=p.descripcion;
-  document.getElementById('exp-body').innerHTML=
-    `<p class="exp-p">${p.compras} compras · de <b>${anMoney(p.primero)}</b> a <b>${anMoney(p.ultimo)}</b> (<b class="${p.cambio>0?'neg':'pos'}">${p.cambio>0?'+':''}${Math.round(p.cambio)}%</b>)</p>
-     <div class="an-linea"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-       <path class="ar" d="${area}"/><path class="ln" d="${linea}"/>
-       ${pts.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>`).join('')}
-     </svg><div class="an-ejes"><span>${f(s[0].t)}</span><span>${f(s[s.length-1].t)}</span></div></div>
-     <div class="an-tabla">${s.map(x=>`<div><span>${f(x.t)}</span><b>${anMoney(x.costo)}</b></div>`).join('')}</div>
-     <p class="exp-p" style="margin-top:14px">${p.cambio<-10
-       ?'Hoy te cuesta menos que antes. Si tienes piezas viejas de este producto compradas caro, tu ganancia en ellas es menor de la que crees.'
-       :p.cambio>10?'Se encareció. Si repones, revisa que tu precio de venta siga dejándote margen.'
-       :'El costo se ha mantenido estable.'}</p>`;
-  document.getElementById('sheet-exp').classList.remove('hidden');
+
+/* Dona de composición */
+function anDona(seg,total){
+  const L=universo=>2*Math.PI*42;
+  const C=2*Math.PI*42;let off=0;
+  const arcos=seg.filter(x=>x.v>0).map(x=>{
+    const len=Math.max(0,x.v/total*C-1.5);
+    const h=`<circle cx="50" cy="50" r="42" stroke="${x.c}" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"/>`;
+    off+=x.v/total*C;return h;}).join('');
+  return `<div class="an-dona"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/>${arcos}</svg></div>`;
 }
 
 /* ---------- CORTES ----------
