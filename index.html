@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=11.0">
+<link rel="stylesheet" href="styles.css?v=11.1">
 </head>
 <body>
 
@@ -140,6 +140,14 @@
     <div id="detalle-body"></div>
   </div>
 </div>
+<div id="sheet-analisis" class="overlay hidden" onclick="if(event.target===this)cerrarAnalisis()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h3>Análisis de tu negocio</h3>
+    <div id="analisis-body"></div>
+    <button class="btn ghost" onclick="cerrarAnalisis()">Cerrar</button>
+  </div>
+</div>
 <div id="sheet-cats" class="overlay hidden" onclick="if(event.target===this)cerrarCats()">
   <div class="sheet">
     <div class="handle"></div>
@@ -194,6 +202,6 @@
 </div>
 
 <script src="config.js"></script>
-<script src="app.js?v=11.0"></script>
+<script src="app.js?v=11.1"></script>
 </body>
 </html>
