@@ -1,4 +1,4 @@
-const APP_VERSION='11.3';const APP_BUILD='6 Sep 2026 20:00';
+const APP_VERSION='11.4';const APP_BUILD='6 Sep 2026 21:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -1356,19 +1356,12 @@ function anPortada(d){
       <button class="an-que" onclick="anExp('utilidad')">¿Qué es la ganancia? ›</button>
     </div>
 
-    <button class="bt" onclick="anIr('capital')">
+    <button class="bt ${viejo?'mango':''}" onclick="anIr('capital')">
       <div class="bk">Dinero detenido</div>
       <b class="bnum num" data-v="${d.capitalTotal}">$0</b>
-      <small class="bs">${d.piezasTotal} piezas sin vender</small>
+      <small class="bs">${d.piezasTotal} piezas sin vender${viejo?' · lo más viejo: '+esc(viejo.categoria)+', '+anDias(viejo.diasStock):''}</small>
       <div class="bmix">${chip}</div>
       <span class="bfl">Ver desglose ›</span>
-    </button>
-
-    <button class="bt ${viejo?'mango':''}" onclick="anIr('capital')">
-      <div class="bk">Lo más viejo</div>
-      <b class="btxt">${viejo?esc(viejo.categoria):'Nada estancado'}</b>
-      <small class="bs">${viejo?anMoney(viejo.capital)+' parados '+anDias(viejo.diasStock):'todo se mueve dentro de lo normal'}</small>
-      <span class="bfl">${viejo?'Qué hacer ›':'Ver detalle ›'}</span>
     </button>
 
     <button class="bt ${atoradas.length?'mango':''}" onclick="anIr('rotacion')">
@@ -1486,7 +1479,7 @@ function anSecCostos(d){
   const sube=L.filter(x=>x.cambio>10),baja=L.filter(x=>x.cambio<-10);
   const fila=(x)=>`<button class="an-cst" onclick="anVerCosto(${L.indexOf(x)})">
       <div class="an-t"><b>${esc(x.descripcion)}</b><small>${x.compras} compras · ${anMoney(x.primero)} → ${anMoney(x.ultimo)}</small></div>
-      <span class="an-chg ${x.cambio>0?'up':'down'}">${x.cambio>0?'+':''}${Math.round(x.cambio)}%</span></button>`;
+      ${anSpark(x.serie)}<span class="an-chg ${x.cambio>0?'up':'down'}">${x.cambio>0?'+':''}${Math.round(x.cambio)}%</span></button>`;
   return `<div class="an-card">
       <p class="an-sub2">${L.length} productos comprados 3 veces o más. Toca uno para ver su historia completa.</p>
       <div class="an-dosk"><div><b class="up">${sube.length}</b><small>se encarecieron<br>más de 10%</small></div>
@@ -1501,6 +1494,43 @@ function anSecCostos(d){
       <div class="an-lista">${baja.map(fila).join('')}</div></div>`:''}
     <div class="an-card"><div class="an-k">Estables</div>
       <div class="an-lista">${L.filter(x=>x.cambio<=10&&x.cambio>=-10).map(fila).join('')||'<p class="an-sub2">Ninguno.</p>'}</div></div>`;
+}
+
+
+/* Miniatura de la evolución del costo: se lee de un vistazo sin abrir el detalle. */
+function anSpark(serie){
+  if(!serie||serie.length<2)return '';
+  const W=54,H=20,P=2.5;
+  const v=serie.map(x=>x.costo),mn=Math.min(...v),mx=Math.max(...v),rg=(mx-mn)||1;
+  const pts=v.map((x,i)=>[P+i*((W-2*P)/(v.length-1)),H-P-((x-mn)/rg)*(H-2*P)]);
+  return `<svg class="an-spark ${v[v.length-1]>v[0]?'up':'down'}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <path d="${pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}"/>
+    <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="2.2"/></svg>`;
+}
+/* Historia completa de un producto: línea grande, tabla de compras y qué hacer con eso. */
+function anVerCosto(i){
+  const p=(state._anCostos||[])[i];if(!p)return;buzz();
+  const s=p.serie,W=300,H=120,P={t:14,b:24,l:8,r:8};
+  const min=Math.min(...s.map(x=>x.costo)),max=Math.max(...s.map(x=>x.costo)),rg=(max-min)||1;
+  const px=k=>P.l+(s.length<2?0:k*((W-P.l-P.r)/(s.length-1)));
+  const py=v=>P.t+(H-P.t-P.b)*(1-(v-min)/rg);
+  const pts=s.map((x,k)=>[px(k),py(x.costo)]);
+  const linea=pts.map((q,k)=>(k?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+  const area=linea+` L${pts[pts.length-1][0].toFixed(1)},${H-P.b} L${pts[0][0].toFixed(1)},${H-P.b} Z`;
+  const f=t=>{const dt=new Date(t);return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][dt.getMonth()]+" '"+String(dt.getFullYear()).slice(2);};
+  document.getElementById('exp-titulo').textContent=p.descripcion;
+  document.getElementById('exp-body').innerHTML=
+    `<p class="exp-p">${p.compras} compras · de <b>${anMoney(p.primero)}</b> a <b>${anMoney(p.ultimo)}</b> (<b class="${p.cambio>0?'neg':'pos'}">${p.cambio>0?'+':''}${Math.round(p.cambio)}%</b>)</p>
+     <div class="an-linea"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+       <path class="ar" d="${area}"/><path class="ln" d="${linea}"/>
+       ${pts.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>`).join('')}
+     </svg><div class="an-ejes"><span>${f(s[0].t)}</span><span>${f(s[s.length-1].t)}</span></div></div>
+     <div class="an-tabla">${s.map(x=>`<div><span>${f(x.t)}</span><b>${anMoney(x.costo)}</b></div>`).join('')}</div>
+     <p class="exp-p" style="margin-top:14px">${p.cambio<-10
+       ?'Hoy te cuesta menos que antes. Si tienes piezas viejas de este producto compradas caro, tu ganancia en ellas es menor de la que crees.'
+       :p.cambio>10?'Se encareció. Si repones, revisa que tu precio de venta siga dejándote margen.'
+       :'El costo se ha mantenido estable.'}</p>`;
+  document.getElementById('sheet-exp').classList.remove('hidden');
 }
 
 /* Dona de composición */
