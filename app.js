@@ -1,4 +1,4 @@
-const APP_VERSION='11.0';const APP_BUILD='6 Sep 2026 14:00';
+const APP_VERSION='11.1';const APP_BUILD='6 Sep 2026 16:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats()};
+  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats(),'sheet-analisis':()=>cerrarAnalisis()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -399,6 +399,10 @@ function armarDinero(){
       ${fila('box','Artículos vendidos','v-art','','artMes','grey','piezas vendidas este mes','','mes')}
       ${fila('moto','Motomandado del mes','v-moto','neg','moto','mango','gastado en envíos este mes')}
     </div>
+    ${state.usuario==='Alex'?`<button class="analisis-cta" onclick="abrirAnalisis()">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div>
+      <div class="t"><b>Análisis de tu negocio</b><small>Dónde está tu dinero, qué tan rápido sale y cuánto ganas de verdad</small></div>
+      <span class="fl">›</span></button>`:''}
     <div class="section-title">Historial</div>
     <div class="chart-card">
       <div class="chart-head"><b>Ventas</b><div class="chart-tabs"><button class="${state.chartTab!=='semana'?'on':''}" onclick="setChartTab('mes')">12 meses</button><button class="${state.chartTab==='semana'?'on':''}" onclick="setChartTab('semana')">7 días</button></div></div>
@@ -1277,6 +1281,162 @@ function copiarResumen(){
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{buzz(12);toast('Resumen copiado, pégalo en WhatsApp');}).catch(()=>toast('No se pudo copiar','err'));
 }
 
+
+
+/* ---------- ANÁLISIS (solo Alex) ----------
+   No celebra: explica. Cada tarjeta trae el número, la lectura en español y un
+   "¿qué significa?" que enseña el concepto detrás. Solo la mercancía de Alex. */
+const AN_COLORES=['#1D9E75','#F59E0B','#3B82F6','#A855F7','#E5484D','#0EA5E9','#F97316','#14B8A6','#8B5CF6','#EC4899','#64748B'];
+const anColor=(i)=>AN_COLORES[i%AN_COLORES.length];
+const anMoney=n=>'$'+pesos(n);
+function anDias(d){
+  if(!d)return '—';
+  if(d<45)return d+' días';
+  const m=Math.round(d/30.4);
+  if(m<24)return m+' meses';
+  return (Math.round(d/365*10)/10)+' años';
+}
+const AN_EXPLICA={
+  margen:{t:'Margen',p:'De cada $100 que entran, cuántos te quedas después de pagar el producto, el envío y el motomandado. Un margen del 40% quiere decir que de $100 vendidos, $40 son tuyos y $60 eran costos.<br><br>El margen no es la ganancia: puedes tener margen alto y ganar poco si vendes pocas piezas. Por eso al lado siempre va cuánto ganas <b>por venta</b> y cuántas ventas fueron.'},
+  capital:{t:'Capital detenido',p:'Es el dinero que ya pagaste y que sigue en cajas, sin venderse. No lo perdiste, pero tampoco lo tienes: no puedes usarlo para comprar otra cosa hasta que se venda.<br><br>Los negocios sanos buscan que este número sea <b>bajo respecto a lo que venden</b>. Mucho capital detenido significa que compraste cosas que salen despacio, o de más.'},
+  rotacion:{t:'Rotación',p:'Cuántos días pasan, en promedio, desde que compras una pieza hasta que se vende.<br><br>La comparación importante es contra <b>cuánto lleva parado lo que tienes ahora</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, no es que sea lenta: es que las piezas que te quedan son justamente las que no salen. Esas son las candidatas a rematar.'},
+  costos:{t:'Evolución de costos',p:'Lo que te ha costado el mismo producto en cada compra. Los proveedores suben y bajan precios, y eso cambia tu ganancia sin que lo notes.<br><br>Sirve para dos cosas: saber si te conviene reponer ahora, y darte cuenta de que una pieza vieja comprada cara <b>ya no deja el margen que crees</b>, porque el precio de venta lo marca el mercado de hoy, no lo que pagaste ayer.'},
+  utilidad:{t:'Utilidad',p:'Lo que te queda de verdad: precio + cobro extra − costo del producto − motomandado. Es tu ganancia limpia, no lo que entró a la bolsa.<br><br>La diferencia entre "vendí $285,000" y "gané $108,000" es exactamente esto, y confundirlas es el error más común de quien empieza.'}
+};
+function anExp(k){const e=AN_EXPLICA[k];if(!e)return;explicarTexto(e.t,e.p);}
+
+function abrirAnalisis(){
+  buzz();state.anRango=state.anRango||'todo';
+  document.getElementById('sheet-analisis').classList.remove('hidden');
+  document.querySelector('#sheet-analisis .sheet').scrollTo({top:0});
+  cargarAnalisis();
+}
+function cerrarAnalisis(){document.getElementById('sheet-analisis').classList.add('hidden');}
+function anRango(r){if(state.anRango===r)return;buzz();state.anRango=r;cargarAnalisis();}
+function cargarAnalisis(){
+  const b=document.getElementById('analisis-body');
+  b.innerHTML='<div class="sk" style="height:120px"></div><div class="sk" style="height:220px;margin-top:12px"></div><div class="sk" style="height:220px;margin-top:12px"></div>';
+  apiCached('analisis',{rango:state.anRango},d=>pintarAnalisis(d),
+    ()=>{b.innerHTML=vacio('wifi','No se pudo cargar','Revisa la conexión y desliza para reintentar.');});
+}
+
+function pintarAnalisis(d){
+  const b=document.getElementById('analisis-body');
+  const R=d.resumen,esTodo=d.rango!=='12m';
+  b.innerHTML=
+    `<div class="an-seg"><button class="${esTodo?'on':''}" onclick="anRango('todo')">Todo el historial</button><button class="${esTodo?'':'on'}" onclick="anRango('12m')">Últimos 12 meses</button></div>`
+    +anResumen(R)+anCapital(d)+anRotacion(d)+anMargen(d)+anCostos(d);
+  b.querySelectorAll('.num[data-v]').forEach(el=>tick(el,Number(el.dataset.v),el.dataset.int?{prefix:'',fmt:entero,dur:900}:{dur:900}));
+  requestAnimationFrame(()=>b.querySelectorAll('.an-bar i,.an-fill').forEach(el=>{el.style.width=el.dataset.w;}));
+}
+
+/* 1. Resumen */
+function anResumen(R){
+  return `<div class="an-card hero-an">
+    <div class="an-k">Tu negocio${R.desde?' · desde '+diaLabel(R.desde).replace(/^\w/,c=>c.toUpperCase()):''}</div>
+    <div class="an-tres">
+      <div><small>Vendido</small><b class="num" data-v="${R.vendido}">$0</b></div>
+      <div><small>Ganancia</small><b class="num pos" data-v="${R.utilidad}">$0</b></div>
+      <div><small>Margen</small><b>${R.margen}%</b></div>
+    </div>
+    <p class="an-lee">De cada $100 que entraron, <b>$${Math.round(R.margen)} se quedaron contigo</b>. Son ${R.ventas} ventas, ${anMoney(R.porVenta)} de ganancia por venta en promedio.</p>
+    <button class="an-que" onclick="anExp('utilidad')">¿Qué es la ganancia? ›</button>
+  </div>`;
+}
+
+/* 2. Capital detenido */
+function anCapital(d){
+  const L=d.capital;if(!L.length)return '';
+  const T=d.capitalTotal||1;
+  const viejo=L.slice().sort((a,b)=>b.diasStock-a.diasStock).filter(x=>x.diasStock>365)[0];
+  const barras=L.map((x,i)=>`<div class="an-row" onclick="buzz()">
+      <span class="an-dot" style="background:${anColor(i)}"></span>
+      <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.piezas} pieza${x.piezas===1?'':'s'} · parado ${anDias(x.diasStock)}</small></div>
+      <div class="an-v">${anMoney(x.capital)}<small>${Math.round(x.capital/T*100)}%</small></div>
+    </div><div class="an-bar"><i data-w="${(x.capital/T*100).toFixed(1)}%" style="background:${anColor(i)}"></i></div>`).join('');
+  return `<div class="an-card">
+    <div class="an-h"><div><div class="an-k">Dónde está tu dinero</div><b class="an-big num" data-v="${d.capitalTotal}">$0</b>
+      <small class="an-sub">detenidos en ${d.piezasTotal} piezas sin vender</small></div></div>
+    <div class="an-lista">${barras}</div>
+    ${viejo?`<p class="an-lee alerta"><b>${esc(viejo.categoria)}</b> es lo más viejo que tienes: ${anMoney(viejo.capital)} en ${viejo.piezas} pieza${viejo.piezas===1?'':'s'} que llevan ${anDias(viejo.diasStock)} ahí. Rematarlas te devuelve ese dinero para comprar algo que sí salga.</p>`:''}
+    <button class="an-que" onclick="anExp('capital')">¿Por qué importa esto? ›</button>
+  </div>`;
+}
+
+/* 3. Rotación */
+function anRotacion(d){
+  const L=d.rotacion.filter(x=>x.ventas>0||x.piezas>0);if(!L.length)return '';
+  const max=Math.max(...L.map(x=>Math.max(x.diasVenta,x.diasStock)),1);
+  const atoradas=L.filter(x=>x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2);
+  return `<div class="an-card">
+    <div class="an-k">Qué tan rápido sale cada cosa</div>
+    <div class="an-leyenda"><span class="l1">Tarda en venderse</span><span class="l2">Lleva parado hoy</span></div>
+    <div class="an-lista">${L.map(x=>`<div class="an-rot">
+      <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.ventas} venta${x.ventas===1?'':'s'}${x.piezas?' · '+x.piezas+' en stock':''}</small></div>
+      <div class="an-dob">
+        <div class="an-bar sm"><i class="v" data-w="${(x.diasVenta/max*100).toFixed(1)}%"></i></div><span>${anDias(x.diasVenta)}</span>
+        <div class="an-bar sm"><i class="s ${x.piezas&&x.diasStock>x.diasVenta*2?'mal':''}" data-w="${(x.diasStock/max*100).toFixed(1)}%"></i></div><span>${anDias(x.diasStock)}</span>
+      </div></div>`).join('')}</div>
+    ${atoradas.length?`<p class="an-lee alerta">En <b>${atoradas.map(x=>esc(x.categoria)).join('</b>, <b>')}</b> lo que te queda lleva parado más del doble de lo que normalmente tarda en venderse. No es que la categoría sea lenta: son esas piezas en concreto las que no salen.</p>`:'<p class="an-lee">Tu stock está dentro de los tiempos normales de venta. Nada se está quedando atorado.</p>'}
+    <button class="an-que" onclick="anExp('rotacion')">¿Cómo se lee esto? ›</button>
+  </div>`;
+}
+
+/* 4. Margen */
+function anMargen(d){
+  const L=d.margen;if(!L.length)return '';
+  const mejor=L.slice().filter(x=>x.ventas>=5).sort((a,b)=>b.margen-a.margen)[0];
+  const peor=L.slice().filter(x=>x.ventas>=5).sort((a,b)=>a.margen-b.margen)[0];
+  return `<div class="an-card">
+    <div class="an-k">Cuánto ganas de verdad</div>
+    <div class="an-lista">${L.map((x,i)=>`<div class="an-row">
+      <div class="an-t"><b>${esc(x.categoria)}</b><small>${x.ventas} venta${x.ventas===1?'':'s'} · ${anMoney(x.porVenta)} por venta</small></div>
+      <div class="an-v pos">${anMoney(x.utilidad)}<small>${x.margen}% margen</small></div>
+    </div><div class="an-bar"><i class="an-fill" data-w="${Math.min(100,x.margen).toFixed(1)}%" style="background:${anColor(i)}"></i></div>`).join('')}</div>
+    ${mejor&&peor&&mejor!==peor?`<p class="an-lee">Tu mejor margen está en <b>${esc(mejor.categoria)}</b> (${mejor.margen}%) y el más bajo en <b>${esc(peor.categoria)}</b> (${peor.margen}%). Ojo: margen alto con pocas ventas puede dejar menos dinero que margen bajo con muchas.</p>`:''}
+    <button class="an-que" onclick="anExp('margen')">¿Qué es el margen? ›</button>
+  </div>`;
+}
+
+/* 5. Evolución de costos */
+function anCostos(d){
+  const L=d.costos;if(!L.length)return '';
+  state._anCostos=L;
+  const sube=L.filter(x=>x.cambio>10).length,baja=L.filter(x=>x.cambio<-10).length;
+  return `<div class="an-card">
+    <div class="an-k">Cómo se movió tu costo</div>
+    <p class="an-sub2">${L.length} productos que has comprado 3 veces o más. ${sube} subieron y ${baja} bajaron más de 10%.</p>
+    <div class="an-lista">${L.slice(0,12).map((x,i)=>`<button class="an-cst" onclick="anVerCosto(${i})">
+      <div class="an-t"><b>${esc(x.descripcion)}</b><small>${x.compras} compras · ${anMoney(x.primero)} → ${anMoney(x.ultimo)}</small></div>
+      <span class="an-chg ${x.cambio>0?'up':'down'}">${x.cambio>0?'+':''}${Math.round(x.cambio)}%</span>
+    </button>`).join('')}</div>
+    <button class="an-que" onclick="anExp('costos')">¿Para qué me sirve? ›</button>
+  </div>`;
+}
+function anVerCosto(i){
+  const p=(state._anCostos||[])[i];if(!p)return;buzz();
+  const s=p.serie,W=300,H=120,P={t:14,b:24,l:8,r:8};
+  const min=Math.min(...s.map(x=>x.costo)),max=Math.max(...s.map(x=>x.costo)),rg=(max-min)||1;
+  const px=k=>P.l+(s.length<2?0:k*((W-P.l-P.r)/(s.length-1)));
+  const py=v=>P.t+(H-P.t-P.b)*(1-(v-min)/rg);
+  const pts=s.map((x,k)=>[px(k),py(x.costo)]);
+  const linea=pts.map((q,k)=>(k?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+  const area=linea+` L${pts[pts.length-1][0].toFixed(1)},${H-P.b} L${pts[0][0].toFixed(1)},${H-P.b} Z`;
+  const f=t=>{const dt=new Date(t);return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][dt.getMonth()]+" '"+String(dt.getFullYear()).slice(2);};
+  document.getElementById('exp-titulo').textContent=p.descripcion;
+  document.getElementById('exp-body').innerHTML=
+    `<p class="exp-p">${p.compras} compras · de <b>${anMoney(p.primero)}</b> a <b>${anMoney(p.ultimo)}</b> (<b class="${p.cambio>0?'neg':'pos'}">${p.cambio>0?'+':''}${Math.round(p.cambio)}%</b>)</p>
+     <div class="an-linea"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+       <path class="ar" d="${area}"/><path class="ln" d="${linea}"/>
+       ${pts.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>`).join('')}
+     </svg><div class="an-ejes"><span>${f(s[0].t)}</span><span>${f(s[s.length-1].t)}</span></div></div>
+     <div class="an-tabla">${s.map(x=>`<div><span>${f(x.t)}</span><b>${anMoney(x.costo)}</b></div>`).join('')}</div>
+     <p class="exp-p" style="margin-top:14px">${p.cambio<-10
+       ?'Hoy te cuesta menos que antes. Si tienes piezas viejas de este producto compradas caro, tu ganancia en ellas es menor de la que crees.'
+       :p.cambio>10?'Se encareció. Si repones, revisa que tu precio de venta siga dejándote margen.'
+       :'El costo se ha mantenido estable.'}</p>`;
+  document.getElementById('sheet-exp').classList.remove('hidden');
+}
 
 /* ---------- CORTES ----------
    Alex cierra un corte: las ventas pendientes de su mercancía se congelan bajo un número.
