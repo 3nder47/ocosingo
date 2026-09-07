@@ -726,3 +726,97 @@ input{font:inherit;color:inherit}
 .ctile.todas .tx{position:static;color:var(--bg)}
 .ctile.todas .tx b{font-size:1rem;text-shadow:none}
 .ctile.todas.on{border-color:var(--selva)}
+
+/* ===== v11.1 · análisis (solo Alex) =====
+   Deliberadamente distinto a las tarjetas de Logros: aquí no se celebra, se explica.
+   Superficie clara, datos con color, y una lectura en español debajo de cada gráfica. */
+.analisis-cta{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin-top:18px;padding:16px;
+  border-radius:20px;background:var(--card);box-shadow:var(--shadow);transition:transform .15s var(--ease)}
+.analisis-cta:active{transform:scale(.98)}
+.analisis-cta .ic{width:42px;height:42px;border-radius:13px;background:var(--selva-soft);color:var(--selva-ink);
+  display:grid;place-items:center;flex-shrink:0}
+.analisis-cta .ic svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.analisis-cta .t{flex:1;min-width:0}
+.analisis-cta .t b{display:block;font-size:0.9375rem;font-weight:800}
+.analisis-cta .t small{display:block;font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.35}
+.analisis-cta .fl{font-size:1.375rem;font-weight:800;color:var(--muted);flex-shrink:0}
+
+#sheet-analisis{z-index:42}
+#sheet-analisis .sheet{max-height:96vh}
+.an-seg{display:flex;background:var(--card-2);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px}
+.an-seg button{flex:1;padding:10px;border-radius:10px;font-size:0.8125rem;font-weight:700;color:var(--muted);transition:all .18s var(--ease)}
+.an-seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+
+.an-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:18px 17px 14px;margin-bottom:14px;
+  animation:rise .45s var(--ease) both}
+.an-card:nth-child(2){animation-delay:.03s}.an-card:nth-child(3){animation-delay:.07s}
+.an-card:nth-child(4){animation-delay:.11s}.an-card:nth-child(5){animation-delay:.15s}.an-card:nth-child(6){animation-delay:.19s}
+@media (prefers-color-scheme:dark){.an-card{border:1px solid var(--line)}}
+.an-k{font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.an-big{display:block;font-size:2rem;font-weight:800;letter-spacing:-.04em;margin-top:6px;line-height:1}
+.an-sub{display:block;font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:5px}
+.an-sub2{font-size:0.8125rem;color:var(--muted);font-weight:600;margin:6px 0 12px;line-height:1.45}
+
+/* resumen */
+.an-card.hero-an{background:linear-gradient(150deg,#173A30,var(--hero-a));color:#fff;border:0}
+.hero-an .an-k{color:rgba(255,255,255,.7)}
+.an-tres{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.an-tres small{display:block;font-size:0.75rem;font-weight:700;opacity:.72}
+.an-tres b{display:block;font-size:1.25rem;font-weight:800;letter-spacing:-.03em;margin-top:3px}
+.an-tres .pos{color:#7FE7BE}
+.hero-an .an-lee{color:rgba(255,255,255,.9)}
+.hero-an .an-que{color:#7FE7BE}
+
+/* lectura en español bajo cada gráfica: es el punto de la vista */
+.an-lee{font-size:0.875rem;font-weight:600;line-height:1.5;color:var(--ink);margin-top:14px;
+  padding:12px 13px;border-radius:14px;background:var(--card-2)}
+.an-lee b{font-weight:800}
+.an-lee.alerta{background:var(--mango-soft);color:#8A5A00}
+@media (prefers-color-scheme:dark){.an-lee.alerta{color:#FFC65C}}
+.an-que{display:block;width:100%;text-align:left;padding:12px 2px 2px;font-size:0.8125rem;font-weight:800;color:var(--selva)}
+
+/* filas y barras */
+.an-lista{margin-top:12px}
+.an-row{display:flex;align-items:center;gap:10px;padding:9px 0 5px}
+.an-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.an-t{flex:1;min-width:0}
+.an-t b{display:block;font-size:0.875rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an-t small{display:block;font-size:0.75rem;color:var(--muted);font-weight:600;margin-top:2px}
+.an-v{text-align:right;font-size:0.9375rem;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.an-v.pos{color:var(--selva)}
+.an-v small{display:block;font-size:0.6875rem;font-weight:700;color:var(--muted);margin-top:2px}
+.an-bar{height:7px;border-radius:99px;background:var(--card-2);overflow:hidden}
+.an-bar i{display:block;height:100%;width:0;border-radius:99px;background:var(--selva);transition:width .9s var(--ease) .1s}
+.an-bar.sm{height:6px;flex:1}
+
+/* rotación: dos barras comparadas */
+.an-leyenda{display:flex;gap:14px;margin-top:10px;font-size:0.75rem;font-weight:700;color:var(--muted)}
+.an-leyenda span::before{content:'';display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.an-leyenda .l1::before{background:var(--selva)}
+.an-leyenda .l2::before{background:var(--ink)}
+.an-rot{padding:10px 0 6px;border-top:1px solid var(--line)}
+.an-rot:first-child{border-top:0}
+.an-dob{display:grid;grid-template-columns:1fr auto;gap:5px 9px;align-items:center;margin-top:7px}
+.an-dob span{font-size:0.75rem;font-weight:700;color:var(--muted);white-space:nowrap;text-align:right;min-width:62px}
+.an-dob .v{background:var(--selva)}
+.an-dob .s{background:var(--ink)}
+.an-dob .s.mal{background:var(--mango)}
+
+/* costos */
+.an-cst{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 0;border-top:1px solid var(--line)}
+.an-cst:first-child{border-top:0}
+.an-cst:active{opacity:.6}
+.an-chg{font-size:0.875rem;font-weight:800;padding:4px 9px;border-radius:999px;flex-shrink:0}
+.an-chg.up{background:var(--danger-soft);color:var(--danger)}
+.an-chg.down{background:var(--selva-soft);color:var(--selva-ink)}
+.an-linea{margin:14px 0 6px}
+.an-linea svg{width:100%;height:120px;overflow:visible}
+.an-linea .ar{fill:var(--selva);opacity:.13;stroke:none}
+.an-linea .ln{fill:none;stroke:var(--selva);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:600;stroke-dashoffset:600;animation:draw2 1.1s var(--ease) .15s forwards}
+.an-linea circle{fill:var(--selva)}
+.an-ejes{display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;color:var(--muted);margin-top:4px}
+.an-tabla{margin-top:12px;border-radius:14px;background:var(--card-2);overflow:hidden}
+.an-tabla div{display:flex;justify-content:space-between;padding:9px 13px;font-size:0.8125rem;font-weight:600}
+.an-tabla div+div{border-top:1px solid var(--line)}
+.an-tabla b{font-weight:800}
