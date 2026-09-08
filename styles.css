@@ -661,23 +661,42 @@ input{font:inherit;color:inherit}
 @media (prefers-color-scheme:dark){.outbox{color:#FFC65C}}
 
 /* ---------- ORBE: la única celebración de la app, en la pantalla de éxito ----------
-   Tres esferas difuminadas que respiran detrás de la foto: verde de la marca, ámbar,
-   y el color dominante de la foto del producto (--tint). Vive los 10 s de la pantalla. */
+   Tres esferas difuminadas detrás de la foto: verde de la marca, ámbar, y el color dominante
+   de la foto del producto (--tint). Entran con fuerza, giran despacio y respiran los 10 s.
+   Es el único lugar de la app con presupuesto de atención completo: una venta a la semana. */
 .success{overflow:hidden}
 .success>*:not(.orb){position:relative;z-index:1}
-.orb{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0;animation:orbin .7s var(--ease) .05s forwards}
-.orb i{position:absolute;width:58vmin;height:58vmin;border-radius:50%;filter:blur(42px);opacity:.5;will-change:transform;transform:translateZ(0)}
-.orb .o1{background:var(--selva);left:4%;top:18%;animation:drift1 9s ease-in-out infinite}
-.orb .o2{background:var(--mango);right:2%;top:26%;animation:drift2 11s ease-in-out infinite}
-.orb .o3{background:var(--tint,#3B82F6);left:26%;top:40%;animation:drift3 13s ease-in-out infinite}
+.orb{position:absolute;inset:-18%;pointer-events:none;z-index:0;animation:orbGiro 22s linear infinite}
+.orb i{position:absolute;width:96vmin;height:96vmin;border-radius:50%;filter:blur(34px);opacity:0;
+  will-change:transform,opacity;transform:translateZ(0);mix-blend-mode:multiply}
+.orb .o1{background:var(--selva);left:-4%;top:8%;animation:orbEntra .8s var(--ease) forwards,drift1 7s ease-in-out .8s infinite alternate}
+.orb .o2{background:var(--mango);right:-8%;top:24%;animation:orbEntra .8s var(--ease) .1s forwards,drift2 8.5s ease-in-out .9s infinite alternate}
+.orb .o3{background:var(--tint,#3B82F6);left:16%;bottom:-6%;animation:orbEntra .8s var(--ease) .2s forwards,drift3 10s ease-in-out 1s infinite alternate}
 .success.pend .orb .o2{display:none}
-.success.pend .orb i{opacity:.28}
-@keyframes orbin{to{opacity:1}}
-@keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(9vmin,-7vmin) scale(1.12)}}
-@keyframes drift2{0%,100%{transform:translate(0,0) scale(1.05)}50%{transform:translate(-10vmin,8vmin) scale(.95)}}
-@keyframes drift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6vmin,10vmin) scale(1.15)}}
-@media (prefers-color-scheme:dark){.orb i{opacity:.42}.success.pend .orb i{opacity:.22}}
-@media (prefers-reduced-motion:reduce){.orb i{animation:none}.orb{opacity:.6;animation:none}}
+.success.pend .orb i{--op:.45;filter:blur(52px)}
+@keyframes orbEntra{0%{opacity:0;transform:scale(.25)}62%{opacity:var(--op,.92)}100%{opacity:var(--op,.92);transform:scale(1)}}
+@keyframes orbGiro{to{transform:rotate(360deg)}}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(22vmin,-18vmin) scale(1.4)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1.2)}to{transform:translate(-20vmin,16vmin) scale(.75)}}
+@keyframes drift3{from{transform:translate(0,0) scale(.85)}to{transform:translate(17vmin,-22vmin) scale(1.35)}}
+@media (prefers-color-scheme:dark){.orb i{mix-blend-mode:screen;filter:blur(44px);--op:.72}}
+@media (prefers-reduced-motion:reduce){.orb,.orb i{animation:none}.orb i{opacity:.5}}
+
+/* La foto entra con rebote y suelta un halo que se expande una sola vez. */
+.success .thumb.hero-img{animation:fotoIn .8s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes fotoIn{0%{opacity:0;transform:scale(.45) rotate(-8deg)}55%{opacity:1}100%{opacity:1;transform:scale(1) rotate(0)}}
+.success .halo{position:absolute;width:120px;height:120px;border-radius:50%;border:3px solid var(--selva);
+  opacity:.9;pointer-events:none;z-index:0;animation:halo 1.25s .28s var(--ease) forwards}
+.success .halo.b{animation-delay:.52s;border-width:2px;opacity:.6}
+@keyframes halo{to{transform:scale(3.6);opacity:0}}
+/* El texto sube escalonado detrás de la foto: se siente que la pantalla se arma. */
+.success h3{animation:subeIn .5s .34s var(--ease) both}
+.success .s-name{animation:subeIn .5s .42s var(--ease) both}
+.success .s-gain{animation:subeIn .5s .5s var(--ease) both}
+.success .s-hito{animation:subeIn .5s .58s var(--ease) both}
+.success .s-sub{animation:subeIn .5s .64s var(--ease) both}
+.success .undo-row{animation:subeIn .5s .72s var(--ease) both}
+@keyframes subeIn{from{opacity:0;transform:translateY(12px)}}
 .success .s-hito{font-size:0.9375rem;font-weight:800;color:var(--selva-ink);margin-top:2px}
 @media (prefers-color-scheme:dark){.success .s-hito{color:var(--selva)}}
 
