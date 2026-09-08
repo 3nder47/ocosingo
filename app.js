@@ -1,4 +1,4 @@
-const APP_VERSION='11.4';const APP_BUILD='6 Sep 2026 21:00';
+const APP_VERSION='11.5';const APP_BUILD='7 Sep 2026 10:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -980,7 +980,7 @@ function celebrar(id,p,ventaID,pendiente,resumen){
     :`<div class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>`;
   s.classList.toggle('pend',!!pendiente);s.style.removeProperty('--tint');
   if(p&&p.imagen)tintDesde(p.imagen,s);   // la tercera esfera toma el color de la foto del producto
-  s.innerHTML=`<div class="orb"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>`+
+  s.innerHTML=`<div class="orb"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>`+(p?'<i class="halo"></i><i class="halo b"></i>':'')+
     `${visual}<h3>${pendiente?'Venta guardada en el teléfono':'Venta registrada'}</h3>
     ${p?`<p class="s-name">${esc(p.descripcion)}</p>`:''}
     ${resumen?`<div class="s-gain">$${money(resumen.precio)}${resumen.ganancia!=null?` · <b>+$${money(resumen.ganancia)}</b> ganancia`:''}</div>`:''}
