@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EAF0F6">
+<title>Glosario de tu negocio — Kiosko</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiosko.css?v=2">
+<style>
+.term-hero{grid-column:1/-1;border-radius:var(--r);padding:2rem;color:#fff;
+  background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);position:relative;overflow:hidden;
+  box-shadow:0 20px 40px -15px rgba(15,23,42,.5)}
+.term-hero::before{content:"";position:absolute;right:-90px;top:-90px;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,185,129,.38),transparent 70%);filter:blur(40px);animation:pulseGlow 6s infinite ease-in-out}
+.term-hero>*{position:relative;z-index:2}
+.term-hero .eti{font-size:.75rem;font-weight:800;color:var(--lima);text-transform:uppercase;letter-spacing:.08em}
+.term-hero h2{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800;letter-spacing:-.035em;margin:.4rem 0 .6rem}
+.term-hero .corto{font-size:1rem;color:rgba(255,255,255,.85);line-height:1.6;max-width:62ch}
+.term-hero .cifra{display:inline-flex;flex-direction:column;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);border-radius:var(--r2);padding:.8rem 1.15rem;margin-top:1.15rem}
+.term-hero .cifra b{font-family:'JetBrains Mono',monospace;font-size:1.65rem;font-weight:800;color:var(--lima);line-height:1}
+.term-hero .cifra span{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.7);margin-top:.3rem}
+.bloque{margin-top:1.25rem}
+.bloque h3{font-size:.95rem;font-weight:800;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.bloque h3 i{width:8px;height:8px;border-radius:3px;background:var(--verde);display:inline-block}
+.bloque p{font-size:.9rem;color:var(--gris);line-height:1.7}
+.bloque p b{color:var(--ink)}
+.compara{display:grid;gap:.75rem;margin-top:.85rem}
+@media(min-width:700px){.compara{grid-template-columns:1fr 1fr}}
+.comp-c{background:var(--card-inner);border:1px solid var(--linea);border-radius:var(--r2);padding:1rem}
+.comp-c .k{font-size:.72rem;font-weight:800;color:var(--gris);text-transform:uppercase}
+.comp-c .v{font-family:'JetBrains Mono',monospace;font-size:1.35rem;font-weight:800;margin:.3rem 0 .15rem}
+.comp-c .s{font-size:.78rem;color:var(--gris);font-weight:600;line-height:1.5}
+.comp-c.gana{background:#ECFDF5;border-color:#A7F3D0}
+.comp-c.gana .v{color:var(--verde-deep)}
+.ojo{background:#FFF7ED;border:1px solid #FFEDD5;border-radius:var(--r2);padding:1rem 1.15rem;margin-top:1.15rem;
+  font-size:.87rem;line-height:1.65;color:#9A3412;font-weight:600}
+.ojo b{color:#C2410C}
+.escala{display:flex;height:26px;border-radius:10px;overflow:hidden;margin-top:.6rem;box-shadow:var(--neo-inset)}
+.escala div{display:grid;place-items:center;font-size:.7rem;font-weight:800;color:#fff}
+.pasos{display:grid;gap:.5rem;margin-top:.85rem}
+.paso{display:flex;gap:.75rem;align-items:flex-start;background:var(--card-inner);border-radius:var(--r2);padding:.8rem 1rem}
+.paso .n{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--lima);display:grid;place-items:center;
+  font-size:.75rem;font-weight:800;flex:none}
+.paso div{font-size:.87rem;line-height:1.6;color:var(--gris);font-weight:600}
+.paso div b{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="pin" id="pin"><div class="pin-c">
+  <div class="logo-icon">Ki</div><h1>Glosario</h1><p>Tu PIN de Kiosko</p>
+  <input id="pin-in" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autofocus>
+  <div class="pin-e" id="pin-e"></div>
+</div></div>
+
+<div id="app" class="oculto"><div class="app">
+  <aside class="lado">
+    <div class="marca"><div class="logo-icon">Ki</div><div><b>Kiosko</b><small>Glosario</small></div></div>
+    <div class="nav-t">LO BÁSICO</div>
+    <button class="nav on" data-t="costo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7.5 12 3l9 4.5-9 4.5z"/><path d="M3 7.5V17l9 4 9-4V7.5"/></svg>Costo real</button>
+    <button class="nav" data-t="factor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M12 5v14"/></svg>Factor de importación</button>
+    <button class="nav" data-t="ganancia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Ganancia</button>
+    <button class="nav" data-t="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>Margen</button>
+    <div class="nav-t">PARA DECIDIR</div>
+    <button class="nav" data-t="rotacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Rotación</button>
+    <button class="nav" data-t="capital"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 12V7M12 12l4 2"/></svg>Capital detenido</button>
+    <button class="nav" data-t="piso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 18h16M7 18V9M12 18V5M17 18v-6"/></svg>Precio piso</button>
+    <button class="nav" data-t="servicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>Costo de atender</button>
+    <div class="nav-t">OTRAS PANTALLAS</div>
+    <button class="nav" onclick="location.href='analisis.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Análisis</button>
+    <button class="nav" onclick="location.href='alta.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
+  </aside>
+
+  <div>
+    <div class="movil" id="movil"></div>
+    <main class="main">
+      <div class="cab">
+        <div><h1>Glosario de tu negocio</h1><p>Cada palabra explicada con tus propios números, no con definiciones</p></div>
+      </div>
+      <div class="bento" id="cuerpo"><div class="cargando"><div class="spin"></div>Leyendo tus datos…</div></div>
+    </main>
+  </div>
+</div></div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
+function api(a,p,b,ms){ms=ms||30000;
+  if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta config.js"));
+  var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
+  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
+  else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
+  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok)throw new Error("El servidor respondió "+r.status);return r.text();})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Datos no válidos");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
+   .catch(function(e){clearTimeout(t);if(e&&e.name==="AbortError")throw new Error("El servidor tardó demasiado");throw e;});}
+
+var $=function(i){return document.getElementById(i);};
+function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function dias(d){if(!d)return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
+var D=null,term="costo";
+
+/* Desglose visual reutilizable */
+function desglose(titulo,filas,resultado,nota){
+  var max=Math.max.apply(null,filas.map(function(f){return Math.abs(f.v);}).concat([Math.abs(resultado.v),1]));
+  var h='<div class="desglose"><div class="dg-t">'+esc(titulo)+"</div>";
+  filas.forEach(function(f){
+    h+='<div class="dg-fila '+(f.signo==="-"?"dg-menos":"dg-mas")+'">'+
+       '<div class="et">'+esc(f.et)+(f.sub?"<small>"+esc(f.sub)+"</small>":"")+"</div>"+
+       '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(f.v)/max*100).toFixed(1)+'%"></div></div>'+
+       '<div class="val">'+(f.signo==="-"?"−":"+")+mx(Math.abs(f.v))+"</div></div>";
+  });
+  h+='<div class="dg-fila dg-res"><div class="et">'+esc(resultado.et)+(resultado.sub?"<small>"+esc(resultado.sub)+"</small>":"")+"</div>"+
+     '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(resultado.v)/max*100).toFixed(1)+'%"></div></div>'+
+     '<div class="val">'+(resultado.texto||mx(resultado.v))+"</div></div>";
+  if(nota)h+='<div class="dg-nota">'+nota+"</div>";
+  return h+"</div>";
+}
+function paso(n,txt){return '<div class="paso"><div class="n">'+n+"</div><div>"+txt+"</div></div>";}
+
+var TERMS={};
+
+TERMS.costo={
+  eti:"Lo básico", t:"Costo real",
+  corto:"Lo que de verdad te costó una pieza puesta en tu casa: el precio del producto más su parte de impuestos y envío.",
+  cifra:function(){return {b:"$136.77",s:"lo que te costó tu Kemei KM-1419"};},
+  html:function(){
+    return desglose("Tu Kemei KM-1419, pieza por pieza",
+      [{et:"Precio en Temu",sub:"ya con las promociones",v:105,signo:"+"},
+       {et:"Su parte del impuesto",sub:"repartido entre las 4 piezas",v:31.77,signo:"+"}],
+      {et:"Costo real",sub:"esto es lo que arriesgaste",v:136.77},
+      "El precio que ves en la plataforma <b>nunca</b> es tu costo. Temu te cobró el impuesto aparte, al final, en un solo monto: hay que repartirlo entre las piezas.")+
+    '<div class="bloque"><h3><i></i>Por qué importa</h3><p>Si calculas tu ganancia contra los $105, crees que ganas $175 vendiendo en $280. La verdad son <b>$143</b>. Esos $32 de diferencia, en 100 ventas al año, son <b>$3,200</b> que creías tener y no tenías.</p></div>';
+  }};
+
+TERMS.factor={
+  eti:"Lo básico", t:"Factor de importación",
+  corto:"Por cuánto tienes que multiplicar el precio de la plataforma para saber tu costo real. Es el mismo dato que el costo real, pero convertido en algo que puedes usar ANTES de comprar.",
+  cifra:function(){return {b:"×1.30",s:"tu último pedido de Temu"};},
+  html:function(){
+    return desglose("De dónde sale el 1.30",
+      [{et:"Suma de la plataforma",sub:"los 4 productos a su precio",v:439.96,signo:"+"},
+       {et:"Impuesto de importación",sub:"lo que Temu cobró aparte",v:133.11,signo:"+"}],
+      {et:"Lo que pagó tu tarjeta",sub:"573.07 ÷ 439.96 = ×1.3026",v:573.07},
+      "Cada peso de mercancía te costó <b>$1.30</b> puesto en Ocosingo.")+
+    '<div class="bloque"><h3><i></i>Cómo lo usas parado en la tienda</h3>'+
+    paso(1,"Ves algo en Temu a <b>$200</b>.")+
+    paso(2,"Multiplicas por 1.30: te va a costar <b>$260</b>.")+
+    paso(3,"Tu regla es vender al doble: necesitas venderlo en <b>$520</b> o más.")+
+    paso(4,"Si en Marketplace ese producto anda en $400, <b>no lo compres</b>. Decidiste antes de gastar.")+
+    '</div><div class="ojo">Anota el factor de cada pedido. Si Temu te da 1.30 y otra plataforma 1.45, esa otra es <b>15% más cara</b> aunque los precios en pantalla se vean iguales. Ese 15% no aparece en ningún lado más que aquí.</div>';
+  }};
+
+TERMS.ganancia={
+  eti:"Lo básico", t:"Ganancia",
+  corto:"Lo que de verdad se queda en tu bolsa después de pagar el producto y el envío. No es lo que te paga el cliente.",
+  cifra:function(){return {b:"$118",s:"por cada Kemei KM-1419 que vendas"};},
+  html:function(){
+    return desglose("Una venta tuya, completa",
+      [{et:"Precio de venta",sub:"lo que te paga el cliente",v:280,signo:"+"},
+       {et:"Cobro a domicilio",sub:"lo que le cobras por el envío",v:10,signo:"+"},
+       {et:"Costo del producto",sub:"lo que te costó puesto aquí",v:136.77,signo:"-"},
+       {et:"Motomandado",sub:"lo que le pagas al repartidor",v:35,signo:"-"}],
+      {et:"Tu ganancia",sub:"esto sí es tuyo",v:118.23},
+      "Entraron <b>$290</b>, salieron <b>$171.77</b>. Te quedan <b>$118.23</b>.")+
+    '<div class="ojo">El error más común de quien empieza es confundir <b>venta</b> con <b>ganancia</b>. Tú has vendido $285,000 en tu vida, pero has ganado $111,343. Son cosas distintas y solo la segunda es tuya.</div>';
+  }};
+
+TERMS.margen={
+  eti:"Lo básico", t:"Margen",
+  corto:"De cada $100 que entran, cuántos se quedan contigo. Es la ganancia dicha en porcentaje, para poder comparar productos de precios muy distintos.",
+  cifra:function(){var r=(D&&D.resumen)||{};return {b:Math.round(r.margen||0)+"%",s:"tu margen general"};},
+  html:function(){
+    var mar=(D&&D.margen)||[];
+    var mejorM=mar.slice().sort(function(a,b){return b.margen-a.margen;})[0];
+    var mejorU=mar.slice().sort(function(a,b){return b.utilidad-a.utilidad;})[0];
+    var h='<div class="desglose"><div class="dg-t">Tu Kemei, en porcentaje</div>'+
+      '<div class="escala"><div style="width:47%;background:linear-gradient(90deg,#F97316,#FBBF24)">47% costo</div>'+
+      '<div style="width:12%;background:#94A3B8">12% envío</div>'+
+      '<div style="width:41%;background:linear-gradient(90deg,#10B981,#84CC16)">41% tuyo</div></div>'+
+      '<div class="dg-nota">De los <b>$290</b> que entraron: $136.77 se fueron al producto (47%), $35 al moto (12%) y <b>$118.23 se quedaron contigo (41%)</b>. Ese 41% es el margen.</div></div>';
+    if(mejorM&&mejorU&&mejorM.categoria!==mejorU.categoria){
+      h+='<div class="bloque"><h3><i></i>Margen alto no es lo mismo que más dinero</h3><div class="compara">'+
+        '<div class="comp-c"><div class="k">Mejor margen</div><div class="v">'+Math.round(mejorM.margen)+'%</div>'+
+        '<div class="s"><b>'+esc(mejorM.categoria)+'</b><br>'+mejorM.ventas+" ventas · te dejó "+mx(mejorM.utilidad)+" en total</div></div>"+
+        '<div class="comp-c gana"><div class="k">Más dinero</div><div class="v">'+mx(mejorU.utilidad)+'</div>'+
+        '<div class="s"><b>'+esc(mejorU.categoria)+'</b><br>'+Math.round(mejorU.margen)+"% de margen · "+mejorU.ventas+" ventas</div></div></div>"+
+        '<p style="margin-top:.85rem">El margen te dice qué tan bien te paga <b>cada peso vendido</b>. La ganancia total te dice <b>cuánto dinero acabó en tu bolsa</b>. Para decidir qué reponer, mira las dos.</p></div>';
+    }
+    return h;
+  }};
+
+TERMS.rotacion={
+  eti:"Para decidir", t:"Rotación",
+  corto:"Cuántos días tarda una pieza en venderse desde que la compras. Es la diferencia entre tener mercancía y tener un negocio.",
+  cifra:function(){
+    var r=(D&&D.rotacion)||[],c=r.filter(function(x){return x.ventas>=5;}).sort(function(a,b){return a.diasVenta-b.diasVenta;})[0];
+    return c?{b:dias(c.diasVenta),s:"lo más rápido que sale: "+c.categoria}:{b:"—",s:"sin datos"};},
+  html:function(){
+    return '<div class="bloque"><h3><i></i>Por qué la velocidad vale más que el margen</h3>'+
+    '<div class="compara">'+
+      '<div class="comp-c"><div class="k">Producto A · lento</div><div class="v">60%</div>'+
+      '<div class="s">margen alto, pero tarda <b>12 meses</b> en venderse.<br>$100 invertidos dan <b>1 vuelta</b> al año → ganas <b>$60</b>.</div></div>'+
+      '<div class="comp-c gana"><div class="k">Producto B · rápido</div><div class="v">30%</div>'+
+      '<div class="s">margen bajo, pero se vende en <b>2 meses</b>.<br>$100 invertidos dan <b>6 vueltas</b> al año → ganas <b>$180</b>.</div></div>'+
+    '</div><p style="margin-top:.85rem">El mismo billete, tres veces más ganancia. <b>No ganas por comprar barato: ganas por vender rápido.</b></p></div>'+
+    '<div class="ojo">Lo que hay que comparar no es el número solo, sino <b>cuánto tarda en venderse</b> contra <b>cuánto lleva parado lo que tienes hoy</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, no es que la categoría sea lenta: son <b>esas piezas</b> las que no salen. Esas son las que se rematan.</div>';
+  }};
+
+TERMS.capital={
+  eti:"Para decidir", t:"Capital detenido",
+  corto:"El dinero que ya pagaste y sigue en cajas. No lo perdiste, pero tampoco lo tienes: no puede comprar nada nuevo hasta que se venda.",
+  cifra:function(){return D?{b:mx(D.capitalTotal),s:"en "+D.piezasTotal+" piezas sin vender"}:{b:"—",s:""};},
+  html:function(){
+    var r=(D&&D.resumen)||{},meses=12,pm=(r.utilidad||0)/meses;
+    var cong=pm>0?(D.capitalTotal/pm):0;
+    return desglose("Cuántos meses de trabajo tienes dormidos",
+      [{et:"Dinero en cajas",sub:"ya lo pagaste, no lo tienes",v:D?D.capitalTotal:0,signo:"+"},
+       {et:"Lo que ganas al mes",sub:"promedio del último año",v:pm,signo:"-"}],
+      {et:"Meses congelados",sub:"lo primero entre lo segundo",v:D?D.capitalTotal:0,texto:(cong?cong.toFixed(1):"—")+" meses"},
+      "Es cuánto tiempo tendrías que trabajar para volver a juntar el dinero que hoy está dormido en cajas.")+
+    '<div class="bloque"><h3><i></i>Cómo se lee</h3>'+
+    paso(1,"<b>1 o 2 meses:</b> normal y sano.")+
+    paso(2,"<b>3 a 4 meses:</b> vigílalo, empieza a apretar.")+
+    paso(3,"<b>5 o más:</b> compraste más rápido de lo que vendes, o compraste cosas que no salen.")+
+    '</div><div class="ojo">Cuando quieras hacer un pedido y no tengas efectivo, <b>no necesitas pedir prestado: ya tienes el dinero</b>. Solo está dormido. El plan de remate es el botón para despertarlo.</div>';
+  }};
+
+TERMS.piso={
+  eti:"Para decidir", t:"Precio piso",
+  corto:"El precio más bajo al que puedes vender algo sin perder dinero. No es tu costo: es tu costo más el envío que absorbes.",
+  cifra:function(){return {b:"$172",s:"el piso de tu Kemei KM-1419"};},
+  html:function(){
+    return desglose("Tu piso real, no el que parece",
+      [{et:"Costo del producto",sub:"ya puesto aquí",v:136.77,signo:"+"},
+       {et:"Motomandado",sub:"lo que absorbes en cada entrega",v:35,signo:"+"}],
+      {et:"Precio piso",sub:"debajo de aquí, pagas por regalar",v:171.77},
+      "Si lo vendieras en $150 creerías que ganas $13. En realidad <b>pierdes $22</b>, porque el moto sale de tu bolsa.")+
+    '<div class="ojo">Este es el error que te encontré hoy: el envío cuesta lo mismo lleves una pieza o tres, porque es <b>por viaje</b>. En una venta de $280 casi no se siente; en un remate de $110 se come todo. Por eso los remates se venden <b>en paquete</b> o el cliente los recoge.</div>';
+  }};
+
+TERMS.servicio={
+  eti:"Para decidir", t:"Costo de atender",
+  corto:"Lo que un producto te cuesta después de venderlo: garantías, explicaciones, devoluciones, tu tiempo y tu tranquilidad. Nunca aparece en la hoja, pero es real.",
+  cifra:function(){return {b:"$973",s:"lo que dejaba cada incubadora… en papel"};},
+  html:function(){
+    return '<div class="bloque"><h3><i></i>Tu propio ejemplo</h3>'+
+    '<p>Las incubadoras eran, en la hoja, tu mejor producto: <b>$973 de ganancia por venta</b>, el 39% de todo lo que has ganado en tu vida. En cualquier análisis frío, la respuesta habría sido "compra más incubadoras".</p>'+
+    '<p style="margin-top:.7rem">Pero fallaban, los clientes no sabían usarlas, había que enseñarles, y Jesús tenía que estar disponible. Cuando él consiguió trabajo, sostenerlas dejó de ser posible. <b>Dejaste de venderlas, y fue la decisión correcta.</b></p></div>'+
+    desglose("Lo que la hoja no ve",
+      [{et:"Ganancia por venta",sub:"lo que sí aparece",v:973,signo:"+"},
+       {et:"Tiempo de dos personas",sub:"enseñar a usarla, atender fallas",v:400,signo:"-"},
+       {et:"Riesgo de devolución",sub:"y el estrés que no se cobra",v:300,signo:"-"}],
+      {et:"Lo que quedaba de verdad",sub:"los números son ilustrativos",v:273},
+      "Nadie puede medir esto con exactitud, y no hace falta: basta con <b>saber que existe</b> y tomarlo en cuenta antes de repetir una compra.")+
+    '<div class="ojo">Tú aplicaste este concepto sin saber que tenía nombre. Eso no es suerte: <b>es criterio</b>. Lo único que te faltaba era la palabra.</div>';
+  }};
+
+var ORDEN=["costo","factor","ganancia","margen","rotacion","capital","piso","servicio"];
+
+function pintar(){
+  var T=TERMS[term];if(!T)return;
+  var c=T.cifra?T.cifra():null;
+  var h='<section class="term-hero ani"><div class="eti">'+esc(T.eti)+"</div>"+
+    "<h2>"+esc(T.t)+'</h2><p class="corto">'+T.corto+"</p>"+
+    (c?'<div class="cifra"><b>'+c.b+"</b><span>"+esc(c.s)+"</span></div>":"")+"</section>"+
+    '<section class="b-card ani">'+T.html()+"</section>";
+  $("cuerpo").innerHTML=h;
+  document.querySelectorAll("[data-t]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-t")===term);});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-t]");if(!b)return;
+  term=b.getAttribute("data-t");pintar();
+});
+
+var pi=$("pin-in");
+pi.addEventListener("input",function(){
+  if(pi.value.length<4)return;
+  var v=pi.value;pi.disabled=true;$("pin-e").textContent="";
+  api("verificarPin",null,{pin:v}).then(function(d){
+    if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
+    if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
+    $("pin").classList.add("oculto");$("app").classList.remove("oculto");
+    $("movil").innerHTML=ORDEN.map(function(k,i){return '<button data-t="'+k+'"'+(i===0?' class="on"':"")+">"+esc(TERMS[k].t)+"</button>";}).join("");
+    api("analisis",{rango:"12m"},null,45000).then(function(d2){D=d2;pintar();})
+      .catch(function(){D=null;pintar();});
+  }).catch(function(e){$("pin-e").textContent=e.message;pi.value="";pi.disabled=false;pi.focus();});
+});
+})();
+</script>
+</body>
+</html>
