@@ -313,25 +313,27 @@ function nuevaFila(){
       '<small class="cat-estado" data-k="catEstado"></small></div></div>'+
     '<div class="campos">'+
       '<div class="campo"><span>Piezas que compraste</span><span class="step"><button type="button" data-k="menos">−</button><input data-k="q" type="number" min="1" step="1" value="1"><button type="button" data-k="mas">+</button></span></div>'+
-      '<label class="campo"><span>Precio que te cobró la plataforma, por pieza</span><span class="money"><i>$</i>'+
+      '<label class="campo"><span>Precio DESPUÉS de las promociones, por pieza</span><span class="money"><i>$</i>'+
         '<input data-k="costo" type="number" min="0" step="0.01" placeholder="105.00" inputmode="decimal"></span>'+
-        '<small>El de tu pedido ya con descuentos. Sin impuestos ni envío.</small></label>'+
-      '<details class="opc ancho"><summary>¿Tenía descuento? Anota el precio antes del descuento</summary>'+
-        '<label class="campo" style="margin-top:.35rem"><span>Precio de lista</span><span class="money"><i>$</i>'+
+        '<small>En Temu es el renglón chico que dice “Después de aplicadas las promociones”. Es el <b>más bajo</b> de los dos y es lo que de verdad pagaste por pieza.</small></label>'+
+      '<details class="opc ancho"><summary>¿Tenía descuento? Anota el precio antes de la promoción</summary>'+
+        '<label class="campo" style="margin-top:.35rem"><span>Precio ANTES de las promociones (el número grande)</span><span class="money"><i>$</i>'+
         '<input data-k="lista" type="number" min="0" step="0.01" placeholder="149.99" inputmode="decimal"></span>'+
-        '<small>Solo de referencia. No cambia tu costo.</small></label></details>'+
+        '<small>El <b>más alto</b> de los dos. Solo de referencia: no cambia tu costo.</small>'+
+        '<small class="cat-estado" data-k="avisoPrecios"></small></label></details>'+
     "</div>"+
     '<div class="calculo vacio" data-k="calculo">Cuando captures el precio y el cargo de tu tarjeta, aquí verás tu costo real y el precio sugerido.</div>';
 
-  var f={id:id,el:el,fotos:[],fotosDrive:[],gemelo:null,catManual:false,tocado:false,precioVal:0};
-  ["galeria","file","desc","chips","cat","catNueva","catTxt","catEstado","menos","q","mas","costo","lista","calculo","x"]
+  var f={id:id,el:el,fotos:[],fotosDrive:[],parcial:false,gemelo:null,catManual:false,tocado:false,precioVal:0};
+  ["galeria","file","desc","chips","cat","catNueva","catTxt","catEstado","avisoPrecios","menos","q","mas","costo","lista","calculo","x"]
     .forEach(function(k){f[k]=el.querySelector('[data-k="'+k+'"]');});
 
   /* galería de hasta 4 fotos */
   f.pintarGaleria=function(){
     var h="";
     if(f.fotosDrive&&f.fotosDrive.length){
-      h+='<div class="gal-slot llena principal"><img src="'+esc(f.fotosDrive[0])+'" alt=""><span class="et">Ya en Drive</span></div>';
+      h+='<div class="gal-slot llena principal"><img src="'+esc(f.fotosDrive[0])+'" alt=""><span class="et">'+
+        (f.parcial?"Ya en Drive · puede tener más":"Ya en Drive")+"</span></div>";
       for(var j=1;j<Math.min(f.fotosDrive.length,3)+1&&j<4;j++){
         if(f.fotosDrive[j])h+='<div class="gal-slot llena"><img src="'+esc(f.fotosDrive[j])+'" alt=""></div>';
         else if(j===f.fotosDrive.length)h+='<div class="gal-slot" data-k="pick"><div style="text-align:center;font-size:.7rem;font-weight:700">+</div></div>';
@@ -402,10 +404,17 @@ function nuevaFila(){
     f.gemelo=null;f.fotosDrive=[];
     if(!d){f.pintarGaleria();f.pintarChips();return;}
     var g=parecido(d);
-    f.fotosDrive=fotosDe(d);
+    f.parcial=false;
+    if(g&&(g.imagen||(g.extras&&g.extras.length))){
+      /* Con existencia: el catálogo trae la principal Y las tomas extra. */
+      f.fotosDrive=[g.imagen].concat(g.extras||[]).filter(Boolean);
+    } else {
+      /* Agotado: el historial de ventas solo devuelve la principal. Puede haber más. */
+      f.fotosDrive=fotosDe(d);
+      f.parcial=f.fotosDrive.length>0;
+    }
     if(g){
       f.gemelo=g;
-      if(!f.fotosDrive.length)f.fotosDrive=[g.imagen].concat(g.extras||[]).filter(Boolean);
       if(!f.catManual&&g.categoria){f.cat.value=g.categoria;f.catNueva.classList.add("oculto");f.catTxt.value="";}
     } else if(!f.catManual){
       var c=catPorNombre(d);
@@ -434,7 +443,16 @@ function calcular(){
   var hay=suma>0&&pagado>0,factor=hay?pagado/suma:1;
 
   filas.forEach(function(f){
-    var costo=num(f.costo.value);
+    var costo=num(f.costo.value),lst=num(f.lista.value);
+    if(f.avisoPrecios){
+      if(lst>0&&costo>0&&lst<costo){
+        f.avisoPrecios.className="cat-estado nueva";
+        f.avisoPrecios.innerHTML="Parece que los tienes invertidos: el precio ANTES debería ser el más alto. "+
+          '<button type="button" class="sug" data-k="voltear">Intercambiar</button>';
+        var bt=f.avisoPrecios.querySelector("[data-k=voltear]");
+        if(bt)bt.addEventListener("click",function(){var a=f.costo.value;f.costo.value=f.lista.value;f.lista.value=a;calcular();});
+      } else f.avisoPrecios.textContent="";
+    }
     if(!(costo>0)||!hay){
       f.calculo.className="calculo vacio";
       f.calculo.textContent=costo>0?"Falta el cargo de tu tarjeta, arriba en la tarjeta oscura":"Falta el precio que te cobró la plataforma";
@@ -452,7 +470,8 @@ function calcular(){
       '<span class="queda'+(flojo?" flojo":"")+'">te quedan '+mx(gana)+(flojo?" · poco":"")+"</span></div>"+
       ((ex||f.gemelo)?'<div class="tags">'+
         (ex?'<span class="tg info">Ya lo tienes: '+esc(ex.pid||"")+" · se le suman piezas</span>":"")+
-        ((f.fotosDrive&&f.fotosDrive.length)?'<span class="tg cong">'+f.fotosDrive.length+(f.fotosDrive.length===1?" foto":" fotos")+" ya en Drive · no hace falta resubir</span>":"")+
+        ((f.fotosDrive&&f.fotosDrive.length)?'<span class="tg cong">'+
+          (f.parcial?"Ya tiene fotos en Drive · no hace falta resubir":f.fotosDrive.length+(f.fotosDrive.length===1?" foto":" fotos")+" en Drive · no hace falta resubir")+"</span>":"")+
         "</div>":"");
     var inp=f.calculo.querySelector("[data-k=precio]");
     inp.addEventListener("input",function(){f.tocado=true;f.precioVal=num(inp.value);
