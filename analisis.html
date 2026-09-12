@@ -356,7 +356,24 @@ $("b-plan").addEventListener("click",function(){
     (lib<cost?"<p>Recuperas menos de lo que pagaste. <b>Eso está bien</b> si llevan un año sin moverse: un billete dormido no vale más por esperar.</p>":"")+
     "<p><b>Véndelas en paquete.</b> El envío cuesta lo mismo lleves una pieza o tres: es por viaje. Ofrece lotes o pide que lo recojan y esa resta desaparece.</p>"+
     '<textarea readonly id="plan-txt">'+esc(txt)+"</textarea>"+
-    '<div style="display:flex;gap:.75rem;margin-top:1.25rem"><button class="btn-action pri" id="cp">Copiar lista</button><button class="btn-action gh" data-cerrar="1">Cerrar</button></div>');
+    '<p class="sub" style="margin-top:1rem"><b>Aplicar el remate</b> cambia el precio en tu hoja, en todas las piezas sin vender de esos productos, y se refleja solo en la app y en tu catalogo. El precio anterior queda guardado: se puede deshacer.</p>'+
+    '<div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap"><button class="btn-action pri" id="aplicar">Aplicar remate a mi hoja</button>'+
+    '<button class="btn-action gh" id="cp">Solo copiar lista</button><button class="btn-action gh" data-cerrar="1">Cerrar</button></div>'+
+    '<div id="res-remate" class="sub" style="margin-top:1rem"></div>');
+  $("aplicar").addEventListener("click",function(){
+    var b=this;b.disabled=true;b.textContent="Aplicando…";
+    var items=[];
+    Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;
+      items.push({descripcion:x.descripcion,categoria:x.categoria,precio:sel[i]});});
+    api("aplicarRemate",null,{remate:{usuario:"Alex",items:items}},45000).then(function(r){
+      if(!r||!r.success)throw new Error((r&&r.error)||"No se pudo aplicar");
+      $("res-remate").innerHTML="<b>Listo: "+r.piezas+" pieza"+(r.piezas===1?"":"s")+" con precio nuevo.</b><br>"+
+        r.productos.map(function(p){return esc(p.descripcion)+" · "+p.piezas+" pza · "+mx(p.antes)+" → <b>"+mx(p.ahora)+"</b>";}).join("<br>")+
+        (r.verificado?"":"<br>"+esc(r.aviso||""));
+      b.textContent="Aplicado";
+    }).catch(function(e){$("res-remate").innerHTML='<b style="color:var(--rojo)">'+esc(e.message)+"</b>";
+      b.disabled=false;b.textContent="Aplicar remate a mi hoja";});
+  });
   $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();
     try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
 });
