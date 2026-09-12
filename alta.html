@@ -274,9 +274,18 @@ pi.addEventListener("input",function(){
 });
 
 function cargarCatalogo(){
-  /* Si todavía no publicas Imagenes.gs, esto falla en silencio y la pantalla
-     sigue funcionando con las fotos de los productos que tienen existencia. */
-  api("imagenes",null,null,25000).then(function(l){IMGS=l||[];filas.forEach(function(f){if(f.detectar)f.detectar();});}).catch(function(){});
+  /* Las fotos de productos AGOTADOS no salen en el catálogo (solo trae lo que tiene
+     existencia), pero sí vienen en el historial de ventas: cada venta trae su imagen.
+     Con eso sabemos que ya hay foto en Drive y no la vuelves a subir. */
+  api("ventas",{limite:1000},null,35000).then(function(vs){
+    var visto={};IMGS=[];
+    (vs||[]).forEach(function(v){
+      if(!v||!v.descripcion||!v.imagen)return;
+      var k=norm(v.descripcion);if(visto[k])return;visto[k]=1;
+      IMGS.push({descripcion:v.descripcion,url:v.imagen,extras:[]});
+    });
+    filas.forEach(function(f){if(f.detectar)f.detectar();});
+  }).catch(function(){});
   api("catalogo").then(function(items){
     catalogo=(items||[]).filter(function(x){return x.origen==="Alex";});
     var cs={},ds={};
