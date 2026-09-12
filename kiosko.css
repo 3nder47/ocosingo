@@ -298,6 +298,22 @@ button{cursor:pointer;border:none;background:none}
 .btn-action.gh{border:1px solid rgba(255,255,255,.25);color:#fff}
 .btn-action.gh:hover{background:rgba(255,255,255,.1)}
 
+.desglose{background:var(--card-inner);border:1px solid var(--linea);border-radius:var(--r2);padding:1.1rem;margin:1rem 0}
+.dg-t{font-size:.725rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.85rem}
+.dg-fila{display:grid;grid-template-columns:1.35fr 2.2fr auto;gap:.7rem;align-items:center;margin-bottom:.55rem}
+.dg-fila .et{font-size:.8rem;font-weight:700;color:var(--ink)}
+.dg-fila .et small{display:block;font-size:.68rem;color:var(--gris);font-weight:600}
+.dg-fila .pista{height:22px;border-radius:8px;background:rgba(200,210,225,.35);overflow:hidden;position:relative}
+.dg-fila .barra{height:100%;border-radius:8px;transform-origin:left;animation:crece .8s var(--ease) both}
+.dg-fila .val{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:.9rem;text-align:right;white-space:nowrap}
+.dg-mas .barra{background:linear-gradient(90deg,#10B981,#84CC16)}
+.dg-menos .barra{background:linear-gradient(90deg,#F97316,#FBBF24)}
+.dg-res{border-top:2px dashed var(--linea);margin-top:.85rem;padding-top:.85rem}
+.dg-res .barra{background:var(--ink)}
+.dg-res .et,.dg-res .val{font-size:1rem}
+.dg-nota{font-size:.75rem;color:var(--gris);font-weight:600;line-height:1.55;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--linea)}
+.dg-nota b{color:var(--ink)}
+.dg-pct{display:inline-flex;align-items:center;gap:.4rem;background:#ECFDF5;color:var(--verde-deep);border-radius:var(--pill);padding:.3rem .8rem;font-weight:800;font-size:.8rem;margin-top:.6rem}
 /* ---------- MODAL ---------- */
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.65);backdrop-filter:blur(8px);
   display:grid;place-items:center;padding:1.25rem;opacity:0;visibility:hidden;transition:all .3s var(--ease)}
