@@ -82,6 +82,12 @@ button{cursor:pointer}
 .rem-h{display:flex;gap:.75rem;align-items:flex-start}
 .chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--tenue);background:none;flex:none;display:grid;place-items:center;color:transparent;padding:0;margin-top:.1rem}
 .rem.on .chk{background:var(--lima);border-color:var(--lima);color:#0B1410}
+.foto{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:var(--bg);border:1px solid var(--linea)}
+.foto.sin{display:grid;place-items:center;color:var(--tenue)}
+.ctrl{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;background:var(--card2);border-radius:var(--r2);padding:.75rem .875rem;margin-top:.875rem}
+.ctrl>span:first-child{font-size:.8125rem;font-weight:700}
+.ctrl small{flex-basis:100%;font-size:.6875rem;color:var(--gris);font-weight:600;line-height:1.5}
+.cuenta-h{font-size:.6875rem;font-weight:700;color:var(--tenue);margin-top:.875rem}
 .rem-t{flex:1;min-width:0}
 .rem-t b{font-size:.9375rem;font-weight:700;display:block}
 .rem-t small{color:var(--gris);font-size:.6875rem;font-weight:600}
@@ -97,6 +103,9 @@ button{cursor:pointer}
 .rem-f b{color:var(--lima2)}
 .rem-f b.mal{color:var(--coral)}
 
+.orden{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:.75rem;color:var(--gris);font-weight:700;margin:.875rem 0 .25rem}
+.vermas{width:100%;border:1px dashed var(--linea);background:none;color:var(--gris);border-radius:var(--r2);padding:.875rem;font-size:.8125rem;font-weight:700}
+.vermas:hover{border-color:var(--lima);color:var(--lima)}
 /* barra inferior */
 .bot{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 1rem calc(1rem + env(safe-area-inset-bottom))}
 .bot-in{max-width:760px;margin:0 auto;background:rgba(17,26,22,.85);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--linea);border-radius:var(--r);padding:.875rem 1rem;display:flex;align-items:center;gap:1rem;box-shadow:0 18px 50px -12px #000}
@@ -166,10 +175,11 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
   function mx(n){var v=Math.round(Number(n)||0);return "$"+v.toLocaleString("es-MX");}
   function a10(n){return Math.ceil(n/10)*10;}
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
   function dias(d){if(!d)return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
   var PAL=["#C6FF4A","#4ADE80","#38BDF8","#FFA033","#C084FC","#FF6B5A","#2DD4BF","#FBBF24","#F472B6","#94A3B8"];
 
-  var D=null,rango="todo",sel={};
+  var D=null,rango="todo",sel={},FOTOS={},MOTO=35,orden="dinero",verTodo=false;
 
   /* ---------- PIN ---------- */
   var pi=$("pin-in");
@@ -186,8 +196,14 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
   function cargar(){
     $("wrap").innerHTML='<div class="cargando">Leyendo tu hoja…</div>';
     $("bot").classList.add("oculto");
-    api("analisis",{rango:rango},null,45000).then(function(d){D=d;sel={};pintar();})
-      .catch(function(e){$("wrap").innerHTML='<div class="cargando">'+esc(e.message)+"</div>";});
+    Promise.all([
+      api("analisis",{rango:rango},null,45000),
+      api("catalogo",null,null,30000).catch(function(){return[];})
+    ]).then(function(r){
+      D=r[0];sel={};FOTOS={};
+      (r[1]||[]).forEach(function(x){if(x&&x.descripcion&&x.imagen)FOTOS[norm(x.descripcion)]=x.imagen;});
+      pintar();
+    }).catch(function(e){$("wrap").innerHTML='<div class="cargando">'+esc(e.message)+"</div>";});
   }
   $("s-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcarSeg();cargar();});
   $("s-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcarSeg();cargar();});
@@ -204,7 +220,7 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
 
   /* ---------- pintar ---------- */
   function pintar(){
-    var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=(D.viejos||[]).filter(function(x){return x.dias>180;});
+    var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
     var meses=mesesPeriodo(),porMes=meses?R.utilidad/meses:0;
     var mesesDetenido=porMes>0?D.capitalTotal/porMes:0;
     var capViejo=V.reduce(function(s,x){return s+x.capital;},0),pzViejo=V.reduce(function(s,x){return s+x.piezas;},0);
@@ -232,9 +248,21 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     /* PLAN DE REMATE */
     h+='<section class="c"><div class="k">Plan de remate</div>'+
       '<p class="lee" style="margin-top:0">Esto es lo que lleva más de 6 meses parado: <b>'+mx(capViejo)+"</b> en <b>"+pzViejo+" piezas</b>. "+
-      "Elige cuáles rematar y a qué precio. Abajo se va sumando el dinero que recuperas.</p>"+
+      "Elige cuáles rematar y a qué precio. Abajo se va sumando el dinero que de verdad recuperas.</p>"+
+      '<div class="ctrl"><span>Envío que absorbes por pieza</span><span class="precio-in">$<input id="moto" type="number" step="5" min="0" value="'+MOTO+'"></span>'+
+      '<small>El motomandado sale de tu bolsa en casi todas tus entregas. Ya está descontado abajo.</small></div>'+
+      '<div class="cuenta-h">'+V.length+" producto"+(V.length===1?"":"s")+" · "+pzViejo+" piezas"+(V.length>=25?" · el servidor manda los 25 más viejos":"")+"</div>"+
+      (V.length>4?'<div class="alerta">Tus <b>4 productos más pesados</b> ('+esc(V.slice(0,4).map(function(x){return x.descripcion;}).join(", "))+
+        ") concentran <b>"+mx(V.slice(0,4).reduce(function(s,x){return s+x.capital;},0))+"</b> de los "+mx(capViejo)+
+        " parados. Mover esos cuatro vale más que mover los otros "+(V.length-4)+" juntos.</div>":"")+
       '<button class="que" data-exp="remate">¿Vender al costo es perder? ›</button>'+
-      '<div class="lista" id="remates">'+(V.length?V.map(remHTML).join(""):'<p class="lee">Nada lleva más de 6 meses parado. Vas bien.</p>')+"</div></section>";
+      '<button class="que" data-exp="envio">¿Por qué descuento el envío? ›</button>'+
+      '<div class="orden"><span>Ordenar por</span><button class="opt'+(orden==="dinero"?" on":"")+'" data-ord="dinero">Dinero congelado</button>'+
+      '<button class="opt'+(orden==="dias"?" on":"")+'" data-ord="dias">Tiempo parado</button></div>'+
+      '<div class="lista" id="remates">'+
+        (V.length?V.slice(0,verTodo?999:12).map(remHTML).join(""):'<p class="lee">Nada lleva más de 6 meses parado. Vas bien.</p>')+
+        (V.length>12&&!verTodo?'<button class="vermas" id="vermas">Ver los '+(V.length-12)+" productos restantes · entre todos suman "+mx(V.slice(12).reduce(function(s,x){return s+x.capital;},0))+"</button>":"")+
+      "</div></section>";
 
     /* ROTACIÓN */
     var maxD=Math.max.apply(null,rot.map(function(x){return Math.max(x.diasVenta,x.diasStock);}).concat([1]));
@@ -263,11 +291,17 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     total();
   }
 
+  function viejos(){
+    var V=(D.viejos||[]).filter(function(x){return x.dias>180;}).slice();
+    V.sort(orden==="dinero"?function(a,b){return b.capital-a.capital;}:function(a,b){return b.dias-a.dias;});
+    return V;
+  }
   function costoUnit(x){return x.piezas?x.capital/x.piezas:0;}
   function remHTML(x,i){
-    var cu=costoUnit(x);
+    var cu=costoUnit(x),img=FOTOS[norm(x.descripcion)];
     return '<div class="rem" data-i="'+i+'">'+
       '<div class="rem-h"><button class="chk" data-act="tog"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></button>'+
+      (img?'<img class="foto" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="foto sin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.4"/><path d="m21 15-5-5L5 19"/></svg></span>')+
       '<div class="rem-t"><b>'+esc(x.descripcion)+"</b><small>"+esc(x.categoria)+" · "+x.piezas+" pza"+(x.piezas===1?"":"s")+" · te costó "+mx(cu)+" c/u · hoy lo tienes en "+mx(x.precio)+'</small></div>'+
       '<span class="dias">'+dias(x.dias)+"</span></div>"+
       '<div class="opts">'+
@@ -281,8 +315,10 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
 
   document.addEventListener("click",function(e){
     var exp=e.target.closest("[data-exp]");if(exp){abrirExp(exp.getAttribute("data-exp"));return;}
+    var od=e.target.closest("[data-ord]");if(od){orden=od.getAttribute("data-ord");sel={};verTodo=false;pintar();return;}
+    if(e.target.closest("#vermas")){verTodo=true;pintar();return;}
     var card=e.target.closest(".rem");if(!card)return;
-    var i=card.getAttribute("data-i"),V=(D.viejos||[]).filter(function(x){return x.dias>180;}),x=V[i];
+    var i=card.getAttribute("data-i"),V=viejos(),x=V[i];
     var b=e.target.closest("[data-act]");if(!b)return;
     var act=b.getAttribute("data-act");
     if(act==="tog"){ if(sel[i])delete sel[i]; else sel[i]=num(card.querySelector("[data-act=in]").value)||a10(costoUnit(x)*1.2); }
@@ -290,9 +326,13 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     render(card,i,x);total();
   });
   document.addEventListener("input",function(e){
+    if(e.target.id==="moto"){MOTO=num(e.target.value);
+      var W=viejos();
+      document.querySelectorAll(".rem").forEach(function(c){render(c,c.getAttribute("data-i"),W[c.getAttribute("data-i")]);});
+      total();return;}
     var b=e.target.closest("[data-act=in]");if(!b)return;
     var card=b.closest(".rem"),i=card.getAttribute("data-i");
-    var V=(D.viejos||[]).filter(function(x){return x.dias>180;});
+    var V=viejos();
     sel[i]=num(b.value);render(card,i,V[i]);total();
   });
 
@@ -300,30 +340,32 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     var on=sel[i]!=null&&sel[i]>0;card.classList.toggle("on",on);
     var p=num(card.querySelector("[data-act=in]").value),cu=costoUnit(x);
     card.querySelectorAll(".opt").forEach(function(o){o.classList.toggle("on",num(o.getAttribute("data-v"))===p);});
-    var recup=p*x.piezas,dif=recup-x.capital;
+    var neto=(p-MOTO)*x.piezas,dif=neto-x.capital;
     card.querySelector("[data-f]").innerHTML=on
-      ? "Liberas <b>"+mx(recup)+"</b> · "+(dif>=0?"recuperas lo que pagaste y te quedan <b>"+mx(dif)+"</b> de ganancia":'aceptas perder <b class="mal">'+mx(-dif)+"</b> para recuperar el resto")
+      ? "Entra "+mx(p*x.piezas)+" · envío −"+mx(MOTO*x.piezas)+" · recuperas <b>"+mx(neto)+"</b> de los "+mx(x.capital)+" que pagaste · "+
+        (dif>=0?"<b>+"+mx(dif)+"</b> de ganancia":'te faltan <b class="mal">'+mx(-dif)+"</b>")
       : "Toca la palomita para incluirlo en el plan";
   }
 
   function total(){
-    var V=(D.viejos||[]).filter(function(x){return x.dias>180;});
+    var V=viejos();
     var libera=0,cost=0,pz=0,n=0;
-    Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;libera+=sel[i]*x.piezas;cost+=x.capital;pz+=x.piezas;n++;});
+    Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;libera+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;n++;});
     $("bot-val").textContent=mx(libera);
-    $("bot-sub").textContent=n?(pz+" pieza"+(pz===1?"":"s")+" de "+n+" producto"+(n===1?"":"s")+" · te costaron "+mx(cost)):"Elige qué rematar";
+    $("bot-sub").textContent=n?(pz+" pieza"+(pz===1?"":"s")+" · pagaste "+mx(cost)+" · recuperas ya con el envío descontado"):"Elige qué rematar";
     $("btn-plan").disabled=!n;
   }
   $("btn-limpiar").addEventListener("click",function(){sel={};document.querySelectorAll(".rem").forEach(function(c){c.classList.remove("on");c.querySelector("[data-f]").textContent="Toca la palomita para incluirlo en el plan";});total();});
 
   $("btn-plan").addEventListener("click",function(){
-    var V=(D.viejos||[]).filter(function(x){return x.dias>180;}),lin=[],libera=0,cost=0,pz=0;
+    var V=viejos(),lin=[],libera=0,cost=0,pz=0;
     Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;
-      libera+=sel[i]*x.piezas;cost+=x.capital;pz+=x.piezas;
+      libera+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;
       lin.push("• "+x.descripcion+" — "+x.piezas+" pza · REMATE "+mx(sel[i])+" (antes "+mx(x.precio)+")");});
-    var txt="REMATE KIOSKO\n"+pz+" piezas · liberas "+mx(libera)+"\n\n"+lin.join("\n");
+    var txt="REMATE KIOSKO\n"+pz+" piezas · recuperas "+mx(libera)+" ya con el envío descontado\n\n"+lin.join("\n");
     abrirHoja("<h3>Tu plan de remate</h3>"+
-      "<p>Vas a mover <b>"+pz+" piezas</b> que llevaban meses paradas y a recuperar <b>"+mx(libera)+"</b> en efectivo. Te costaron "+mx(cost)+".</p>"+
+      "<p>Vas a mover <b>"+pz+" piezas</b> que llevaban meses paradas y a recuperar <b>"+mx(libera)+"</b> limpios, ya descontado el motomandado de "+mx(MOTO)+" por pieza. Te costaron "+mx(cost)+".</p>"+
+      (libera<cost?"<p>Recuperas menos de lo que pagaste. <b>Eso está bien</b> si esas piezas llevan un año sin moverse: un billete dormido no vale más por esperar.</p>":"")+
       "<p>Publícalas juntas en Marketplace como un lote de ofertas: los remates atraen compradores que luego ven el resto de tu catálogo. Cuando se vendan, registra la venta con el precio de remate para que tus números sigan siendo ciertos.</p>"+
       '<textarea readonly id="plan-txt">'+esc(txt)+"</textarea>"+
       '<div style="display:flex;gap:.5rem;margin-top:.75rem"><button class="cta" id="cp">Copiar lista</button><button class="cta ghost" data-cerrar="1">Cerrar</button></div>');
@@ -333,6 +375,7 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
   var EXP={
     capital:["Capital detenido","Es el dinero que ya pagaste y sigue en cajas. No lo perdiste, pero tampoco lo tienes: no puede comprar nada nuevo hasta que se venda.<br><br>La medida que usan los negocios es cuántos <b>meses de ganancia</b> tienes congelados. Uno o dos es normal. Cinco o más significa que compraste más rápido de lo que vendes, o compraste cosas que no salen."],
     remate:["¿Vender al costo es perder?","No. Perder es que el dinero siga parado un año más.<br><br>Una pieza que compraste en $150 y no sale a $300 no vale $300: vale lo que alguien pague hoy. Si la rematas en $170 recuperas tu dinero, compras algo que sí rota y esos $170 dan la vuelta tres veces al año.<br><br>El error clásico del que empieza es aferrarse al precio que <b>quería</b> ganar. El que lleva años mira el calendario, no el precio."],
+    envio:["El envío te está costando más de lo que crees","Revisé tus 461 ventas. <b>225 se entregaron a domicilio</b> —la mitad— y en ellas pagaste <b>$10,485</b> de motomandado.<br><br>Cobraste el extra al cliente en <b>30 de esas 225 entregas</b>: el 13%. En total recuperaste $330 de los $10,485. <b>Absorbiste $10,155.</b><br><br>Además el moto no siempre cuesta $35: hay 16 entregas de $100 y 10 de $80. Tu promedio real por entrega es de <b>$47</b>, no $35.<br><br>Por eso aquí el envío se descuenta completo. Si empiezas a cobrarlo siempre, este número mejora solo y sin invertir un peso."],
     rotacion:["Rotación","Cuántos días pasan, en promedio, desde que compras una pieza hasta que se vende.<br><br>Lo importante no es el número solo: es compararlo contra <b>cuánto lleva parado lo que tienes hoy</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, esas piezas concretas son las que no salen. Esas son las que rematas."],
     margen:["Margen","De cada $100 que entran, cuántos te quedas después de pagar el producto, el envío y el motomandado.<br><br>El margen no es la ganancia. Puedes tener margen alto y ganar poco si vendes pocas piezas. Por eso al lado va siempre cuánto ganas <b>por venta</b> y cuántas ventas fueron."]
   };
