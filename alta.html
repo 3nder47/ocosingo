@@ -128,11 +128,26 @@ button{cursor:pointer}
 .quitar{position:absolute;top:.625rem;left:.625rem;z-index:2;width:30px;height:30px;border-radius:50%;border:none;background:var(--glass);backdrop-filter:blur(10px);color:var(--ink2);display:grid;place-items:center}
 .quitar:hover{color:var(--coral)}
 .pbody{padding:0 .5rem .25rem}
-.nombre{width:100%;border:none;background:none;font-size:1.125rem;font-weight:800;letter-spacing:-.02em;padding:0;line-height:1.25}
-.nombre::placeholder{color:var(--ink3);font-weight:700}
-.nombre:focus{outline:none}
+.nombre{font-size:1.0625rem!important;letter-spacing:-.01em}
 .ya{font-size:.75rem;color:var(--ink2);font-weight:600;margin-top:.125rem;min-height:1rem}
 .ya b{color:var(--green2)}
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;margin-top:.75rem}
+.campo{display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.campo.ancho,.opc.ancho{grid-column:1/-1}
+.campo>span:first-child{font-size:.75rem;font-weight:700;color:var(--ink2)}
+.campo>input,.money{border:1.5px solid var(--line);background:var(--card2);border-radius:var(--r-md);padding:.625rem .8125rem;font-weight:700;font-size:.9375rem;width:100%}
+.campo>input::placeholder,.money input::placeholder{color:var(--ink3);font-weight:600}
+.campo>input:focus,.money:focus-within{outline:none;border-color:var(--green2);background:#fff;box-shadow:0 0 0 3px rgba(30,122,82,.14)}
+.money{display:flex;align-items:center;gap:.375rem}
+.money i{font-style:normal;color:var(--ink2);font-weight:800}
+.money input{flex:1;min-width:0;border:none;background:none;padding:0;font-weight:800;font-size:1.0625rem}
+.money input:focus{outline:none}
+.campo small{font-size:.6875rem;color:var(--ink2);font-weight:600;line-height:1.4}
+.opc summary{cursor:pointer;font-size:.75rem;font-weight:700;color:var(--green2);list-style:none;padding:.25rem 0}
+.opc summary::-webkit-details-marker{display:none}
+.opc summary::before{content:"+ ";}
+.opc[open] summary::before{content:"− ";}
+.opc[open] summary{margin-bottom:.375rem}
 .pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.625rem}
 .pill.inp{padding:.3125rem .625rem}
 .pill.inp input{border:none;background:none;padding:0;width:auto;font-weight:700;font-size:.8125rem}
@@ -141,10 +156,10 @@ button{cursor:pointer}
 .pill.inp .din{width:4.5rem;text-align:right}
 .pill.inp .lbl{color:var(--ink2);font-weight:600}
 .pill:focus-within{border-color:var(--green2);box-shadow:0 0 0 3px rgba(30,122,82,.15)}
-.step{display:inline-flex;align-items:center;border-radius:var(--r-pill);background:var(--card2);border:1px solid var(--line)}
-.step button{width:30px;height:30px;border:none;background:none;border-radius:50%;font-weight:800;color:var(--ink2)}
+.step{display:inline-flex;align-items:center;border-radius:var(--r-md);background:var(--card2);border:1.5px solid var(--line);height:44px;padding:0 .25rem;width:fit-content}
+.step button{width:34px;height:34px;border:none;background:#fff;border-radius:50%;font-weight:800;color:var(--green);font-size:1.125rem;box-shadow:var(--shadow)}
 .step button:hover{background:var(--mint);color:var(--green)}
-.step input{width:2.25rem;text-align:center;border:none;background:none;font-weight:800;font-size:.875rem;padding:0}
+.step input{width:2.75rem;text-align:center;border:none;background:none;font-weight:800;font-size:1.0625rem;padding:0}
 .step input:focus{outline:none}
 .step span{font-size:.75rem;color:var(--ink2);font-weight:600;padding-right:.625rem}
 
@@ -169,7 +184,8 @@ button{cursor:pointer}
 .slider{grid-column:1/-1;width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:var(--r-pill);background:linear-gradient(90deg,var(--mango) 0 var(--p,50%),var(--lime2) var(--p,50%) 100%);outline:none;margin:.125rem 0 0}
 .slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--green);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
 .slider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--green);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
-.espera{font-size:.8125rem;color:var(--ink3);font-weight:600}
+.espera{font-size:.8125rem;color:var(--ink2);font-weight:600;line-height:1.45}
+.dinero.vacio{background:transparent;border:1.5px dashed rgba(20,31,25,.14);display:block}
 
 /* tarjeta agregar */
 .add{grid-column:1/-1;min-height:150px;border:2px dashed rgba(20,31,25,.14);background:transparent;box-shadow:none;border-radius:var(--r-xl);display:grid;place-items:center;color:var(--ink2);font-weight:800;transition:background .15s,color .15s}
@@ -432,15 +448,15 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
         '<span class="cta"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span data-k="ctatxt">Agregar foto</span></span>' +
         '<input type="file" accept="image/*" data-k="file" style="display:none"></div>' +
       '<div class="pbody">' +
-        '<input class="nombre" data-k="desc" list="dl-prods" placeholder="¿Qué compraste?" autocomplete="off">' +
+        '<label class="campo"><span>Nombre del producto</span><input class="nombre" data-k="desc" list="dl-prods" placeholder="Ej. Kemei KM-1419 Cortadora de pelo" autocomplete="off"></label>' +
         '<div class="ya" data-k="ya"></div>' +
-        '<div class="pills">' +
-          '<span class="pill inp"><input class="cat" data-k="cat" list="dl-cats" placeholder="Categoría" autocomplete="off"></span>' +
-          '<span class="step"><button data-k="menos">−</button><input data-k="q" type="number" min="1" step="1" value="1"><button data-k="mas">+</button><span>pzas</span></span>' +
-          '<span class="pill inp"><span class="lbl">c/u $</span><input class="din" data-k="costo" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></span>' +
-          '<span class="pill inp"><span class="lbl">lista $</span><input class="din" data-k="lista" type="number" min="0" step="0.01" placeholder="—" inputmode="decimal"></span>' +
+        '<div class="campos">' +
+          '<label class="campo"><span>Categoría</span><input data-k="cat" list="dl-cats" placeholder="Ej. Cuidado personal" autocomplete="off"></label>' +
+          '<div class="campo"><span>Piezas que compraste</span><span class="step"><button type="button" data-k="menos">−</button><input data-k="q" type="number" min="1" step="1" value="1"><button type="button" data-k="mas">+</button></span></div>' +
+          '<label class="campo ancho"><span>Precio que te cobró la plataforma, por pieza</span><span class="money"><i>$</i><input data-k="costo" type="number" min="0" step="0.01" placeholder="105.00" inputmode="decimal"></span><small>El que aparece en tu pedido ya con descuentos. Sin impuestos ni envío: esos van abajo, en lo que pagó tu tarjeta.</small></label>' +
+          '<details class="opc ancho"><summary>¿Tenía descuento? Anota el precio antes del descuento</summary><label class="campo"><span>Precio de lista, antes del descuento</span><span class="money"><i>$</i><input data-k="lista" type="number" min="0" step="0.01" placeholder="149.99" inputmode="decimal"></span><small>Solo de referencia. No cambia tu costo.</small></label></details>' +
         "</div>" +
-        '<div class="dinero" data-k="dinero"><span class="espera">Captura el costo y el cargo de tu tarjeta</span></div>' +
+        '<div class="dinero vacio" data-k="dinero"><span class="espera">Cuando captures el precio y el cargo de tu tarjeta, aquí verás tu costo real y el precio sugerido</span></div>' +
       "</div>";
     var f = { id: id, el: el, color: PALETA[ci], foto: null, tocado: false, precioVal: 0, cf: 0 };
     ["foto","x","ctatxt","file","desc","ya","cat","menos","q","mas","costo","lista","dinero"].forEach(function(k){ f[k] = el.querySelector('[data-k="' + k + '"]'); });
@@ -486,7 +502,8 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
       var ex = (f.desc.value.trim() && f.cat.value.trim()) ? existente(f.desc.value, f.cat.value) : null;
       f.ya.innerHTML = ex ? "Ya lo tienes · <b>" + esc(ex.pid || "") + "</b> · se le suman piezas" : "";
       var costo = num(f.costo.value), q = Math.max(0, Math.round(num(f.q.value)));
-      if (!(costo > 0) || !hay){ f.dinero.innerHTML = '<span class="espera">' + (costo > 0 ? "Falta el cargo de tu tarjeta" : "Captura el costo por pieza") + "</span>"; return; }
+      if (!(costo > 0) || !hay){ f.dinero.className = "dinero vacio"; f.dinero.innerHTML = '<span class="espera">' + (costo > 0 ? "Falta el cargo de tu tarjeta, arriba en la tarjeta verde" : "Falta el precio que te cobró la plataforma") + "</span>"; return; }
+      f.dinero.className = "dinero";
       var cf = r2(costo * factor); f.cf = cf;
       var sug = a10(cf * mult); if (!f.tocado) f.precioVal = sug;
       var precio = f.tocado ? num(f.precioVal) : sug;
