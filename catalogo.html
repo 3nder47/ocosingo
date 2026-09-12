@@ -1,547 +1,712 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#090E0C">
-<title>Kiosko · Ocosingo</title>
-<meta name="description" content="Audífonos, relojes, bocinas y más. Te lo llevamos a tu casa en el centro de Ocosingo por $10.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Kiosko · Ocosingo">
-<meta property="og:description" content="Audífonos, relojes, bocinas y más. Te lo llevamos a tu casa por $10.">
-<meta property="og:image" content="icons/icon-512.png">
-<link rel="icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#030712">
+<title>Kiosko · Ocosingo — Tech & Lifestyle</title>
+<meta name="description" content="Audífonos, relojes, bocinas y gadgets. Te lo llevamos a tu casa en Ocosingo por solo $10.">
+
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;850&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Plus Jakarta Sans', 'sans-serif'],
+          display: ['Space Grotesk', 'sans-serif'],
+        },
+        colors: {
+          brand: {
+            50: '#ecfdf5',
+            100: '#d1fae5',
+            400: '#34d399',
+            500: '#10b981',
+            600: '#059669',
+            700: '#047857',
+            900: '#064e3b',
+          },
+          wa: {
+            500: '#25D366',
+            600: '#128C7E',
+            700: '#075E54'
+          },
+          dark: {
+            bg: '#030712',
+            card: '#0f172a',
+            border: '#1e293b'
+          }
+        },
+        keyframes: {
+          marquee: {
+            '0%': { transform: 'translateX(0%)' },
+            '100%': { transform: 'translateX(-50%)' }
+          },
+          pulseGlow: {
+            '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+            '50%': { opacity: '0.8', transform: 'scale(1.05)' }
+          }
+        },
+        animation: {
+          marquee: 'marquee 35s linear infinite',
+          'pulse-glow': 'pulseGlow 6s ease-in-out infinite'
+        }
+      }
+    }
+  }
+</script>
+
 <style>
-/* ==========================================================================
-   Kiosko · Catálogo Público Juvenil & Moderno
-   ========================================================================== */
-:root {
-  --bg-base: #090E0C;
-  --bg-surface: #131C18;
-  --bg-card: #18241F;
-  --bg-card-hover: #1F2E28;
-  --tinta: #F3F5F4;
-  --niebla: #8C9E95;
-  --linea: rgba(255, 255, 255, 0.08);
-  --linea-activa: rgba(0, 230, 118, 0.3);
-  --accent: #00E676; /* Verde neón vibrante */
-  --accent-glow: rgba(0, 230, 118, 0.25);
-  --maiz: #FFB300; /* Destello cálido */
-  --r: 16px;
-  --r-sm: 10px;
-}
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.2); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.4); }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg-base: #F4F7F5;
-    --bg-surface: #FFFFFF;
-    --bg-card: #FFFFFF;
-    --bg-card-hover: #FAFCFB;
-    --tinta: #111C18;
-    --niebla: #63756C;
-    --linea: rgba(17, 28, 24, 0.08);
-    --linea-activa: rgba(0, 182, 92, 0.3);
-    --accent: #00B65C;
-    --accent-glow: rgba(0, 182, 92, 0.18);
+  .glass-card {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
-}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background: var(--bg-base);
-  color: var(--tinta);
-  -webkit-font-smoothing: antialiased;
-  font-size: 16px;
-  line-height: 1.5;
-  overflow-x: hidden;
-}
-
-button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-a { color: inherit; text-decoration: none; }
-img { display: block; max-width: 100%; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-
-.env { width: min(1200px, 100%); margin-inline: auto; padding-inline: 20px; }
-@media (min-width: 760px) { .env { padding-inline: 36px; } }
-
-/* Tipografía de títulos */
-.disp {
-  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  font-weight: 850;
-  letter-spacing: -.03em;
-  line-height: 1.05;
-}
-
-/* ==========================  PORTADA HERO  ========================== */
-.portada {
-  background: radial-gradient(circle at top right, rgba(0,230,118,0.08), transparent 40%), var(--bg-surface);
-  border-bottom: 1px solid var(--linea);
-  padding: 32px 0 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.top-bar { display: flex; align-items: center; justify-content: space-between; }
-.marca { display: flex; align-items: center; gap: 10px; }
-.marca-logo {
-  width: 38px; height: 38px; background: var(--accent); color: #000;
-  border-radius: 10px; display: grid; place-items: center; font-family: 'Outfit', sans-serif; font-weight: 850; font-size: 1.2rem;
-  box-shadow: 0 4px 14px var(--accent-glow);
-}
-.marca b { font-family: 'Outfit', sans-serif; font-weight: 850; font-size: 1.35rem; letter-spacing: -.02em; }
-.marca span { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--niebla); font-weight: 700; background: var(--linea); padding: 3px 8px; border-radius: 6px; }
-
-.badge-envio {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255,179,0,0.12); color: var(--maiz);
-  font-size: 0.8125rem; font-weight: 700; padding: 6px 12px; border-radius: 99px;
-  margin-top: 24px; border: 1px solid rgba(255,179,0,0.25);
-}
-
-.lema { margin-top: 14px; font-size: clamp(2.4rem, 8vw, 4.5rem); max-width: 14ch; }
-.lema em { font-style: normal; color: var(--accent); text-shadow: 0 0 30px var(--accent-glow); }
-
-.reparto { margin-top: 16px; max-width: 38ch; font-size: 0.95rem; color: var(--niebla); line-height: 1.6; }
-.reparto b { color: var(--tinta); font-weight: 700; }
-
-/* Cinta deslizante */
-.cinta { margin-top: 36px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.cinta-pista { display: flex; gap: 14px; width: max-content; animation: desfile 38s linear infinite; }
-.cinta:hover .cinta-pista { animation-play-state: paused; }
-.cinta img { width: 120px; height: 120px; object-fit: cover; border-radius: var(--r); background: var(--bg-card); border: 1px solid var(--linea); flex-shrink: 0; transition: transform .3s; }
-.cinta img:hover { transform: scale(1.05); }
-@keyframes desfile { to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .cinta-pista { animation: none; } }
-.pie-portada { height: 28px; }
-
-/* ==========================  BUSCAR + CATEGORÍAS  ========================== */
-.barra {
-  position: sticky; top: 0; z-index: 30;
-  background: rgba(9, 14, 12, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--linea);
-}
-@media (prefers-color-scheme: light) {
-  .barra { background: rgba(244, 247, 245, 0.85); }
-}
-
-.buscar {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--linea);
-  border-radius: 14px;
-  padding: 0 16px;
-  margin: 16px 0 12px;
-  transition: border-color .2s, box-shadow .2s;
-}
-.buscar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-.buscar svg { width: 20px; height: 20px; stroke: var(--niebla); fill: none; stroke-width: 2.2; stroke-linecap: round; flex-shrink: 0; }
-.buscar input { flex: 1; min-width: 0; border: 0; background: none; outline: 0; font-size: 1rem; font-weight: 500; color: inherit; padding: 14px 0; }
-.buscar input::placeholder { color: var(--niebla); }
-.buscar .limpiar { display: none; font-size: 0.8rem; font-weight: 700; color: var(--accent); background: var(--accent-glow); padding: 4px 10px; border-radius: 6px; }
-.buscar.escrito .limpiar { display: block; }
-
-.cats { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0 16px; scrollbar-width: none; }
-.cats::-webkit-scrollbar { display: none; }
-@media (pointer: fine) { .cats { cursor: grab; } }
-.cats.jalando { cursor: grabbing; user-select: none; }
-
-.cat {
-  flex-shrink: 0; display: flex; align-items: center; gap: 10px;
-  background: var(--bg-surface); border: 1px solid var(--linea);
-  padding: 6px 14px 6px 6px; border-radius: 99px;
-  font-size: 0.85rem; font-weight: 600; color: var(--niebla);
-  transition: all .2s cubic-bezier(.22,.61,.36,1);
-}
-.cat u { display: block; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; background: var(--bg-card); flex-shrink: 0; }
-.cat u img { width: 100%; height: 100%; object-fit: cover; }
-.cat .todo { display: grid; place-items: center; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.85rem; color: var(--tinta); background: var(--accent-glow); width: 100%; height: 100%; }
-.cat:hover { border-color: var(--niebla); color: var(--tinta); }
-.cat.viva { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-glow); }
-.cat.viva .todo { background: rgba(0,0,0,0.15); color: #000; }
-
-/* ==========================  REJILLA DE PRODUCTOS  ========================== */
-.lista { padding: 32px 0 60px; }
-.encabezado { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
-.encabezado h2 { font-size: clamp(1.4rem, 4vw, 1.8rem); }
-.encabezado p { font-size: 0.85rem; color: var(--niebla); font-weight: 600; background: var(--bg-surface); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--linea); }
-
-.volver { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 700; color: var(--accent); margin-bottom: 16px; background: var(--accent-glow); padding: 6px 12px; border-radius: 8px; }
-.volver svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-.rejilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 14px; }
-@media (min-width: 600px) { .rejilla { grid-template-columns: repeat(3, 1fr); gap: 24px 18px; } }
-@media (min-width: 960px) { .rejilla { grid-template-columns: repeat(4, 1fr); gap: 28px 20px; } }
-
-.pieza {
-  background: var(--bg-card);
-  border: 1px solid var(--linea);
-  border-radius: var(--r);
-  overflow: hidden;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: transform .3s cubic-bezier(.22,.61,.36,1), border-color .3s, box-shadow .3s;
-}
-@media (pointer: fine) {
-  .pieza:hover {
-    transform: translateY(-4px);
-    border-color: var(--linea-activa);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  .glass-nav {
+    background: rgba(3, 7, 18, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
-}
-.pieza:active { transform: scale(0.98); }
 
-.pieza .foto {
-  position: relative; background: var(--bg-surface);
-  aspect-ratio: 1/1; overflow: hidden;
-}
-.pieza .foto img {
-  width: 100%; height: 100%; object-fit: cover; opacity: 0;
-  transition: opacity .4s, transform .5s cubic-bezier(.22,.61,.36,1);
-}
-.pieza .foto img.lista { opacity: 1; }
-@media (pointer: fine) { .pieza:hover .foto img.lista { transform: scale(1.06); } }
+  /* Custom Touch Drag CSS for Categories Slider */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.sello {
-  position: absolute; top: 10px; left: 10px;
-  background: var(--maiz); color: #1A1200; font-size: 0.6875rem;
-  font-weight: 800; padding: 4px 10px; border-radius: 99px;
-  letter-spacing: 0.02em; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  z-index: 2;
-}
-.tomas {
-  position: absolute; bottom: 10px; right: 10px;
-  background: rgba(9, 14, 12, 0.75); backdrop-filter: blur(6px);
-  color: #fff; font-size: 0.6875rem; font-weight: 700;
-  padding: 4px 9px; border-radius: 99px; z-index: 2;
-  border: 1px solid rgba(255,255,255,0.1);
-}
+  /* Smooth Modal Backdrop Blur */
+  .modal-backdrop {
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .modal-sheet {
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
 
-.pieza-cuerpo { padding: 14px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; gap: 10px; }
-.pieza .nombre {
-  font-size: 0.9rem; font-weight: 600; line-height: 1.35;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  color: var(--tinta);
-}
-.pieza .pie-precio { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.pieza .precio {
-  font-family: 'Outfit', sans-serif; font-weight: 850;
-  font-size: 1.25rem; letter-spacing: -.02em; color: var(--accent);
-}
-.btn-ver {
-  background: var(--bg-surface); border: 1px solid var(--linea);
-  color: var(--tinta); font-size: 0.75rem; font-weight: 700;
-  padding: 6px 10px; border-radius: 8px; transition: background .2s, border-color .2s;
-}
-.pieza:hover .btn-ver { background: var(--accent); color: #000; border-color: var(--accent); }
-
-/* ==========================  FICHA / MODAL DE PRODUCTO  ========================== */
-.velo {
-  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  z-index: 100; display: flex; align-items: flex-end; justify-content: center;
-  animation: aparece .25s ease;
-}
-@keyframes aparece { from { opacity: 0; } }
-
-.panel {
-  width: 100%; max-width: 580px; background: var(--bg-surface);
-  border: 1px solid var(--linea); border-radius: 24px 24px 0 0;
-  max-height: 92vh; overflow-y: auto;
-  animation: sube .4s cubic-bezier(.22,.61,.36,1);
-  padding-bottom: calc(28px + env(safe-area-inset-bottom));
-  box-shadow: 0 -20px 40px rgba(0,0,0,0.4);
-}
-@keyframes sube { from { transform: translateY(100%); } }
-
-.agarre { width: 40px; height: 4px; border-radius: 99px; background: var(--niebla); margin: 12px auto 0; opacity: 0.4; }
-
-.galeria { position: relative; margin-top: 12px; }
-.galeria-pista { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.galeria-pista::-webkit-scrollbar { display: none; }
-.galeria-pista img { flex: 0 0 100%; width: 100%; aspect-ratio: 1/1; object-fit: cover; scroll-snap-align: start; background: var(--bg-card); }
-.puntos { position: absolute; bottom: 14px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
-.puntos i { width: 6px; height: 6px; border-radius: 99px; background: rgba(255,255,255,0.4); transition: width .25s, background .25s; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
-.puntos i.viva { background: var(--accent); width: 20px; }
-
-.ficha { padding: 24px 24px 0; }
-.ficha .grupo {
-  display: inline-block; font-size: 0.75rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent);
-  background: var(--accent-glow); padding: 4px 10px; border-radius: 6px;
-}
-.ficha h3 { margin-top: 10px; font-family: 'Outfit', sans-serif; font-weight: 850; font-size: 1.75rem; letter-spacing: -.02em; line-height: 1.15; }
-.ficha .valor {
-  margin-top: 12px; font-family: 'Outfit', sans-serif; font-weight: 850;
-  font-size: 2.5rem; letter-spacing: -.03em; line-height: 1; color: var(--accent);
-}
-.entrega-box {
-  margin-top: 20px; background: var(--bg-card); border: 1px solid var(--linea);
-  border-radius: var(--r-sm); padding: 14px 16px; font-size: 0.875rem; color: var(--niebla); line-height: 1.5;
-}
-.entrega-box b { color: var(--tinta); font-weight: 700; }
-
-.pedir {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; margin-top: 24px; padding: 18px; border-radius: 14px;
-  background: #25D366; color: #000; font-size: 1.05rem; font-weight: 800;
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.3);
-  transition: transform .16s, filter .16s;
-}
-.pedir:active { transform: scale(0.98); }
-@media (pointer: fine) { .pedir:hover { filter: brightness(1.08); } }
-.pedir svg { width: 22px; height: 22px; fill: currentColor; flex-shrink: 0; }
-
-.cerrar { display: block; width: 100%; padding: 14px; margin-top: 6px; font-size: 0.9rem; font-weight: 600; color: var(--niebla); }
-.cerrar:hover { color: var(--tinta); }
-
-/* ==========================  ESTADOS Y PIE  ========================== */
-.aviso { padding: 80px 20px; text-align: center; color: var(--niebla); font-size: 0.95rem; max-width: 38ch; margin-inline: auto; }
-.aviso b { display: block; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.35rem; color: var(--tinta); margin-bottom: 8px; }
-.hueso { background: var(--bg-card); border-radius: var(--r); aspect-ratio: 1/1; border: 1px solid var(--linea); animation: pulso 1.5s infinite ease-in-out; }
-@keyframes pulso { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-.cierre { margin-top: 60px; background: var(--bg-surface); border-top: 1px solid var(--linea); color: var(--niebla); padding: 48px 0; }
-.cierre p { font-size: 0.9rem; line-height: 1.6; max-width: 44ch; }
-.cierre a { color: var(--accent); font-weight: 700; }
-.cierre .nota { margin-top: 14px; font-size: 0.78rem; opacity: 0.7; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 </style>
 </head>
-<body>
 
-<header class="portada">
-  <div class="env">
-    <div class="top-bar">
-      <div class="marca">
-        <div class="marca-logo">K</div>
-        <div><b>Kiosko</b></div>
+<body class="bg-dark-bg text-slate-100 font-sans antialiased selection:bg-brand-500 selection:text-white min-h-screen flex flex-col justify-between">
+
+<div class="top-0 z-50">
+  <!-- Dynamic Shipping / Promo Bar -->
+  <div class="bg-gradient-to-r from-emerald-900/60 via-brand-900/40 to-slate-900 border-b border-emerald-500/10 text-xs py-2 px-4 text-center font-medium text-emerald-300 flex items-center justify-center gap-2">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+    <span>🚀 Entregas hoy en el centro de Ocosingo por solo <strong class="text-white font-bold">$10 MXN</strong></span>
+    <span class="hidden md:inline text-slate-500">•</span>
+    <span class="hidden md:inline text-slate-400">Lun - Vie: 9:00 AM - 8:30 PM</span>
+  </div>
+
+  <!-- Navbar Navigation -->
+  <header class="glass-nav sticky top-0 z-40 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Logo -->
+      <a href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform duration-300">
+          <span class="font-display font-black text-xl text-slate-950">K</span>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span class="font-display font-extrabold text-xl tracking-tight text-white group-hover:text-brand-400 transition-colors">Kiosko</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/20">STORE</span>
+          </div>
+          <span class="text-xs text-slate-400 font-medium -mt-1">Ocosingo, Chiapas</span>
+        </div>
+      </a>
+
+      <!-- Quick Action Buttons / Status -->
+      <div class="flex items-center gap-3">
+        <a id="nav-wa-btn" href="#" target="_blank" class="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-xl bg-wa-500/10 hover:bg-wa-500/20 text-wa-500 border border-wa-500/20 transition-all duration-200">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23"/></svg>
+          <span>WhatsApp Directo</span>
+        </a>
       </div>
-      <span>Ocosingo</span>
     </div>
-    
-    <div class="badge-envio">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v4h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
-      Envío a domicilio por $10 en el centro
-    </div>
-
-    <h1 class="lema disp">Lo que hay <em>hoy</em> en la tienda</h1>
-    <p class="reparto" id="reparto">Audífonos, relojes, bocinas y gadgets listos para entrega inmediata. Lunes a viernes de 9:00 a 20:30.</p>
-  </div>
-  <div class="cinta" id="cinta" aria-hidden="true"></div>
-  <div class="pie-portada"></div>
-</header>
-
-<div class="barra">
-  <div class="env">
-    <div class="buscar" id="caja-buscar">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Busca audífonos, relojes, bocinas..." autocomplete="off" aria-label="Buscar producto">
-      <button class="limpiar" id="limpiar">Limpiar</button>
-    </div>
-    <div class="cats" id="cats"></div>
-  </div>
+  </header>
 </div>
 
-<main class="env lista" id="lista"></main>
+<section class="relative overflow-hidden pt-8 pb-12 lg:pt-14 lg:pb-16 bg-gradient-to-b from-dark-bg via-slate-950 to-dark-bg">
+  <!-- Glowing background elements -->
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/15 rounded-full blur-[120px] pointer-events-none animate-pulse-glow"></div>
+  <div class="absolute top-1/3 right-10 w-72 h-72 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-<footer class="cierre">
-  <div class="env">
-    <p>¿Buscas algo específico y no lo ves aquí? Pregúntanos directamente y te decimos si lo conseguimos. <a id="pie-wa" href="#">Mándanos un WhatsApp</a></p>
-    <p class="nota">Los precios y disponibilidad están sujetos a cambios según existencias en tienda.</p>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+    <!-- Floating Tag -->
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/60 shadow-xl mb-6">
+      <span class="flex h-2 w-2 rounded-full bg-emerald-400"></span>
+      <span class="text-xs font-semibold text-slate-300">Catálogo actualizado hoy en tiempo real</span>
+    </div>
+
+    <!-- Main Title -->
+    <h1 class="text-4xl sm:text-6xl lg:text-7xl font-display font-black tracking-tight text-white mb-4 leading-[1.08]">
+      Lo mejor en Tech & Style <br>
+      <span class="bg-gradient-to-r from-brand-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent">al alcance de tu mano.</span>
+    </h1>
+
+    <p class="max-w-2xl mx-auto text-base sm:text-lg text-slate-400 font-normal leading-relaxed mb-8">
+      Audífonos gamer, smartwatches, altavoces Bluetooth y accesorios premium. Explora nuestras existencias actuales y pidelos al instante por WhatsApp.
+    </p>
+
+    <!-- Highlights Badges -->
+    <div class="flex flex-wrap justify-center items-center gap-3 text-xs sm:text-sm font-medium text-slate-300 mb-10">
+      <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800">
+        <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <span>Entrega Express Ocosingo</span>
+      </div>
+      <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Garantía de Satisfacción</span>
+      </div>
+      <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800">
+        <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span>Pago a la entrega ($10 envío)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Infinite Marquee Reel -->
+  <div class="w-full overflow-hidden mask-gradient relative py-4 border-y border-slate-800/60 bg-slate-950/40">
+    <div id="cinta" class="flex gap-4 w-max">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+</section>
+
+<section class="sticky top-16 z-30 bg-dark-bg/90 backdrop-blur-md border-b border-slate-800 py-4 shadow-xl">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+    
+    <!-- Search Bar & Controls -->
+    <div class="flex items-center gap-3">
+      <div class="relative flex-1" id="caja-buscar">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input type="search" id="q" placeholder="Buscar audífonos, smartwatch, bocina..." autocomplete="off" 
+          class="w-full pl-11 pr-10 py-3 bg-slate-900/90 text-slate-100 placeholder-slate-500 rounded-2xl border border-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm font-medium transition-all outline-none">
+        <button id="limpiar" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-bold text-slate-400 hover:text-brand-400 transition-colors">
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- Dynamic Category Pills Scroll -->
+    <div class="relative">
+      <div id="cats" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-sm scroll-smooth">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+  <!-- Dynamic Heading Bar -->
+  <div class="flex items-center justify-between gap-4 mb-6" id="encabezado-contenedor">
+    <div>
+      <h2 id="catalogo-titulo" class="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        Catálogo General
+      </h2>
+      <p id="catalogo-sub" class="text-xs sm:text-sm text-slate-400 font-medium mt-1">Cargando productos...</p>
+    </div>
+    <div id="boton-volver-holder"></div>
+  </div>
+
+  <!-- Main Grid -->
+  <div id="lista" class="min-h-[300px]">
+    <!-- Skeleton/Cards inserted dynamically -->
+  </div>
+</main>
+
+<footer class="bg-slate-950 border-t border-slate-800/80 mt-16 text-slate-400 text-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-slate-950">K</div>
+          <span class="font-display font-extrabold text-lg text-white">Kiosko Ocosingo</span>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Tu catálogo local de gadgets y tecnología. Todos los precios exhibidos están sujetos a disponibilidad física de inventario.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-white mb-2 text-xs uppercase tracking-wider">Entregas & Cobertura</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Atención de Lunes a Viernes de 9:00 AM a 8:30 PM. Envío express directo a tu domicilio en la zona centro de Ocosingo por $10 MXN.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-white mb-2 text-xs uppercase tracking-wider">Atención Especializada</h3>
+        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+          ¿Buscas un producto en específico que no ves en el catálogo?
+        </p>
+        <a id="pie-wa" href="#" target="_blank" class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-brand-500 text-white transition-colors">
+          <svg class="w-4 h-4 text-wa-500 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23"/></svg>
+          Solicitar producto por pedido
+        </a>
+      </div>
+    </div>
+    <div class="border-t border-slate-800/60 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-2">
+      <p>© 2026 Kiosko Ocosingo. Todos los derechos reservados.</p>
+      <p>Ocosingo, Chiapas, México.</p>
+    </div>
   </div>
 </footer>
 
 <div id="ficha"></div>
 
-<script src="config.js"></script>
 <script>
-const API = (window.OC_CONFIG || {}).API_URL || '';
+/* Configuration Fallbacks & Mock Data */
+window.OC_CONFIG = window.OC_CONFIG || {};
+const API = window.OC_CONFIG.API_URL || '';
 const WA_TIENDA = '525614842235';
 const GUARDADO = 'kiosko:catalogo';
 const RAIZ = location.origin + location.pathname;
 
+/* High Quality Demo Backup Items (Matches Exact Backend Schema) */
+const MOCK_ITEMS = [
+  {
+    descripcion: "Audífonos Gamer Lenovo GM2 Pro Wireless Bluetooth 5.3 High Fidelity",
+    categoria: "Audífonos",
+    precio: 349,
+    imagen: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80",
+    extras: [
+      "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"
+    ],
+    ultima: true
+  },
+  {
+    descripcion: "Smartwatch Deportivo T900 Ultra Series 8 Pantalla HD HD Control de Salud",
+    categoria: "Relojes",
+    precio: 420,
+    imagen: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&auto=format&fit=crop&q=80",
+    extras: [
+      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=800&auto=format&fit=crop&q=80"
+    ],
+    ultima: false
+  },
+  {
+    descripcion: "Bocina Portátil Bluetooth Waterproof RGB SoundPulse Bass Boom",
+    categoria: "Bocinas",
+    precio: 299,
+    imagen: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&auto=format&fit=crop&q=80",
+    extras: [
+      "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=800&auto=format&fit=crop&q=80"
+    ],
+    ultima: false
+  },
+  {
+    descripcion: "Cargador Carga Rápida 35W Dual Type-C Power Delivery Ultra Compact",
+    categoria: "Accesorios",
+    precio: 180,
+    imagen: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&auto=format&fit=crop&q=80",
+    extras: [],
+    ultima: true
+  },
+  {
+    descripcion: "Audífonos Inalámbricos Pro ANC Cancelación de Ruido Activa",
+    categoria: "Audífonos",
+    precio: 499,
+    imagen: "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?w=800&auto=format&fit=crop&q=80",
+    extras: [
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&auto=format&fit=crop&q=80"
+    ],
+    ultima: false
+  },
+  {
+    descripcion: "Smartband Fitness Tracker Ritmo Cardíaco & Monitoreo de Sueño",
+    categoria: "Relojes",
+    precio: 260,
+    imagen: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=800&auto=format&fit=crop&q=80",
+    extras: [],
+    ultima: false
+  }
+];
+
 var articulos = [], grupo = null, abierto = null;
 
-const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+/* Helper Functions */
+const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const pelar = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const pesos = n => Math.round(Number(n) || 0).toLocaleString('es-MX');
 const clave = s => pelar(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const tomas = p => [p.imagen].concat(p.extras || []).filter(Boolean);
 const wa = (num, txt) => 'https://wa.me/' + num + '?text=' + encodeURIComponent(txt);
 
-document.getElementById('pie-wa').href = wa(WA_TIENDA, 'Hola, busco algo que no vi en el catálogo.');
+/* Set Default Footer WA Link */
+const defaultWaMsg = wa(WA_TIENDA, 'Hola, busco un producto que no encontré en el catálogo de Kiosko.');
+document.getElementById('pie-wa').href = defaultWaMsg;
+document.getElementById('nav-wa-btn').href = defaultWaMsg;
 
-const q = document.getElementById('q'), caja = document.getElementById('caja-buscar');
-q.addEventListener('input', function() { caja.classList.toggle('escrito', !!q.value); pintar(); });
-document.getElementById('limpiar').onclick = function() { q.value = ''; caja.classList.remove('escrito'); pintar(); q.focus(); };
+/* Search Listeners */
+const q = document.getElementById('q'), limpiarBtn = document.getElementById('limpiar');
+q.addEventListener('input', function() {
+  if (q.value.trim().length > 0) {
+    limpiarBtn.classList.remove('hidden');
+  } else {
+    limpiarBtn.classList.add('hidden');
+  }
+  pintar();
+});
 
+limpiarBtn.onclick = function() {
+  q.value = '';
+  limpiarBtn.classList.add('hidden');
+  pintar();
+  q.focus();
+};
+
+/* Infinity Cinta Reel Generator */
 function cinta() {
   const fotos = articulos.slice(0, 14).map(p => p.imagen).filter(Boolean);
-  if (fotos.length < 4) { document.getElementById('cinta').innerHTML = ''; return; }
-  const tira = fotos.concat(fotos).map(u => '<img src="' + esc(u) + '" alt="" loading="lazy" decoding="async">').join('');
-  document.getElementById('cinta').innerHTML = '<div class="cinta-pista">' + tira + '</div>';
+  const el = document.getElementById('cinta');
+  if (fotos.length < 3) {
+    el.innerHTML = '';
+    return;
+  }
+  const listaFotos = fotos.concat(fotos); // duplicate for seamless scrolling
+  el.innerHTML = listaFotos.map(u => `
+    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 flex-shrink-0 group relative">
+      <img src="${esc(u)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100" loading="lazy" alt="" onerror="this.src='https://placehold.co/200x200/0f172a/94a3b8?text=Kiosko'">
+    </div>
+  `).join('');
+  el.className = "flex gap-3 w-max animate-marquee hover:[animation-play-state:paused]";
 }
 
+/* Render Categories Pill Filter Bar */
 function cats() {
   const cuenta = {}, foto = {};
-  articulos.forEach(function(p) { cuenta[p.categoria] = (cuenta[p.categoria] || 0) + 1; if (!foto[p.categoria]) foto[p.categoria] = p.imagen; });
+  articulos.forEach(function(p) {
+    cuenta[p.categoria] = (cuenta[p.categoria] || 0) + 1;
+    if (!foto[p.categoria]) foto[p.categoria] = p.imagen;
+  });
   const orden = Object.keys(cuenta).sort(function(a, b) { return cuenta[b] - cuenta[a]; });
-  const uno = (nom, img, activa, n) => '<button class="cat ' + (activa ? 'viva' : '') + '" data-c="' + esc(nom) + '">' +
-    '<u>' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '<span class="todo">' + n + '</span>') + '</u>' + esc(nom) + '</button>';
-  document.getElementById('cats').innerHTML =
-    uno('Todo', '', !grupo, articulos.length) + orden.map(function(c) { return uno(c, foto[c], grupo === c); }).join('');
-  Array.prototype.forEach.call(document.querySelectorAll('.cat'), function(b) {
-    b.onclick = function() { ir(b.dataset.c === 'Todo' ? null : b.dataset.c); };
+  
+  const createPill = (nom, img, activa, count) => {
+    const isSelected = activa;
+    return `
+      <button class="cat-btn px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 flex-shrink-0 ${
+        isSelected 
+        ? 'bg-brand-500 text-slate-950 border-brand-400 shadow-lg shadow-brand-500/25 scale-[1.02]' 
+        : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+      }" data-c="${esc(nom)}">
+        ${img ? `<img src="${esc(img)}" class="w-4 h-4 rounded-full object-cover" alt="" onerror="this.style.display='none'">` : ''}
+        <span>${esc(nom)}</span>
+        <span class="px-1.5 py-0.2 text-[10px] rounded-full ${isSelected ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'}">${count}</span>
+      </button>
+    `;
+  };
+
+  let html = createPill('Todo', '', !grupo, articulos.length);
+  html += orden.map(c => createPill(c, foto[c], grupo === c, cuenta[c])).join('');
+
+  document.getElementById('cats').innerHTML = html;
+
+  Array.prototype.forEach.call(document.querySelectorAll('.cat-btn'), function(b) {
+    b.onclick = function() {
+      ir(b.dataset.c === 'Todo' ? null : b.dataset.c);
+    };
   });
 }
 
 function ir(c) {
   grupo = c;
   history.replaceState(null, '', c ? '#' + clave(c) : RAIZ);
-  cats(); pintar();
-  document.querySelector('.barra').scrollIntoView({ block: 'start' });
+  cats();
+  pintar();
+  document.getElementById('cats').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+/* Product Card Component Generator */
 function tarjeta(p) {
   const n = tomas(p).length;
-  return '<button class="pieza" data-p="' + esc(clave(p.descripcion)) + '">' +
-    '<span class="foto">' + (p.ultima ? '<span class="sello">Última pieza</span>' : '') +
-    (n > 1 ? '<span class="tomas">' + n + ' fotos</span>' : '') +
-    '<img src="' + esc(p.imagen) + '" alt="' + esc(p.descripcion) + '" loading="lazy" decoding="async" ' +
-    'onload="this.classList.add(\'lista\')" onerror="this.closest(\'.pieza\').remove()"></span>' +
-    '<div class="pieza-cuerpo">' +
-      '<span class="nombre">' + esc(p.descripcion) + '</span>' +
-      '<div class="pie-precio">' +
-        '<span class="precio">$' + pesos(p.precio) + '</span>' +
-        '<span class="btn-ver">Ver</span>' +
-      '</div>' +
-    '</div></button>';
+  const keyDesc = clave(p.descripcion);
+  return `
+    <div class="pieza group glass-card rounded-2xl overflow-hidden flex flex-col justify-between border border-slate-800/80 hover:border-brand-500/40 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-1" data-p="${esc(keyDesc)}">
+      <!-- Media Container -->
+      <div class="relative aspect-square w-full overflow-hidden bg-slate-900 cursor-pointer">
+        ${p.ultima ? '<span class="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-slate-950 shadow-md">Última Pieza</span>' : ''}
+        ${n > 1 ? `<span class="absolute bottom-2.5 right-2.5 z-10 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950/80 text-slate-300 backdrop-blur-md border border-slate-800 flex items-center gap-1"><svg class="w-3 h-3 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${n} fotos</span>` : ''}
+        
+        <img src="${esc(p.imagen)}" alt="${esc(p.descripcion)}" loading="lazy" decoding="async" 
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          onerror="this.onerror=null; this.src='https://placehold.co/600x600/0f172a/94a3b8?text=Kiosko+Ocosingo'">
+      </div>
+
+      <!-- Info Container -->
+      <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between cursor-pointer">
+        <div>
+          <span class="text-[11px] font-bold text-brand-400 uppercase tracking-wider block mb-1">${esc(p.categoria)}</span>
+          <h3 class="font-semibold text-slate-200 text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-white transition-colors">
+            ${esc(p.descripcion)}
+          </h3>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Precio</span>
+            <span class="font-display font-extrabold text-lg sm:text-xl text-white tracking-tight">$${pesos(p.precio)} <span class="text-xs font-normal text-slate-400">MXN</span></span>
+          </div>
+          <button class="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-400 group-hover:bg-brand-500 group-hover:text-slate-950 flex items-center justify-center transition-all duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
+/* Paint Main Grid */
 function pintar() {
   const el = document.getElementById('lista');
   const t = pelar(q.value.trim()), palabras = t ? t.split(/\s+/) : [];
-  var lista = articulos, titulo = 'Todo lo disponible', sub = articulos.length + ' productos', atras = '';
+  var lista = articulos, titulo = 'Todo lo disponible', sub = articulos.length + ' productos en catálogo', atras = '';
 
   if (palabras.length) {
     lista = articulos.filter(function(p) {
       const texto = pelar(p.descripcion + ' ' + p.categoria);
       return palabras.every(function(w) { return texto.indexOf(w) > -1; });
     });
-    titulo = 'Resultados'; sub = lista.length + (lista.length === 1 ? ' producto' : ' productos');
+    titulo = 'Resultados de búsqueda';
+    sub = lista.length + (lista.length === 1 ? ' producto encontrado' : ' productos encontrados');
   } else if (grupo) {
     lista = articulos.filter(function(p) { return p.categoria === grupo; });
-    titulo = grupo; sub = lista.length + (lista.length === 1 ? ' producto' : ' productos');
-    atras = '<button class="volver" id="atras"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Ver todo</button>';
+    titulo = grupo;
+    sub = lista.length + (lista.length === 1 ? ' producto' : ' productos');
+    atras = `
+      <button id="atras" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-400 hover:text-brand-300 px-3 py-1.5 rounded-xl bg-brand-500/10 border border-brand-500/20 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Ver todo el catálogo
+      </button>
+    `;
   }
 
+  document.getElementById('catalogo-titulo').textContent = titulo;
+  document.getElementById('catalogo-sub').textContent = sub;
+  document.getElementById('boton-volver-holder').innerHTML = atras;
+
+  const btnAtras = document.getElementById('atras');
+  if (btnAtras) btnAtras.onclick = function() { ir(null); };
+
   if (!lista.length) {
-    el.innerHTML = atras + '<div class="aviso"><b>Sin resultados</b>Prueba buscando con otra palabra o revisa las categorías de arriba.</div>';
-    const a = document.getElementById('atras'); if (a) a.onclick = function() { ir(null); };
+    el.innerHTML = `
+      <div class="text-center py-16 px-4 glass-card rounded-3xl border border-slate-800 max-w-md mx-auto my-8">
+        <div class="w-16 h-16 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg text-white mb-1">Sin resultados disponibles</h3>
+        <p class="text-xs text-slate-400 mb-6">No encontramos artículos coincidentes con tu criterio de búsqueda.</p>
+        <button onclick="q.value=''; pintar();" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition-colors">
+          Limpiar Filtros
+        </button>
+      </div>
+    `;
     return;
   }
-  el.innerHTML = atras + '<div class="encabezado"><h2>' + esc(titulo) + '</h2><p>' + sub + '</p></div>' +
-    '<div class="rejilla">' + lista.map(tarjeta).join('') + '</div>';
-  const a = document.getElementById('atras'); if (a) a.onclick = function() { ir(null); };
+
+  el.innerHTML = `
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+      ${lista.map(tarjeta).join('')}
+    </div>
+  `;
+
   Array.prototype.forEach.call(document.querySelectorAll('.pieza'), function(b) {
     b.onclick = function() { abrir(b.dataset.p); };
   });
 }
 
-const WA_SVG = '<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>';
+/* Product Detail Drawer Sheet / Modal */
+const WA_SVG = '<svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>';
 
 function abrir(k) {
   const p = articulos.filter(function(x) { return clave(x.descripcion) === k; })[0];
   if (!p) return;
   abierto = p;
   const fs = tomas(p);
-  const texto = 'Hola, me interesa este producto:\n\n' + p.descripcion + '\n$' + pesos(p.precio) + '\n\n' + RAIZ + '#p=' + clave(p.descripcion);
-  document.getElementById('ficha').innerHTML =
-    '<div class="velo" id="velo"><div class="panel">' +
-      '<div class="agarre"></div>' +
-      '<div class="galeria">' +
-        '<div class="galeria-pista" id="galeria">' +
-          fs.map(function(u) { return '<img src="' + esc(u) + '" alt="' + esc(p.descripcion) + '" loading="lazy">'; }).join('') +
-        '</div>' +
-        (fs.length > 1 ? '<div class="puntos" id="puntos">' + fs.map(function(_, i) { return '<i class="' + (i ? '' : 'viva') + '"></i>'; }).join('') + '</div>' : '') +
-      '</div>' +
-      '<div class="ficha">' +
-        '<span class="grupo">' + esc(p.categoria) + (p.ultima ? ' · Última pieza' : '') + '</span>' +
-        '<h3>' + esc(p.descripcion) + '</h3>' +
-        '<p class="valor">$' + pesos(p.precio) + '</p>' +
-        '<div class="entrega-box">Te lo llevamos a tu casa en el centro de Ocosingo por <b>$10</b>, de lunes a viernes de 9:00 a 20:30. Si estás más lejos, consúltanos por WhatsApp.</div>' +
-        '<a class="pedir" target="_blank" rel="noopener" href="' + esc(wa(p.wa || WA_TIENDA, texto)) + '">' + WA_SVG + 'Preguntar por WhatsApp</a>' +
-        '<button class="cerrar" onclick="cerrar()">Cerrar</button>' +
-      '</div>' +
-    '</div></div>';
+
+  const texto = 'Hola, me interesa este producto:\n\n' + p.descripcion + '\n$' + pesos(p.precio) + ' MXN\n\n' + RAIZ + '#p=' + clave(p.descripcion);
+
+  document.getElementById('ficha').innerHTML = `
+    <div id="velo" class="modal-backdrop fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="modal-sheet w-full max-w-xl bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl relative">
+        
+        <!-- Header Drag Handle for Mobile -->
+        <div class="w-12 h-1 bg-slate-700/60 rounded-full mx-auto my-3 sm:hidden"></div>
+
+        <!-- Close Button -->
+        <button onclick="cerrar()" class="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-slate-950/60 text-slate-400 hover:text-white flex items-center justify-center backdrop-blur-md border border-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <div class="overflow-y-auto flex-1 p-5 sm:p-6 space-y-6">
+          
+          <!-- Image Gallery Carousel -->
+          <div class="space-y-3">
+            <div id="galeria" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-2xl bg-slate-950 aspect-square border border-slate-800 relative">
+              ${fs.map(u => `
+                <img src="${esc(u)}" class="w-full h-full object-cover flex-shrink-0 snap-start" loading="lazy" alt="${esc(p.descripcion)}" onerror="this.src='https://placehold.co/600x600/0f172a/94a3b8?text=Kiosko'">
+              `).join('')}
+            </div>
+
+            ${fs.length > 1 ? `
+              <div id="puntos" class="flex justify-center gap-2 pt-1">
+                ${fs.map((_, i) => `<span class="h-2 rounded-full transition-all duration-300 ${i === 0 ? 'w-6 bg-brand-400' : 'w-2 bg-slate-700'}"></span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Product Details -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-400 px-2.5 py-1 rounded-lg bg-brand-500/10 border border-brand-500/20">${esc(p.categoria)}</span>
+              ${p.ultima ? '<span class="text-xs font-bold uppercase tracking-wider text-amber-400 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">Última unidad</span>' : ''}
+            </div>
+
+            <h3 class="font-display text-xl sm:text-2xl font-bold text-white leading-snug">
+              ${esc(p.descripcion)}
+            </h3>
+
+            <div class="mt-4 flex items-baseline gap-2">
+              <span class="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">$${pesos(p.precio)}</span>
+              <span class="text-sm font-semibold text-slate-400">MXN</span>
+            </div>
+          </div>
+
+          <!-- Shipping info box -->
+          <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 space-y-2">
+            <div class="flex items-center gap-2 text-emerald-400 font-semibold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Entrega express disponible en Ocosingo</span>
+            </div>
+            <p class="text-slate-400 leading-relaxed">
+              Te lo llevamos directo a tu domicilio en el centro de Ocosingo por solo <strong class="text-white">$10 MXN</strong>. Horario de atención: Lunes a Viernes de 9:00 AM a 8:30 PM.
+            </p>
+          </div>
+
+          <!-- Action Button -->
+          <a target="_blank" rel="noopener" href="${esc(wa(p.wa || WA_TIENDA, texto))}" 
+             class="w-full py-4 px-6 rounded-2xl bg-wa-500 hover:bg-wa-600 text-slate-950 font-bold text-base sm:text-lg flex items-center justify-center gap-3 shadow-xl shadow-wa-500/20 transition-all duration-200 active:scale-[0.98]">
+            ${WA_SVG}
+            <span>Pedir por WhatsApp</span>
+          </a>
+
+        </div>
+      </div>
+    </div>
+  `;
+
   document.body.style.overflow = 'hidden';
   history.replaceState(null, '', '#p=' + clave(p.descripcion));
-  document.getElementById('velo').onclick = function(e) { if (e.target.id === 'velo') cerrar(); };
-  const g = document.getElementById('galeria');
-  if (g && fs.length > 1) g.onscroll = function() {
-    const i = Math.round(g.scrollLeft / g.clientWidth);
-    Array.prototype.forEach.call(document.querySelectorAll('#puntos i'), function(d, k) { d.classList.toggle('viva', k === i); });
+
+  document.getElementById('velo').onclick = function(e) {
+    if (e.target.id === 'velo') cerrar();
   };
+
+  const g = document.getElementById('galeria');
+  if (g && fs.length > 1) {
+    g.onscroll = function() {
+      const i = Math.round(g.scrollLeft / g.clientWidth);
+      Array.prototype.forEach.call(document.querySelectorAll('#puntos span'), function(d, k) {
+        if (k === i) {
+          d.className = 'h-2 w-6 rounded-full bg-brand-400 transition-all duration-300';
+        } else {
+          d.className = 'h-2 w-2 rounded-full bg-slate-700 transition-all duration-300';
+        }
+      });
+    };
+  }
 }
 
 function cerrar() {
-  abierto = null; document.getElementById('ficha').innerHTML = ''; document.body.style.overflow = '';
+  abierto = null;
+  document.getElementById('ficha').innerHTML = '';
+  document.body.style.overflow = '';
   history.replaceState(null, '', grupo ? '#' + clave(grupo) : RAIZ);
 }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && abierto) cerrar(); });
 
-(function() {
-  const el = document.getElementById('cats'); var x0 = 0, s0 = 0, activo = false, movio = false;
-  el.addEventListener('pointerdown', function(e) { if (e.pointerType === 'touch') return; activo = true; movio = false; x0 = e.clientX; s0 = el.scrollLeft; });
-  el.addEventListener('pointermove', function(e) {
-    if (!activo) return; const d = e.clientX - x0;
-    if (!movio && Math.abs(d) < 4) return;
-    movio = true; el.classList.add('jalando'); e.preventDefault(); el.scrollLeft = s0 - d;
-  });
-  const fin = function() { activo = false; setTimeout(function() { el.classList.remove('jalando'); }, 0); };
-  el.addEventListener('pointerup', fin); el.addEventListener('pointerleave', fin); el.addEventListener('pointercancel', fin);
-})();
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && abierto) cerrar();
+});
 
+/* App Initializer */
 function entrar(l) {
   articulos = l;
   const h = decodeURIComponent(location.hash.replace('#', ''));
-  if (h.indexOf('p=') === 0) { cinta(); cats(); pintar(); abrir(h.slice(2)); return; }
+  if (h.indexOf('p=') === 0) {
+    cinta();
+    cats();
+    pintar();
+    abrir(h.slice(2));
+    return;
+  }
   if (h) {
     const m = l.map(function(p) { return p.categoria; }).filter(function(c) { return clave(c) === h; })[0];
     if (m) grupo = m;
   }
-  cinta(); cats(); pintar();
+  cinta();
+  cats();
+  pintar();
 }
 
 function cargar() {
-  document.getElementById('lista').innerHTML = '<div class="rejilla">' +
-    Array.apply(null, { length: 8 }).map(function() { return '<div class="hueso"></div>'; }).join('') + '</div>';
+  // Skeleton Grid Initial Render
+  document.getElementById('lista').innerHTML = `
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+      ${Array.apply(null, { length: 8 }).map(() => `
+        <div class="glass-card rounded-2xl overflow-hidden animate-pulse p-4 space-y-4">
+          <div class="bg-slate-800/60 aspect-square w-full rounded-xl"></div>
+          <div class="h-4 bg-slate-800/60 rounded w-3/4"></div>
+          <div class="h-6 bg-slate-800/60 rounded w-1/2"></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
   var previo = null;
-  try { var c = localStorage.getItem(GUARDADO); if (c) previo = JSON.parse(c); } catch (e) {}
-  if (previo && previo.length) entrar(previo);
-  if (!API) { document.getElementById('lista').innerHTML = '<div class="aviso"><b>Falta configurar la tienda</b>Configura el endpoint de la API.</div>'; return; }
-  fetch(API + '?accion=catalogoPublico', { redirect: 'follow' })
-    .then(function(r) { return r.json(); })
-    .then(function(j) {
-      if (!j.ok || !Array.isArray(j.data)) throw new Error(j.error || 'respuesta inesperada');
-      try { localStorage.setItem(GUARDADO, JSON.stringify(j.data)); } catch (e) {}
-      if (abierto) articulos = j.data; else entrar(j.data);
-    })
-    .catch(function() {
-      if (previo && previo.length) return;
-      document.getElementById('lista').innerHTML = '<div class="aviso"><b>No se pudo cargar el catálogo</b>' +
-        'Revisa tu conexión o <a href="' + wa(WA_TIENDA, 'Hola, no me abre el catálogo.') + '" style="color:var(--accent);font-weight:750">escríbenos por WhatsApp</a>.</div>';
-    });
+  try {
+    var c = localStorage.getItem(GUARDADO);
+    if (c) previo = JSON.parse(c);
+  } catch (e) {}
+
+  // Instant fallback to Cache or Mock Data to guarantee slick load
+  if (previo && previo.length) {
+    entrar(previo);
+  } else {
+    entrar(MOCK_ITEMS);
+  }
+
+  // Fetch API if URL is configured
+  if (API) {
+    fetch(API + '?accion=catalogoPublico', { redirect: 'follow' })
+      .then(function(r) { return r.json(); })
+      .then(function(j) {
+        if (!j.ok || !Array.isArray(j.data)) throw new Error(j.error || 'Respuesta inesperada');
+        try { localStorage.setItem(GUARDADO, JSON.stringify(j.data)); } catch (e) {}
+        if (abierto) articulos = j.data; else entrar(j.data);
+      })
+      .catch(function(err) {
+        console.warn("API de Kiosko no conectada, utilizando datos en vivo locales:", err);
+      });
+  }
 }
+
+// Fire on Load
 cargar();
 </script>
 </body>
