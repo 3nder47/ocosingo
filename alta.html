@@ -143,6 +143,14 @@ button{cursor:pointer}
 .money input{flex:1;min-width:0;border:none;background:none;padding:0;font-weight:800;font-size:1.0625rem}
 .money input:focus{outline:none}
 .campo small{font-size:.6875rem;color:var(--ink2);font-weight:600;line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{border:1.5px solid var(--line);background:var(--card2);border-radius:var(--r-pill);padding:.4375rem .8125rem;font-size:.8125rem;font-weight:700;color:var(--ink2);transition:background .12s,color .12s,border-color .12s,transform .08s}
+.chip:hover{border-color:var(--green2);color:var(--green)}
+.chip:active{transform:scale(.97)}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.chip.otra{border-style:dashed}
+.chip.otra.on{background:var(--lime);border-color:var(--lime);color:var(--green)}
+.cat-nueva{margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem}
 .cat-estado{min-height:1rem}
 .cat-estado.ok{color:var(--green2)}
 .cat-estado.nueva{color:var(--mango)}
@@ -433,6 +441,7 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
       catalogo.forEach(function(x){ if (x.categoria) cs[x.categoria] = 1; if (x.descripcion) ds[x.descripcion] = 1; });
       CATS = Object.keys(cs).sort(function(a,b){ return a.localeCompare(b,"es"); });
       $("dl-cats").innerHTML = CATS.map(function(c){ return '<option value="' + esc(c) + '">'; }).join("");
+      filas.forEach(function(f){ if (f.pintarChips) f.pintarChips(); });
       $("dl-prods").innerHTML = Object.keys(ds).sort().map(function(d){ return '<option value="' + esc(d) + '">'; }).join("");
       calcular();
     }).catch(function(){});
@@ -479,7 +488,8 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
         '<label class="campo"><span>Nombre del producto</span><input class="nombre" data-k="desc" list="dl-prods" placeholder="Ej. Kemei KM-1419 Cortadora de pelo" autocomplete="off"></label>' +
         '<div class="ya" data-k="ya"></div>' +
         '<div class="campos">' +
-          '<label class="campo"><span>Categoría</span><input data-k="cat" list="dl-cats" placeholder="Ej. Cuidado personal" autocomplete="off"><small class="cat-estado" data-k="catEstado"></small></label>' +
+          '<div class="campo ancho"><span>Categoría</span><div class="chips" data-k="chips"></div><input type="hidden" data-k="cat">' +
+            '<div class="cat-nueva oculto" data-k="catNueva"><span class="money"><input data-k="catTxt" placeholder="Nombre de la categoría nueva" autocomplete="off"></span><small class="cat-estado" data-k="catEstado"></small></div></div>' +
           '<div class="campo"><span>Piezas que compraste</span><span class="step"><button type="button" data-k="menos">−</button><input data-k="q" type="number" min="1" step="1" value="1"><button type="button" data-k="mas">+</button></span></div>' +
           '<label class="campo ancho"><span>Precio que te cobró la plataforma, por pieza</span><span class="money"><i>$</i><input data-k="costo" type="number" min="0" step="0.01" placeholder="105.00" inputmode="decimal"></span><small>El que aparece en tu pedido ya con descuentos. Sin impuestos ni envío: esos van abajo, en lo que pagó tu tarjeta.</small></label>' +
           '<details class="opc ancho"><summary>¿Tenía descuento? Anota el precio antes del descuento</summary><label class="campo"><span>Precio de lista, antes del descuento</span><span class="money"><i>$</i><input data-k="lista" type="number" min="0" step="0.01" placeholder="149.99" inputmode="decimal"></span><small>Solo de referencia. No cambia tu costo.</small></label></details>' +
@@ -487,24 +497,37 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
         '<div class="dinero vacio" data-k="dinero"><span class="espera">Cuando captures el precio y el cargo de tu tarjeta, aquí verás tu costo real y el precio sugerido</span></div>' +
       "</div>";
     var f = { id: id, el: el, color: PALETA[ci], foto: null, tocado: false, precioVal: 0, cf: 0 };
-    ["foto","x","ctatxt","file","desc","ya","cat","catEstado","menos","q","mas","costo","lista","dinero"].forEach(function(k){ f[k] = el.querySelector('[data-k="' + k + '"]'); });
+    ["foto","x","ctatxt","file","desc","ya","cat","chips","catNueva","catTxt","catEstado","menos","q","mas","costo","lista","dinero"].forEach(function(k){ f[k] = el.querySelector('[data-k="' + k + '"]'); });
+    f.pintarChips = function(){
+      var sel = f.cat.value, esNueva = sel && CATS.indexOf(sel) === -1;
+      f.chips.innerHTML = CATS.map(function(c){ return '<button type="button" class="chip' + (c === sel ? " on" : "") + '" data-c="' + esc(c) + '">' + esc(c) + "</button>"; }).join("") +
+        '<button type="button" class="chip otra' + (esNueva || !f.catNueva.classList.contains("oculto") ? " on" : "") + '" data-c="__otra">+ Otra</button>';
+      if (!CATS.length) f.chips.innerHTML = '<span class="espera">Cargando tus categorías…</span>' + f.chips.innerHTML;
+    };
+    f.chips.addEventListener("click", function(e){
+      var b = e.target.closest(".chip"); if (!b) return;
+      var c = b.getAttribute("data-c");
+      if (c === "__otra"){ f.catNueva.classList.remove("oculto"); f.cat.value = f.catTxt.value.trim(); f.pintarChips(); revisarCat(); f.catTxt.focus(); calcular(); return; }
+      f.cat.value = c; f.catTxt.value = ""; f.catNueva.classList.add("oculto"); f.catEstado.textContent = ""; f.pintarChips(); calcular();
+    });
     function revisarCat(){
-      var r = ajustarCat(f.cat.value), e = f.catEstado;
-      if (r.tipo === "vacia"){ e.className = "cat-estado"; e.textContent = ""; return; }
-      if (r.tipo === "exacta"){ if (f.cat.value !== r.valor) f.cat.value = r.valor; e.className = "cat-estado ok"; e.textContent = "Categoría que ya usas"; return; }
+      var r = ajustarCat(f.catTxt.value), e = f.catEstado;
+      if (r.tipo === "vacia"){ e.className = "cat-estado"; e.textContent = "Escribe el nombre, o elige una de arriba"; f.cat.value = ""; return; }
+      if (r.tipo === "exacta"){ f.cat.value = r.valor; f.catTxt.value = ""; f.catNueva.classList.add("oculto"); e.textContent = ""; f.pintarChips(); return; }
       if (r.tipo === "parecida"){
+        f.cat.value = "";
         e.className = "cat-estado dudo";
-        e.innerHTML = "¿Quisiste decir <button type=\"button\" class=\"sug\">" + esc(r.valor) + "</button>?";
-        e.querySelector(".sug").addEventListener("click", function(){ f.cat.value = r.valor; revisarCat(); calcular(); });
+        e.innerHTML = "¿Quisiste decir <button type=\"button\" class=\"sug\">" + esc(r.valor) + "</button>? Si no, sigue escribiendo.";
+        e.querySelector(".sug").addEventListener("click", function(){ f.cat.value = r.valor; f.catTxt.value = ""; f.catNueva.classList.add("oculto"); e.textContent = ""; f.pintarChips(); calcular(); });
         return;
       }
-      e.className = "cat-estado nueva"; e.textContent = "Categoría nueva: se crea al dar de alta";
+      f.cat.value = r.valor; e.className = "cat-estado nueva"; e.textContent = "Categoría nueva: se crea al dar de alta";
     }
-    f.cat.addEventListener("change", revisarCat);
-    f.cat.addEventListener("blur", revisarCat);
-    if (d.desc) f.desc.value = d.desc; if (d.cat) f.cat.value = d.cat; if (d.q) f.q.value = d.q; if (d.costo) f.costo.value = d.costo; if (d.lista) f.lista.value = d.lista;
+    f.catTxt.addEventListener("input", function(){ revisarCat(); calcular(); });
+    f.pintarChips();
+    if (d.desc) f.desc.value = d.desc; if (d.q) f.q.value = d.q; if (d.costo) f.costo.value = d.costo; if (d.lista) f.lista.value = d.lista;
 
-    [f.desc, f.cat, f.q, f.costo, f.lista].forEach(function(c){ c.addEventListener("input", calcular); c.addEventListener("change", calcular); });
+    [f.desc, f.q, f.costo, f.lista].forEach(function(c){ c.addEventListener("input", calcular); c.addEventListener("change", calcular); });
     f.menos.addEventListener("click", function(){ f.q.value = Math.max(1, Math.round(num(f.q.value)) - 1); calcular(); });
     f.mas.addEventListener("click", function(){ f.q.value = Math.min(50, Math.round(num(f.q.value)) + 1); calcular(); });
     f.foto.addEventListener("click", function(e){ if (e.target.closest("[data-k=x]")) return; f.file.click(); });
