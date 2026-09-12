@@ -3,419 +3,388 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#EFF1F6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#07080C" media="(prefers-color-scheme: dark)">
-<title>Kiosko · Catálogo</title>
-<meta name="description" content="Audífonos, smartwatch, bocinas y más. Envío a domicilio $10 en el centro de Ocosingo.">
+<meta name="theme-color" content="#171226">
+<title>Kiosko · lo que hay hoy</title>
+<meta name="description" content="Audífonos, relojes, bocinas y más en Ocosingo. Envío a domicilio $10.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Kiosko · Catálogo">
-<meta property="og:description" content="Audífonos, smartwatch, bocinas y más. Envío a domicilio $10 en el centro de Ocosingo.">
+<meta property="og:title" content="Kiosko · lo que hay hoy">
+<meta property="og:description" content="Audífonos, relojes, bocinas y más en Ocosingo. Envío a domicilio $10.">
 <meta property="og:image" content="icons/icon-512.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* =========================================================
+/* ================================================================
    Kiosko · catálogo público
-   Lenguaje visual inspirado en Liquid Glass de iOS 26/27: superficies translúcidas que
-   difuminan lo que tienen detrás, borde oscuro fino + reflejo especular arriba para dar
-   profundidad, y esquinas concéntricas. El color no lo pone la marca: lo ponen las fotos
-   de los productos, difuminadas en el fondo.
-   El vidrio se reserva para las capas que flotan (barras, plaquitas, hoja). Las tarjetas
-   de producto son sólidas: veinte capas de blur matan un teléfono de gama media.
-   ========================================================= */
+   Referencia: el puesto de mercado. Bandas de color saturado como el
+   telar chiapaneco, precios en etiqueta de cartulina, tipografía de
+   cartel pintado. La foto del producto manda; el color la enmarca.
+   ================================================================ */
 :root{
-  color-scheme:light;
-  --bg:#EFF1F6; --ink:#0B0D14; --muted:#6A7080; --card:#FFFFFF;
-  --selva:#0E9F6E; --selva-ink:#065F46;
-  --mango:#F59E0B;
-  --glass:rgba(255,255,255,.58);
-  --glass-2:rgba(255,255,255,.74);
-  --edge:rgba(10,12,20,.10);          /* borde oscurecido: iOS 27 */
-  --spec:rgba(255,255,255,.85);        /* reflejo especular superior */
-  --shadow:0 1px 2px rgba(11,13,20,.05),0 12px 32px -14px rgba(11,13,20,.22);
-  --ease:cubic-bezier(.32,.72,0,1);
-  --r-out:30px; --r-in:22px;           /* radios concéntricos */
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    color-scheme:dark;
-    --bg:#07080C; --ink:#F4F5F9; --muted:#8D93A3; --card:#14161E;
-    --selva:#34D399; --selva-ink:#A7F3D0;
-    --glass:rgba(30,33,44,.55); --glass-2:rgba(30,33,44,.72);
-    --edge:rgba(0,0,0,.5); --spec:rgba(255,255,255,.16);
-    --shadow:0 1px 0 rgba(255,255,255,.04),0 14px 40px -16px rgba(0,0,0,.75);
-  }
+  --tinta:#171226;        /* índigo casi negro, base de todo */
+  --papel:#FFFDF7;        /* blanco cálido de cartulina */
+  --fucsia:#E8175D;
+  --turquesa:#00B3A4;
+  --sol:#FFC42E;
+  --naranja:#FF6B35;
+  --violeta:#7B3FF2;
+  --verde:#1D9E75;
+  --humo:#6F6880;
+  --linea:#E6E0D6;
+  --r:20px;
+  --ease:cubic-bezier(.2,.8,.2,1);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,Inter,Roboto,sans-serif;
-  background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
-  min-height:100vh;padding-bottom:calc(34px + env(safe-area-inset-bottom))}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--papel);color:var(--tinta);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
+  padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:1080px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+:focus-visible{outline:3px solid var(--fucsia);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+.display{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;letter-spacing:-.02em;line-height:.92}
 
-/* ---------- fondo ambiental: las fotos del catálogo, difuminadas ---------- */
-#amb{position:fixed;inset:-25%;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1.2s ease}
-#amb.on{opacity:1}
-#amb i{position:absolute;width:62vmax;height:62vmax;border-radius:50%;background-size:cover;background-position:center;
-  filter:blur(90px) saturate(190%);opacity:.42;will-change:transform}
-@media (prefers-color-scheme:dark){#amb i{opacity:.3;filter:blur(100px) saturate(210%)}}
-#amb i:nth-child(1){left:-14%;top:-6%;animation:flota1 34s ease-in-out infinite alternate}
-#amb i:nth-child(2){right:-16%;top:22%;animation:flota2 40s ease-in-out infinite alternate}
-#amb i:nth-child(3){left:12%;bottom:-14%;animation:flota3 46s ease-in-out infinite alternate}
-@keyframes flota1{to{transform:translate(9vmax,7vmax) scale(1.15)}}
-@keyframes flota2{to{transform:translate(-8vmax,-6vmax) scale(.9)}}
-@keyframes flota3{to{transform:translate(6vmax,-9vmax) scale(1.1)}}
+/* ---------- portada: bloque de color ---------- */
+.top{background:var(--tinta);color:var(--papel);padding:26px 0 0;position:relative;overflow:hidden}
+.top::after{content:'';position:absolute;left:0;right:0;bottom:0;height:7px;
+  background:linear-gradient(90deg,var(--fucsia) 0 20%,var(--sol) 20% 40%,var(--turquesa) 40% 60%,var(--naranja) 60% 80%,var(--violeta) 80% 100%)}
+.marca{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.marca h1{font-size:clamp(2.9rem,13vw,4.6rem);color:var(--papel)}
+.marca h1 em{font-style:normal;color:var(--sol)}
+.lema{font-size:1rem;font-weight:700;color:#C9C2DA;margin-top:10px;max-width:30ch;line-height:1.45}
+.cinta{margin-top:20px;background:var(--sol);color:var(--tinta);overflow:hidden;white-space:nowrap;
+  padding:9px 0;font-weight:800;font-size:0.875rem}
+.cinta div{display:inline-block;animation:corre 26s linear infinite}
+.cinta span{padding:0 26px}
+@keyframes corre{to{transform:translateX(-50%)}}
 
-/* ---------- material de vidrio ---------- */
-.glass{position:relative;background:var(--glass);
-  -webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
-  box-shadow:0 0 0 .5px var(--edge),var(--shadow);isolation:isolate}
-.glass::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,var(--spec) 0,transparent 42%);opacity:.5;mix-blend-mode:overlay}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .glass{background:var(--glass-2)}
-}
+/* ---------- buscador ---------- */
+.busca{position:sticky;top:0;z-index:20;background:var(--papel);padding:14px 0 10px;box-shadow:0 10px 18px -14px rgba(23,18,38,.4)}
+.campo{display:flex;align-items:center;gap:11px;background:#fff;border:2.5px solid var(--tinta);border-radius:999px;padding:13px 18px}
+.campo svg{width:19px;height:19px;stroke:var(--tinta);fill:none;stroke-width:2.6;stroke-linecap:round;flex-shrink:0}
+.campo input{flex:1;border:0;background:none;outline:0;font-size:1rem;font-weight:700;min-width:0;color:inherit}
+.campo input::placeholder{color:var(--humo);font-weight:600}
+.campo .x{width:26px;height:26px;border-radius:50%;background:var(--tinta);color:var(--papel);font-size:0.75rem;font-weight:800;flex-shrink:0;display:none}
+.campo.lleno .x{display:block}
 
-/* ---------- encabezado ---------- */
-.head{padding:26px 0 6px;display:flex;align-items:center;gap:13px}
-.mark{width:54px;height:54px;border-radius:18px;background:linear-gradient(140deg,#12B886,#065F46);
-  display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.25rem;letter-spacing:-.045em;flex-shrink:0;
-  box-shadow:0 10px 30px -10px rgba(14,159,110,.7),inset 0 1px 0 rgba(255,255,255,.4)}
-.head h1{font-size:1.75rem;font-weight:800;letter-spacing:-.04em;line-height:1.05}
-.head p{font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:3px}
+/* ---------- rótulos de sección ---------- */
+.rotulo{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:30px 0 14px}
+.rotulo h2{font-family:'Archivo Black',sans-serif;font-size:1.5rem;letter-spacing:-.02em}
+.rotulo p{font-size:0.875rem;font-weight:700;color:var(--humo)}
+.rotulo button{font-size:0.875rem;font-weight:800;color:var(--fucsia);border-bottom:2.5px solid var(--fucsia);padding-bottom:1px}
 
-/* barra pegajosa: buscador + envío */
-.barra{position:sticky;top:10px;z-index:20;margin:16px 0 4px}
-.buscar{display:flex;align-items:center;gap:11px;border-radius:22px;padding:13px 15px}
-.buscar svg{width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:2.1;stroke-linecap:round;flex-shrink:0}
-.buscar input{flex:1;border:0;background:none;outline:0;font-size:1rem;font-weight:600;min-width:0;color:inherit}
-.buscar input::placeholder{color:var(--muted);font-weight:500}
-.buscar .x{width:27px;height:27px;border-radius:50%;background:rgba(125,130,145,.18);color:var(--muted);
-  font-size:0.75rem;font-weight:800;flex-shrink:0;display:none}
-.buscar.lleno .x{display:block}
-.envio{display:flex;align-items:center;gap:11px;border-radius:20px;padding:11px 15px;margin-top:9px;color:var(--selva-ink)}
-@media (prefers-color-scheme:dark){.envio{color:var(--selva-ink)}}
-.envio svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.envio b{display:block;font-size:0.8438rem;font-weight:800}
-.envio small{display:block;font-size:0.75rem;font-weight:600;opacity:.8;margin-top:1px}
+/* ---------- categorías ---------- */
+.cuadros{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:620px){.cuadros{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.cuadros{grid-template-columns:repeat(4,1fr)}}
+.cuadro{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:1/1;background:var(--c,var(--turquesa));
+  text-align:left;display:block;transition:transform .16s var(--ease)}
+.cuadro:active{transform:scale(.96)}
+.cuadro img{position:absolute;right:-8%;bottom:2%;width:78%;height:68%;object-fit:contain;opacity:0;
+  transition:opacity .4s;filter:drop-shadow(0 10px 18px rgba(23,18,38,.3))}
+.cuadro img.ok{opacity:1}
+.cuadro b{position:absolute;left:14px;top:13px;right:14px;font-family:'Archivo Black',sans-serif;font-size:1.0625rem;
+  line-height:1.05;color:#fff;text-shadow:0 2px 10px rgba(23,18,38,.3)}
+.cuadro i{position:absolute;left:14px;bottom:12px;font-style:normal;font-size:0.75rem;font-weight:800;
+  background:rgba(23,18,38,.82);color:#fff;padding:5px 10px;border-radius:999px}
 
-/* ---------- secciones ---------- */
-.sec{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:26px 4px 12px}
-.sec h2{font-size:1.1875rem;font-weight:800;letter-spacing:-.03em}
-.sec button{font-size:0.8125rem;font-weight:800;color:var(--selva)}
-
-/* ---------- mosaico de categorías: plaquita de vidrio sobre la foto ---------- */
-.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
-@media (min-width:600px){.tiles{grid-template-columns:repeat(3,1fr)}}
-@media (min-width:900px){.tiles{grid-template-columns:repeat(4,1fr)}}
-.tile{position:relative;border-radius:var(--r-out);overflow:hidden;aspect-ratio:1/1;background:rgba(125,130,145,.12);
-  box-shadow:0 0 0 .5px var(--edge),var(--shadow);animation:sube .5s var(--ease) both;transition:transform .2s var(--ease)}
-.tile:active{transform:scale(.965)}
-@media (pointer:fine){.tile:hover{transform:translateY(-4px)}}
-.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;transform:scale(1.02)}
-.tile img.ok{opacity:1}
-.tile .plate{position:absolute;left:9px;right:9px;bottom:9px;border-radius:var(--r-in);padding:11px 13px;text-align:left;
-  background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
-  box-shadow:0 0 0 .5px var(--edge),inset 0 1px 0 var(--spec)}
-.tile .plate b{display:block;font-size:0.875rem;font-weight:800;line-height:1.25;letter-spacing:-.015em}
-.tile .plate small{display:block;font-size:0.75rem;font-weight:700;color:var(--muted);margin-top:2px}
-
-/* ---------- tarjetas de producto ---------- */
-.strip{display:flex;gap:13px;overflow-x:auto;padding:3px 3px 10px;margin:0 -3px;scroll-snap-type:x proximity;
+/* ---------- tarjeta de producto ---------- */
+.rejilla{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:620px){.rejilla{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.rejilla{grid-template-columns:repeat(4,1fr)}}
+.tira{display:flex;gap:14px;overflow-x:auto;padding:2px 18px 10px;margin:0 -18px;scroll-snap-type:x proximity;
   scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.strip::-webkit-scrollbar{display:none}
-@media (pointer:fine){.strip{cursor:grab}}
-.arrastrando{cursor:grabbing!important;user-select:none}
-.arrastrando *{pointer-events:none}
-.strip .card{flex:0 0 165px;scroll-snap-align:start}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:13px;padding-top:4px}
-.card{position:relative;border-radius:var(--r-out);overflow:hidden;background:var(--card);text-align:left;
-  box-shadow:0 0 0 .5px var(--edge),var(--shadow);animation:sube .5s var(--ease) both;
-  transition:transform .2s var(--ease),box-shadow .2s var(--ease);display:flex;flex-direction:column}
-.card:active{transform:scale(.97)}
-@media (pointer:fine){.card:hover{transform:translateY(-5px);box-shadow:0 0 0 .5px var(--edge),0 24px 50px -20px rgba(11,13,20,.35)}}
-@keyframes sube{from{opacity:0;transform:translateY(14px)}}
-.ph{position:relative;aspect-ratio:1/1;background:rgba(125,130,145,.1);overflow:hidden}
-.ph img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s}
-.ph img.ok{opacity:1}
-/* píldora de precio en vidrio, flotando sobre la foto */
-.pill{position:absolute;left:10px;bottom:10px;border-radius:999px;padding:7px 13px;font-size:1rem;font-weight:800;
-  letter-spacing:-.025em;background:var(--glass-2);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
-  box-shadow:0 0 0 .5px var(--edge),inset 0 1px 0 var(--spec)}
-.tag{position:absolute;top:10px;left:10px;font-size:0.6875rem;font-weight:800;padding:5px 10px;border-radius:999px;
-  text-transform:uppercase;letter-spacing:.05em;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
-.tag.ult{background:var(--mango);color:#1a1200}
-.tag.new{background:rgba(11,13,20,.72);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.mas{position:absolute;top:10px;right:10px;font-size:0.6875rem;font-weight:800;padding:5px 9px;border-radius:999px;
-  background:rgba(0,0,0,.42);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.info{padding:12px 14px 15px}
-.info b{font-size:0.875rem;font-weight:700;line-height:1.32;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tira::-webkit-scrollbar{display:none}
+.tira .pieza{flex:0 0 164px;scroll-snap-align:start}
+.pieza{position:relative;background:#fff;border:2.5px solid var(--tinta);border-radius:var(--r);overflow:hidden;
+  text-align:left;display:flex;flex-direction:column;transition:transform .16s var(--ease)}
+.pieza:active{transform:scale(.97)}
+.foto{position:relative;aspect-ratio:1/1;background:var(--c,#EFECE4);display:grid;place-items:center;overflow:hidden}
+.foto img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
+.foto img.ok{opacity:1}
+.sello{position:absolute;top:9px;left:-3px;font-size:0.6875rem;font-weight:800;letter-spacing:.02em;
+  padding:5px 11px 5px 12px;background:var(--fucsia);color:#fff;border-radius:0 999px 999px 0;
+  box-shadow:2px 2px 0 var(--tinta);z-index:2}
+.sello.nuevo{background:var(--violeta)}
+.fotos-n{position:absolute;right:8px;bottom:8px;font-size:0.6875rem;font-weight:800;background:rgba(23,18,38,.8);
+  color:#fff;padding:4px 9px;border-radius:999px}
+.datos{padding:11px 12px 13px;display:flex;flex-direction:column;gap:9px;flex:1}
+.datos b{font-size:0.875rem;font-weight:700;line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;min-height:2.25em}
+.precio{align-self:flex-start;margin-top:auto;font-family:'Archivo Black',sans-serif;font-size:1.1875rem;
+  background:var(--sol);color:var(--tinta);padding:5px 11px;border-radius:7px;transform:rotate(-2deg);
+  box-shadow:2px 2px 0 var(--tinta)}
 
-/* ---------- volver / título de categoría ---------- */
-.volver{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 17px 10px 13px;margin:6px 0 2px;
-  font-size:0.875rem;font-weight:800}
-.volver svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.volver:active{transform:scale(.96)}
-.titulo{padding:18px 4px 6px}
-.titulo h2{font-size:1.75rem;font-weight:800;letter-spacing:-.04em}
-.titulo small{display:block;font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:4px}
+/* ---------- vista de categoría ---------- */
+.regreso{display:inline-flex;align-items:center;gap:8px;margin:16px 0 4px;padding:10px 18px 10px 13px;
+  border-radius:999px;background:var(--tinta);color:var(--papel);font-size:0.875rem;font-weight:800}
+.regreso svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.regreso:active{transform:scale(.96)}
+.encabeza{margin:16px 0 18px;padding:20px 18px;border-radius:var(--r);background:var(--c,var(--turquesa));color:#fff}
+.encabeza h2{font-family:'Archivo Black',sans-serif;font-size:2rem;line-height:1;letter-spacing:-.02em}
+.encabeza p{font-size:0.9375rem;font-weight:700;margin-top:7px;opacity:.92}
 
 /* ---------- ficha ---------- */
-.overlay{position:fixed;inset:0;background:rgba(8,10,16,.4);z-index:50;display:flex;align-items:flex-end;justify-content:center;
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:fade .25s}
-@keyframes fade{from{opacity:0}}
-.sheet{position:relative;width:100%;max-width:580px;max-height:94vh;overflow-y:auto;border-radius:34px 34px 0 0;
-  padding:9px 17px calc(112px + env(safe-area-inset-bottom));background:var(--glass-2);
-  -webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);
-  box-shadow:0 0 0 .5px var(--edge),0 -20px 60px -20px rgba(0,0,0,.5);animation:sube2 .45s var(--ease)}
-@keyframes sube2{from{transform:translateY(100%)}}
-.grip{width:38px;height:5px;border-radius:99px;background:rgba(125,130,145,.4);margin:0 auto 13px}
-.gal{position:relative;border-radius:26px;overflow:hidden;box-shadow:0 0 0 .5px var(--edge)}
-.gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.gal-track::-webkit-scrollbar{display:none}
-.gal-track img{flex:0 0 100%;width:100%;aspect-ratio:1/1;object-fit:cover;scroll-snap-align:start;display:block;background:rgba(125,130,145,.1)}
-.dots{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
-.dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);transition:all .25s var(--ease);box-shadow:0 1px 4px rgba(0,0,0,.35)}
-.dots i.on{background:#fff;width:19px;border-radius:4px}
-.f-cat{font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 5px}
-.f-nom{font-size:1.5rem;font-weight:800;letter-spacing:-.035em;line-height:1.18}
-.f-envio{display:flex;gap:11px;border-radius:var(--r-in);padding:13px 15px;margin-top:16px}
-.f-envio svg{width:20px;height:20px;stroke:var(--selva);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:2px}
-.f-envio b{display:block;font-size:0.875rem;font-weight:700}
-.f-envio small{display:block;font-size:0.8125rem;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.45}
-/* barra flotante inferior: precio + acción, como iOS */
-.accion{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;
-  border-radius:26px;padding:11px 11px 11px 18px;background:var(--glass-2);
-  -webkit-backdrop-filter:blur(30px) saturate(190%);backdrop-filter:blur(30px) saturate(190%);
-  box-shadow:0 0 0 .5px var(--edge),0 14px 40px -14px rgba(0,0,0,.5),inset 0 1px 0 var(--spec)}
-.accion .pr{flex:1;min-width:0}
-.accion .pr small{display:block;font-size:0.6875rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
-.accion .pr b{display:block;font-size:1.5rem;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-top:1px}
-.wa{display:inline-flex;align-items:center;gap:9px;padding:15px 20px;border-radius:19px;flex-shrink:0;
-  background:linear-gradient(160deg,#16C47F,#0E9F6E);color:#fff;font-size:0.9375rem;font-weight:800;
-  box-shadow:0 8px 22px -8px rgba(14,159,110,.75),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .16s var(--ease)}
-.wa:active{transform:scale(.96)}
-.wa svg{width:20px;height:20px;fill:currentColor;flex-shrink:0}
-.cerrar{position:absolute;top:14px;right:15px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
-  font-size:0.875rem;font-weight:800;color:var(--muted);z-index:2}
+.telon{position:fixed;inset:0;background:rgba(23,18,38,.55);z-index:60;display:flex;align-items:flex-end;
+  justify-content:center;animation:aparece .18s}
+@keyframes aparece{from{opacity:0}}
+.ficha{width:100%;max-width:560px;background:var(--papel);border-radius:26px 26px 0 0;max-height:94vh;overflow-y:auto;
+  animation:sube .42s var(--ease)}
+@keyframes sube{from{transform:translateY(100%)}}
+.asa{width:40px;height:5px;border-radius:99px;background:rgba(23,18,38,.18);margin:10px auto 0}
+.galeria{position:relative;background:var(--c,#EFECE4);margin-top:10px}
+.pista{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.pista::-webkit-scrollbar{display:none}
+.pista img{flex:0 0 100%;width:100%;aspect-ratio:1/1;object-fit:cover;scroll-snap-align:start;display:block}
+.puntos{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.puntos i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.6);transition:all .2s}
+.puntos i.on{background:#fff;width:20px;border-radius:4px}
+.cuerpo{padding:20px 20px 24px}
+.cat-chip{display:inline-block;font-size:0.75rem;font-weight:800;padding:5px 12px;border-radius:999px;
+  background:var(--c,var(--turquesa));color:#fff}
+.cuerpo h3{font-family:'Archivo Black',sans-serif;font-size:1.625rem;line-height:1.1;margin-top:12px;letter-spacing:-.02em}
+.precio-gr{display:inline-block;margin-top:16px;font-family:'Archivo Black',sans-serif;font-size:2.5rem;
+  background:var(--sol);color:var(--tinta);padding:9px 18px;border-radius:11px;transform:rotate(-1.6deg);
+  box-shadow:4px 4px 0 var(--tinta)}
+.envio{display:flex;gap:12px;margin-top:22px;padding:14px 16px;border:2.5px solid var(--tinta);border-radius:16px}
+.envio svg{width:22px;height:22px;stroke:var(--tinta);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px}
+.envio b{display:block;font-size:0.9375rem;font-weight:800}
+.envio small{display:block;font-size:0.8125rem;font-weight:600;color:var(--humo);margin-top:3px;line-height:1.45}
+.wa{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:18px;padding:19px;
+  border-radius:16px;background:var(--verde);color:#fff;font-size:1.0625rem;font-weight:800;
+  box-shadow:4px 4px 0 var(--tinta);transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+.wa:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--tinta)}
+.wa svg{width:22px;height:22px;fill:currentColor;flex-shrink:0}
+.cierra{width:100%;padding:16px;font-weight:800;color:var(--humo);font-size:0.9375rem}
 
 /* ---------- estados ---------- */
-.msg{text-align:center;padding:72px 20px;color:var(--muted);font-size:0.9375rem;font-weight:600}
-.msg b{display:block;color:var(--ink);font-size:1.0625rem;margin-bottom:6px}
-.sk{border-radius:var(--r-out);background:rgba(125,130,145,.12);aspect-ratio:1/1;position:relative;overflow:hidden}
-.sk::after{content:'';position:absolute;inset:0;transform:translateX(-100%);
-  background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.22) 50%,transparent 80%);animation:sh 1.5s ease-in-out infinite}
-@keyframes sh{to{transform:translateX(100%)}}
-.pie{text-align:center;padding:38px 20px 12px;color:var(--muted);font-size:0.8125rem;font-weight:600;line-height:1.7}
-.pie a{color:var(--selva);font-weight:800}
+.aviso{text-align:center;padding:70px 20px}
+.aviso b{display:block;font-family:'Archivo Black',sans-serif;font-size:1.25rem;margin-bottom:8px}
+.aviso p{font-size:0.9375rem;font-weight:600;color:var(--humo);line-height:1.5}
+.hueco{border:2.5px solid var(--linea);border-radius:var(--r);aspect-ratio:.78;background:#fff}
+.pie{margin-top:44px;padding:26px 18px 10px;border-top:2.5px solid var(--tinta);text-align:center}
+.pie p{font-size:0.8125rem;font-weight:600;color:var(--humo);line-height:1.6}
+.pie a{font-weight:800;color:var(--fucsia)}
+
+/* una sola entrada orquestada al cargar; nada de animar cada tarjeta en cada scroll */
+.entra>*{animation:asciende .5s var(--ease) both}
+.entra>*:nth-child(1){animation-delay:.02s}.entra>*:nth-child(2){animation-delay:.06s}
+.entra>*:nth-child(3){animation-delay:.1s}.entra>*:nth-child(4){animation-delay:.14s}
+.entra>*:nth-child(5){animation-delay:.18s}.entra>*:nth-child(n+6){animation-delay:.22s}
+@keyframes asciende{from{opacity:0;transform:translateY(14px)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<div id="amb"><i></i><i></i><i></i></div>
+<header class="top">
+  <div class="wrap">
+    <div class="marca"><h1 class="display">Kios<em>ko</em></h1></div>
+    <p class="lema">Lo que tenemos hoy en Ocosingo. Si te gusta algo, mándanos un mensaje y te lo llevamos.</p>
+  </div>
+  <div class="cinta"><div id="cinta"></div></div>
+</header>
 
 <div class="wrap">
-  <div class="head">
-    <div class="mark">Ki</div>
-    <div>
-      <h1>Kiosko</h1>
-      <p>Lo que tenemos disponible hoy</p>
-    </div>
-  </div>
-
-  <div class="barra">
-    <div class="buscar glass" id="caja">
+  <div class="busca">
+    <div class="campo" id="campo">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar producto" autocomplete="off">
-      <button class="x" id="qx" aria-label="Borrar">&#10005;</button>
-    </div>
-    <div class="envio glass">
-      <svg viewBox="0 0 24 24"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
-      <div><b>Envío a domicilio $10</b><small>Centro de Ocosingo · lunes a viernes, 9:00 a 20:30</small></div>
+      <input id="q" type="search" placeholder="¿Qué estás buscando?" autocomplete="off">
+      <button class="x" id="qx" aria-label="Borrar búsqueda">&#10005;</button>
     </div>
   </div>
-
-  <div id="vista"></div>
-
-  <div class="pie">
-    Los precios pueden cambiar sin aviso. Disponibilidad sujeta a existencias.<br>
-    ¿Buscas algo que no está aquí? <a id="piewa" href="#">Escríbenos por WhatsApp</a>
-  </div>
+  <main id="vista"></main>
+  <footer class="pie">
+    <p>Los precios pueden cambiar. Lo que ves aquí es lo que hay.<br>
+    ¿No encuentras lo que buscas? <a id="pie-wa" href="#">Pregúntanos por WhatsApp</a></p>
+  </footer>
 </div>
 
 <div id="ficha"></div>
 
 <script src="config.js"></script>
 <script>
+/* Catálogo público de Kiosko.
+   Los datos vienen de catalogoPublico, la única acción del backend sin token:
+   descripción, categoría, precio, fotos, si es la última pieza y a qué WhatsApp
+   escribe el cliente. Nunca costos, ni cuántas piezas hay, ni de quién es. */
 const API=(window.OC_CONFIG||{}).API_URL||'';
-const WA_GENERAL='525614842235';
+const WA='525614842235';
 const CACHE='kiosko:catalogo';
 const BASE=location.origin+location.pathname;
-const DIAS_NUEVO=45;
-var productos=[],cat=null,abierto=null;
+const NUEVO_DIAS=45;
+
+/* Cada categoría tiene su color: el cliente aprende a reconocerlas por el tono. */
+const COLOR={
+  'Audífonos':'#E8175D','Smartwatch y relojes':'#7B3FF2','Bocinas y altavoces':'#FF6B35',
+  'Mesas y sillas plegables':'#00B3A4','Cuidado personal':'#F0417C','Herramientas':'#2B7FFF',
+  'Accesorios de celular':'#00A86B','Hogar':'#FF9B21','TV y electrónica':'#5B5BF0',
+  'Incubadoras':'#C2410C','Regalos':'#D4157E','Joyería':'#B8860B','Bolsos y accesorios':'#8B5CF6'
+};
+const PALETA=['#E8175D','#7B3FF2','#FF6B35','#00B3A4','#2B7FFF','#F0417C','#00A86B','#FF9B21'];
+function color(cat){
+  if(COLOR[cat])return COLOR[cat];
+  let h=0;for(const ch of String(cat||''))h=(h*31+ch.charCodeAt(0))>>>0;
+  return PALETA[h%PALETA.length];
+}
+
+let items=[],cat=null,abierta=null;
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const pesos=n=>(Math.round(Number(n)||0)).toLocaleString('es-MX');
+const pesos=n=>Math.round(Number(n)||0).toLocaleString('es-MX');
 const slug=s=>norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const fotos=p=>[p.imagen].concat(p.extras||[]).filter(Boolean);
-const wa=(n,t)=>'https://wa.me/'+n+'?text='+encodeURIComponent(t);
-const nuevo=p=>p.agregado&&(Date.now()-p.agregado)<DIAS_NUEVO*864e5;
-const WA_SVG='<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>';
-const CAMION='<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>';
+const wa=(n,t)=>'https://wa.me/'+(n||WA)+'?text='+encodeURIComponent(t);
+const esNuevo=p=>p.agregado&&(Date.now()-p.agregado)<NUEVO_DIAS*864e5;
 
-document.getElementById('piewa').href=wa(WA_GENERAL,'Hola, ¿tienen algo más disponible?');
-const q=document.getElementById('q'),caja=document.getElementById('caja');
-q.addEventListener('input',function(){caja.classList.toggle('lleno',!!q.value);pintar();});
-document.getElementById('qx').onclick=function(){q.value='';caja.classList.remove('lleno');pintar();q.focus();};
+document.getElementById('pie-wa').href=wa(WA,'Hola, ¿tienen algo más disponible?');
 
-/* El color del fondo sale de las fotos del propio catálogo, no de la marca. */
-function ambiental(l){
-  const con=l.filter(p=>p.imagen);if(!con.length)return;
-  const el=document.getElementById('amb').children;
-  for(var i=0;i<3;i++){
-    const p=con[Math.floor(Math.random()*con.length)];
-    el[i].style.backgroundImage='url("'+p.imagen+'")';
-  }
-  document.getElementById('amb').classList.add('on');
+const q=document.getElementById('q'),campo=document.getElementById('campo');
+q.addEventListener('input',()=>{campo.classList.toggle('lleno',!!q.value);pinta();});
+document.getElementById('qx').onclick=()=>{q.value='';campo.classList.remove('lleno');pinta();q.focus();};
+
+/* La cinta amarilla dice lo práctico: envío, horario, cuántas cosas hay. */
+function cinta(){
+  const n=items.length;
+  const frases=['Envío a domicilio $10 en el centro de Ocosingo','De lunes a viernes, 9:00 a 20:30',
+    n?n+' productos disponibles ahora mismo':'Estamos surtiendo','Te lo llevamos el mismo día'];
+  const linea=frases.map(f=>'<span>'+esc(f)+'</span>').join('');
+  document.getElementById('cinta').innerHTML=linea+linea;
 }
 
-function tarjeta(p,i){
+function tarjeta(p){
   const n=fotos(p).length;
-  const tag=p.ultima?'<span class="tag ult">Última pieza</span>':(nuevo(p)?'<span class="tag new">Nuevo</span>':'');
-  return '<button class="card" data-s="'+esc(slug(p.descripcion))+'" style="animation-delay:'+(Math.min(i||0,8)*35)+'ms">'+
-    '<div class="ph">'+tag+(n>1?'<span class="mas">'+n+' fotos</span>':'')+
-      '<img src="'+esc(p.imagen)+'" alt="'+esc(p.descripcion)+'" loading="lazy" decoding="async" '+
-      'onload="this.classList.add(\'ok\')" onerror="this.closest(\'.card\').remove()">'+
-      '<span class="pill">$'+pesos(p.precio)+'</span></div>'+
-    '<div class="info"><b>'+esc(p.descripcion)+'</b></div></button>';
-}
-function franja(t,l){
-  if(!l.length)return '';
-  return '<div class="sec"><h2>'+esc(t)+'</h2></div><div class="strip">'+l.map(tarjeta).join('')+'</div>';
-}
-function mosaico(){
-  const c={},f={};
-  productos.forEach(function(p){c[p.categoria]=(c[p.categoria]||0)+1;if(!f[p.categoria])f[p.categoria]=p.imagen;});
-  const cats=Object.keys(c).sort(function(a,b){return c[b]-c[a];});
-  return '<div class="sec"><h2>Categorías</h2></div><div class="tiles">'+cats.map(function(x,i){
-    return '<button class="tile" data-ver="'+esc(x)+'" style="animation-delay:'+(Math.min(i,8)*35)+'ms">'+
-      '<img src="'+esc(f[x])+'" alt="" loading="lazy" onload="this.classList.add(\'ok\')">'+
-      '<div class="plate"><b>'+esc(x)+'</b><small>'+c[x]+' producto'+(c[x]===1?'':'s')+'</small></div></button>';
-  }).join('')+'</div>';
+  const sello=p.ultima?'<span class="sello">Última pieza</span>'
+    :(esNuevo(p)?'<span class="sello nuevo">Nuevo</span>':'');
+  return `<button class="pieza" data-s="${esc(slug(p.descripcion))}">
+    <div class="foto" style="--c:${color(p.categoria)}22">${sello}
+      ${n>1?'<span class="fotos-n">'+n+' fotos</span>':''}
+      <img src="${esc(p.imagen)}" alt="${esc(p.descripcion)}" loading="lazy" decoding="async"
+        onload="this.classList.add('ok')" onerror="this.closest('.pieza').remove()"></div>
+    <div class="datos"><b>${esc(p.descripcion)}</b><span class="precio">$${pesos(p.precio)}</span></div>
+  </button>`;
 }
 
-function pintar(){
-  const el=document.getElementById('vista');
-  const t=norm(q.value.trim()),pal=t?t.split(/\s+/):[];
-  if(pal.length){
-    const l=productos.filter(function(p){
-      const tx=norm(p.descripcion+' '+p.categoria);
-      return pal.every(function(w){return tx.indexOf(w)>-1;});
-    });
-    el.innerHTML=l.length
-      ?'<div class="titulo"><h2>Resultados</h2><small>'+l.length+' producto'+(l.length===1?'':'s')+'</small></div><div class="grid">'+l.map(tarjeta).join('')+'</div>'
-      :'<div class="msg"><b>Nada con ese nombre</b>Prueba con otra palabra o borra la búsqueda.</div>';
-    cablear();return;
+function pinta(){
+  const vista=document.getElementById('vista');
+  const t=norm(q.value.trim()),palabras=t?t.split(/\s+/):[];
+
+  if(palabras.length){
+    const l=items.filter(p=>{const x=norm(p.descripcion+' '+p.categoria);return palabras.every(w=>x.indexOf(w)>-1);});
+    vista.innerHTML=l.length
+      ?`<div class="rotulo"><h2 class="display">${l.length} resultado${l.length===1?'':'s'}</h2></div>
+        <div class="rejilla entra">${l.map(tarjeta).join('')}</div>`
+      :`<div class="aviso"><b>No encontramos eso</b><p>Prueba con otra palabra, o borra la búsqueda para ver todo lo que hay.</p></div>`;
+    cablea();return;
   }
+
   if(cat){
-    const l=productos.filter(function(p){return p.categoria===cat;});
-    el.innerHTML='<button class="volver glass" id="volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Todas las categorías</button>'+
-      '<div class="titulo"><h2>'+esc(cat)+'</h2><small>'+l.length+' producto'+(l.length===1?'':'s')+' disponible'+(l.length===1?'':'s')+'</small></div>'+
-      '<div class="grid">'+l.map(tarjeta).join('')+'</div>';
-    cablear();return;
+    const l=items.filter(p=>p.categoria===cat),c=color(cat);
+    vista.innerHTML=`<button class="regreso" id="regreso"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Todas las categorías</button>
+      <div class="encabeza" style="--c:${c}"><h2>${esc(cat)}</h2><p>${l.length} producto${l.length===1?'':'s'} disponible${l.length===1?'':'s'}</p></div>
+      <div class="rejilla entra">${l.map(tarjeta).join('')}</div>`;
+    cablea();return;
   }
-  const nue=productos.filter(nuevo).sort(function(a,b){return b.agregado-a.agregado;}).slice(0,10);
-  const ult=productos.filter(function(p){return p.ultima;}).slice(0,10);
-  el.innerHTML=franja('Novedades',nue)+mosaico()+franja('Últimas piezas',ult);
-  cablear();
+
+  const nuevos=items.filter(esNuevo).sort((a,b)=>b.agregado-a.agregado).slice(0,10);
+  const ultimas=items.filter(p=>p.ultima).slice(0,10);
+  const cuenta={},foto={};
+  items.forEach(p=>{cuenta[p.categoria]=(cuenta[p.categoria]||0)+1;if(!foto[p.categoria])foto[p.categoria]=p.imagen;});
+  const cats=Object.keys(cuenta).sort((a,b)=>cuenta[b]-cuenta[a]);
+
+  vista.innerHTML=
+    (nuevos.length?`<div class="rotulo"><h2 class="display">Acaba de llegar</h2></div>
+      <div class="tira entra">${nuevos.map(tarjeta).join('')}</div>`:'')+
+    `<div class="rotulo"><h2 class="display">Busca por tipo</h2><p>${cats.length} categorías</p></div>
+     <div class="cuadros entra">${cats.map(c=>`<button class="cuadro" data-cat="${esc(c)}" style="--c:${color(c)}">
+        <b>${esc(c)}</b><i>${cuenta[c]}</i>
+        <img src="${esc(foto[c])}" alt="" loading="lazy" onload="this.classList.add('ok')"></button>`).join('')}</div>`+
+    (ultimas.length?`<div class="rotulo"><h2 class="display">Queda una sola</h2><p>Si te late, no lo dejes ir</p></div>
+      <div class="tira entra">${ultimas.map(tarjeta).join('')}</div>`:'');
+  cablea();
 }
-function cablear(){
-  Array.prototype.forEach.call(document.querySelectorAll('.card'),function(b){b.onclick=function(){abrir(b.dataset.s);};});
-  Array.prototype.forEach.call(document.querySelectorAll('[data-ver]'),function(b){b.onclick=function(){irCat(b.dataset.ver);};});
-  const v=document.getElementById('volver');if(v)v.onclick=function(){irCat(null);};
-  Array.prototype.forEach.call(document.querySelectorAll('.strip'),arrastrable);
+
+function cablea(){
+  document.querySelectorAll('.pieza').forEach(b=>b.onclick=()=>abrir(b.dataset.s));
+  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>irCat(b.dataset.cat));
+  const r=document.getElementById('regreso');if(r)r.onclick=()=>irCat(null);
 }
-function irCat(c){cat=c;history.replaceState(null,'',c?'#'+slug(c):BASE);pintar();window.scrollTo({top:0,behavior:'smooth'});}
+function irCat(c){
+  cat=c;history.replaceState(null,'',c?'#'+slug(c):BASE);
+  pinta();window.scrollTo({top:0,behavior:'smooth'});
+}
 
 function abrir(s){
-  const p=productos.filter(function(x){return slug(x.descripcion)===s;})[0];
-  if(!p)return;abierto=p;
-  const fs=fotos(p);
-  const txt='Hola, me interesa este producto:\n\n'+p.descripcion+'\n$'+pesos(p.precio)+'\n\n'+BASE+'#p='+slug(p.descripcion);
+  const p=items.filter(x=>slug(x.descripcion)===s)[0];if(!p)return;
+  abierta=p;
+  const fs=fotos(p),c=color(p.categoria);
+  const texto='Hola, me interesa este producto:\n\n'+p.descripcion+'\n$'+pesos(p.precio)+'\n\n'+BASE+'#p='+slug(p.descripcion);
+  const WASVG='<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>';
+  const CAMION='<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>';
   document.getElementById('ficha').innerHTML=
-    '<div class="overlay" id="ov"><div class="sheet">'+
-      '<button class="cerrar glass" onclick="cerrar()">&#10005;</button>'+
-      '<div class="grip"></div>'+
-      '<div class="gal">'+(p.ultima?'<span class="tag ult">Última pieza</span>':'')+
-        '<div class="gal-track" id="gal">'+fs.map(function(u){return '<img src="'+esc(u)+'" alt="'+esc(p.descripcion)+'" loading="lazy">';}).join('')+'</div>'+
-        (fs.length>1?'<div class="dots" id="dots">'+fs.map(function(_,i){return '<i class="'+(i?'':'on')+'"></i>';}).join('')+'</div>':'')+
-      '</div>'+
-      '<div class="f-cat">'+esc(p.categoria)+'</div>'+
-      '<div class="f-nom">'+esc(p.descripcion)+'</div>'+
-      '<div class="f-envio glass">'+CAMION+'<div><b>Envío a domicilio $10</b>'+
-        '<small>Centro de Ocosingo · lunes a viernes de 9:00 a 20:30. Fuera del centro, pregúntanos.</small></div></div>'+
-      '<div class="accion"><div class="pr"><small>Precio</small><b>$'+pesos(p.precio)+'</b></div>'+
-        '<a class="wa" target="_blank" rel="noopener" href="'+esc(wa(p.wa||WA_GENERAL,txt))+'">'+WA_SVG+'Preguntar</a></div>'+
-    '</div></div>';
+    `<div class="telon" id="telon"><div class="ficha">
+      <div class="asa"></div>
+      <div class="galeria" style="--c:${c}22">
+        ${p.ultima?'<span class="sello">Última pieza</span>':''}
+        <div class="pista" id="pista">${fs.map(u=>`<img src="${esc(u)}" alt="${esc(p.descripcion)}" loading="lazy">`).join('')}</div>
+        ${fs.length>1?`<div class="puntos" id="puntos">${fs.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>`:''}
+      </div>
+      <div class="cuerpo">
+        <span class="cat-chip" style="--c:${c}">${esc(p.categoria)}</span>
+        <h3>${esc(p.descripcion)}</h3>
+        <div class="precio-gr">$${pesos(p.precio)}</div>
+        <div class="envio">${CAMION}<div><b>Te lo llevamos por $10</b>
+          <small>Centro de Ocosingo, de lunes a viernes entre 9:00 y 20:30. Si vives más lejos, pregúntanos.</small></div></div>
+        <a class="wa" target="_blank" rel="noopener" href="${esc(wa(p.wa,texto))}">${WASVG}Preguntar por este</a>
+        <button class="cierra" onclick="cerrar()">Cerrar</button>
+      </div>
+    </div></div>`;
   document.body.style.overflow='hidden';
   history.replaceState(null,'','#p='+slug(p.descripcion));
-  document.getElementById('ov').onclick=function(e){if(e.target.id==='ov')cerrar();};
-  const g=document.getElementById('gal');
-  if(g&&fs.length>1)g.onscroll=function(){
+  document.getElementById('telon').onclick=e=>{if(e.target.id==='telon')cerrar();};
+  const g=document.getElementById('pista');
+  if(g&&fs.length>1)g.onscroll=()=>{
     const i=Math.round(g.scrollLeft/g.clientWidth);
-    Array.prototype.forEach.call(document.querySelectorAll('#dots i'),function(d,k){d.classList.toggle('on',k===i);});
+    document.querySelectorAll('#puntos i').forEach((d,k)=>d.classList.toggle('on',k===i));
   };
 }
 function cerrar(){
-  abierto=null;document.getElementById('ficha').innerHTML='';document.body.style.overflow='';
+  abierta=null;document.getElementById('ficha').innerHTML='';document.body.style.overflow='';
   history.replaceState(null,'',cat?'#'+slug(cat):BASE);
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&abierto)cerrar();});
-
-function arrastrable(el){
-  if(el.dataset.drag)return;el.dataset.drag='1';
-  var x0=0,s0=0,act=false,mov=false;
-  el.addEventListener('pointerdown',function(e){if(e.pointerType==='touch')return;act=true;mov=false;x0=e.clientX;s0=el.scrollLeft;});
-  el.addEventListener('pointermove',function(e){
-    if(!act)return;var d=e.clientX-x0;if(!mov&&Math.abs(d)<4)return;
-    mov=true;el.classList.add('arrastrando');e.preventDefault();el.scrollLeft=s0-d;
-  });
-  var fin=function(){act=false;setTimeout(function(){el.classList.remove('arrastrando');},0);};
-  el.addEventListener('pointerup',fin);el.addEventListener('pointerleave',fin);el.addEventListener('pointercancel',fin);
-}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&abierta)cerrar();});
 
 function entrar(l){
-  productos=l;ambiental(l);
-  var h=decodeURIComponent(location.hash.replace('#',''));
-  if(h.indexOf('p=')===0){pintar();abrir(h.slice(2));return;}
-  if(h){var m=l.map(function(p){return p.categoria;}).filter(function(c){return slug(c)===h;})[0];if(m)cat=m;}
-  pintar();
+  items=l;cinta();
+  const h=decodeURIComponent(location.hash.replace('#',''));
+  if(h.indexOf('p=')===0){pinta();abrir(h.slice(2));return;}
+  if(h){const m=l.map(p=>p.categoria).filter(c=>slug(c)===h)[0];if(m)cat=m;}
+  pinta();
 }
 function cargar(){
-  document.getElementById('vista').innerHTML='<div class="sec"><h2>Cargando…</h2></div><div class="tiles">'+
-    Array.apply(null,{length:6}).map(function(){return '<div class="sk"></div>';}).join('')+'</div>';
-  var prev=null;
-  try{var c=localStorage.getItem(CACHE);if(c)prev=JSON.parse(c);}catch(e){}
-  if(prev&&prev.length)entrar(prev);
-  if(!API){document.getElementById('vista').innerHTML='<div class="msg"><b>Falta configurar la dirección</b>Avísale a Alex.</div>';return;}
+  document.getElementById('vista').innerHTML=
+    '<div class="rotulo"><h2 class="display">Cargando</h2></div><div class="cuadros">'+
+    Array.from({length:6},()=>'<div class="hueco"></div>').join('')+'</div>';
+  cinta();
+  let previo=null;
+  try{const c=localStorage.getItem(CACHE);if(c)previo=JSON.parse(c);}catch(e){}
+  if(previo&&previo.length)entrar(previo);
+  if(!API){document.getElementById('vista').innerHTML='<div class="aviso"><b>Falta la configuración</b><p>Avísale a Alex.</p></div>';return;}
   fetch(API+'?accion=catalogoPublico',{redirect:'follow'})
-    .then(function(r){return r.json();})
-    .then(function(j){
+    .then(r=>r.json())
+    .then(j=>{
       if(!j.ok||!Array.isArray(j.data))throw new Error(j.error||'respuesta inesperada');
       try{localStorage.setItem(CACHE,JSON.stringify(j.data));}catch(e){}
-      if(abierto)productos=j.data;else entrar(j.data);
+      if(abierta)items=j.data;else entrar(j.data);
     })
-    .catch(function(){
-      if(prev&&prev.length)return;
-      document.getElementById('vista').innerHTML='<div class="msg"><b>No se pudo cargar el catálogo</b>'+
-        'Revisa tu conexión o <a href="'+wa(WA_GENERAL,'Hola, no me carga el catálogo')+'">escríbenos</a>.</div>';
+    .catch(()=>{
+      if(previo&&previo.length)return;
+      document.getElementById('vista').innerHTML='<div class="aviso"><b>No se pudo cargar</b>'+
+        '<p>Revisa tu conexión, o <a href="'+wa(WA,'Hola, no me carga el catálogo')+'" style="color:var(--fucsia);font-weight:800">escríbenos</a> y te decimos qué hay.</p></div>';
     });
 }
 cargar();
