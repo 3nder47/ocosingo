@@ -3,1205 +3,375 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F1F5F9">
-<title>Kiosko — Strategic Liquidity & Margin Workspace</title>
+<meta name="theme-color" content="#EAF0F6">
+<title>Análisis Estratégico — Kiosko</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #F1F5F9;
-  --bg-aura: radial-gradient(circle at 15% 15%, #E2E8F0 0%, #F1F5F9 50%, #E2E8F0 100%);
-  --card: rgba(255, 255, 255, 0.75);
-  --card-solid: #FFFFFF;
-  --card-dark: #0F172A;
-  --card-inner: #F8FAFC;
-  --linea: rgba(226, 232, 240, 0.9);
-  --linea-glow: rgba(255, 255, 255, 0.8);
-  
-  --ink: #0F172A;
-  --gris: #64748B;
-  --tenue: #94A3B8;
-  
-  --emerald: #10B981;
-  --emerald-dark: #059669;
-  --lime: #84CC16;
-  --lime-glow: rgba(132, 204, 22, 0.35);
-  --orange: #F97316;
-  --rose: #F43F5E;
-  --blue: #3B82F6;
-  --indigo: #6366F1;
-  --cyan: #06B6D4;
-
-  /* Neumorphic Shadows */
-  --shadow-flat: 10px 10px 24px rgba(166, 180, 200, 0.35), -10px -10px 24px rgba(255, 255, 255, 0.9);
-  --shadow-sm: 5px 5px 12px rgba(166, 180, 200, 0.25), -5px -5px 12px rgba(255, 255, 255, 0.85);
-  --shadow-hover: 16px 16px 36px rgba(166, 180, 200, 0.45), -16px -16px 36px rgba(255, 255, 255, 0.98);
-  --shadow-inset: inset 3px 3px 6px rgba(166, 180, 200, 0.25), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
-  
-  --r: 24px;
-  --r2: 16px;
-  --r3: 12px;
-  --pill: 999px;
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  background-image: var(--bg-aura);
-  color: var(--ink);
-  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-input, button, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; border: none; background: none; }
-.mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
-.oculto { display: none !important; }
-
-/* KEYFRAMES */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(18px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes pulseAura {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.08); }
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.ani { animation: fadeInUp 0.5s var(--ease) both; }
-
-/* PIN LOGIN MODAL */
-.pin-layer {
-  position: fixed; inset: 0; z-index: 200;
-  display: grid; place-items: center; padding: 1.5rem;
-  background: var(--bg); background-image: var(--bg-aura);
-}
-.pin-card {
-  width: min(420px, 100%);
-  background: var(--card);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: var(--r);
-  padding: 3rem 2rem; text-align: center;
-  box-shadow: var(--shadow-flat);
-}
-.pin-brand {
-  width: 68px; height: 68px; border-radius: 22px;
-  background: linear-gradient(135deg, var(--ink) 0%, #1E293B 100%);
-  color: var(--lime); display: grid; place-items: center;
-  font-weight: 800; font-size: 1.5rem; margin: 0 auto 1.5rem;
-  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.4);
-}
-.pin-card h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
-.pin-card p { color: var(--gris); font-size: 0.875rem; margin: 0.5rem 0 1.75rem; }
-.pin-card input {
-  width: 100%; font-size: 2.25rem; font-weight: 800; letter-spacing: 0.4em;
-  text-align: center; padding: 0.875rem;
-  border: 1px solid var(--linea); border-radius: var(--r2);
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: var(--shadow-inset); transition: 0.25s var(--ease);
-}
-.pin-card input:focus { outline: none; border-color: var(--emerald); box-shadow: var(--shadow-inset), 0 0 0 4px rgba(16, 185, 129, 0.2); }
-.pin-err { color: var(--rose); font-size: 0.8125rem; font-weight: 700; min-height: 1.25rem; margin-top: 1rem; }
-
-/* APP LAYOUT */
-.app-container { max-width: 1380px; margin: 0 auto; padding: 1.5rem 1rem 10rem; }
-@media(min-width: 768px) { .app-container { padding: 2.5rem 2rem 10rem; } }
-
-/* HEADER & TOOLBAR */
-.app-header {
-  display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem;
-}
-@media(min-width: 840px) {
-  .app-header { flex-direction: row; align-items: center; justify-content: space-between; }
-}
-
-.brand-badge { display: flex; align-items: center; gap: 1rem; }
-.brand-icon {
-  width: 52px; height: 52px; border-radius: 18px;
-  background: linear-gradient(135deg, var(--ink), #1E293B);
-  color: var(--lime); display: grid; place-items: center;
-  font-weight: 800; font-size: 1.2rem; box-shadow: var(--shadow-sm);
-}
-.brand-title h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-.brand-title p { font-size: 0.825rem; color: var(--gris); font-weight: 600; }
-
-.header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-.range-picker {
-  display: flex; gap: 0.25rem; background: rgba(255,255,255,0.6);
-  padding: 0.35rem; border-radius: var(--pill); box-shadow: var(--shadow-inset);
-  border: 1px solid rgba(255,255,255,0.8);
-}
-.range-picker button {
-  padding: 0.45rem 1.1rem; border-radius: var(--pill); font-size: 0.775rem;
-  font-weight: 700; color: var(--gris); transition: all 0.2s var(--ease);
-}
-.range-picker button.on {
-  background: var(--ink); color: #fff; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.3);
-}
-
-/* TOP DECISION NAVIGATION TABS */
-.decision-tabs {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px);
-  padding: 0.5rem; border-radius: var(--r); border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: var(--shadow-sm); margin-bottom: 2.25rem;
-}
-@media(max-width: 768px) {
-  .decision-tabs { display: flex; overflow-x: auto; scrollbar-width: none; }
-  .decision-tabs::-webkit-scrollbar { display: none; }
-  .tab-btn { flex: none; width: 260px; }
-}
-
-.tab-btn {
-  display: flex; align-items: center; gap: 0.875rem; padding: 1rem 1.25rem;
-  border-radius: var(--r2); background: transparent; text-align: left;
-  transition: all 0.25s var(--ease); position: relative;
-}
-.tab-btn:hover { background: rgba(255, 255, 255, 0.8); transform: translateY(-1px); }
-.tab-btn.on {
-  background: var(--card-solid); box-shadow: var(--shadow-flat);
-  border: 1px solid rgba(255,255,255,0.9);
-}
-.tab-num {
-  width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center;
-  font-weight: 800; font-size: 0.875rem; background: rgba(100, 116, 139, 0.1);
-  color: var(--gris); transition: all 0.25s var(--ease); flex: none;
-}
-.tab-btn.on .tab-num { background: var(--ink); color: var(--lime); }
-.tab-info b { display: block; font-size: 0.9rem; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
-.tab-info span { font-size: 0.725rem; color: var(--gris); font-weight: 600; display: block; }
-.tab-btn .badge-count {
-  margin-left: auto; font-size: 0.7rem; font-weight: 800; padding: 3px 8px;
-  border-radius: var(--pill); background: rgba(249, 115, 22, 0.15); color: var(--orange);
-}
-
-/* HERO AURA CARD */
-.hero-aura {
-  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-  color: #fff; border-radius: var(--r); padding: 2.5rem 2rem;
-  position: relative; overflow: hidden; box-shadow: 0 24px 48px -18px rgba(15, 23, 42, 0.5);
-  margin-bottom: 2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2rem;
-}
-.hero-aura::before {
-  content: ""; position: absolute; right: -60px; top: -60px; width: 340px; height: 340px;
-  border-radius: 50%; background: radial-gradient(circle, rgba(132, 204, 22, 0.35) 0%, rgba(16, 185, 129, 0.15) 50%, transparent 70%);
-  filter: blur(50px); animation: pulseAura 7s infinite ease-in-out; pointer-events: none;
-}
-.hero-aura::after {
-  content: ""; position: absolute; left: 30%; bottom: -80px; width: 300px; height: 300px;
-  border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, transparent 70%);
-  filter: blur(60px); pointer-events: none;
-}
-.hero-content { position: relative; z-index: 2; max-width: 600px; }
-.hero-tag {
-  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.9rem;
-  border-radius: var(--pill); background: rgba(255, 255, 255, 0.1);
-  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); margin-bottom: 1rem;
-}
-.hero-val {
-  font-size: clamp(3rem, 6vw, 4.25rem); font-weight: 800; letter-spacing: -0.04em;
-  line-height: 1; margin: 0.25rem 0 0.75rem;
-  background: linear-gradient(180deg, #FFFFFF 20%, #CBD5E1 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.hero-sub { font-size: 0.925rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; }
-.hero-stats { display: flex; gap: 0.75rem; flex-wrap: wrap; position: relative; z-index: 2; }
-.pill-stat {
-  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--pill); padding: 0.6rem 1.25rem; font-size: 0.825rem; font-weight: 700;
-  backdrop-filter: blur(12px); color: #fff;
-}
-.pill-stat.highlight { background: var(--lime); color: #0F172A; font-weight: 800; border: none; }
-
-/* KPI SUMMARY STRIP */
-.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.25rem; }
-@media(max-width: 900px) { .kpi-grid { grid-template-columns: 1fr; } }
-
-.kpi-tile {
-  background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.8); border-radius: var(--r);
-  padding: 1.5rem; box-shadow: var(--shadow-flat); transition: all 0.25s var(--ease);
-  display: flex; flex-direction: column; justify-content: space-between;
-}
-.kpi-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
-.kpi-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-.kpi-icon {
-  width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center;
-  box-shadow: var(--shadow-sm);
-}
-.kpi-icon svg { width: 22px; height: 22px; stroke-width: 2.2; }
-.kpi-tile .lbl { font-size: 0.775rem; font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: 0.04em; }
-.kpi-tile .val { font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em; margin: 0.2rem 0; color: var(--ink); }
-.kpi-tile .sub { font-size: 0.775rem; color: var(--tenue); font-weight: 600; }
-
-/* DECISION SECTIONS HUB */
-.hub-section { display: none; }
-.hub-section.active { display: block; }
-
-.section-banner {
-  background: var(--card-solid); border: 1px solid rgba(255,255,255,0.8);
-  border-radius: var(--r); padding: 1.75rem 2rem; margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-flat); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
-}
-.banner-text h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.025em; display: flex; align-items: center; gap: 0.6rem; }
-.banner-text p { color: var(--gris); font-size: 0.875rem; margin-top: 0.25rem; }
-
-/* HUB 1: DEMAND & VELOCITY RADAR */
-.radar-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.25rem; }
-.radar-card {
-  grid-column: 1 / -1; background: var(--card); backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.8); border-radius: var(--r); padding: 1.75rem;
-  box-shadow: var(--shadow-flat);
-}
-@media(min-width: 960px) {
-  .radar-card.w7 { grid-column: span 7; }
-  .radar-card.w5 { grid-column: span 5; }
-}
-
-.velocity-item {
-  background: rgba(255, 255, 255, 0.6); border: 1px solid var(--linea);
-  border-radius: var(--r2); padding: 1.2rem; margin-bottom: 0.875rem;
-  transition: all 0.2s var(--ease);
-}
-.velocity-item:hover { background: #fff; box-shadow: var(--shadow-sm); transform: translateX(2px); }
-.velocity-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.85rem; }
-.velocity-header b { font-size: 1rem; font-weight: 800; color: var(--ink); }
-.velocity-header small { color: var(--gris); font-size: 0.75rem; font-weight: 600; display: block; margin-top: 2px; }
-
-.meter-row { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.5rem; }
-.meter-label { width: 65px; font-size: 0.725rem; font-weight: 800; color: var(--gris); flex: none; text-transform: uppercase; }
-.meter-track { flex: 1; height: 10px; border-radius: var(--pill); background: rgba(203, 213, 225, 0.4); box-shadow: var(--shadow-inset); overflow: hidden; }
-.meter-fill { height: 100%; border-radius: var(--pill); transform-origin: left; animation: growBar 1s var(--ease) forwards; }
-@keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.meter-val { width: 75px; text-align: right; font-size: 0.75rem; font-weight: 800; flex: none; color: var(--ink); }
-
-/* HUB 2: LIQUIDATION & UNFREEZE ENGINE */
-.engine-controls {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-  background: rgba(255, 255, 255, 0.6); border-radius: var(--r2); padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem; border: 1px solid var(--linea); box-shadow: var(--shadow-inset);
-}
-.moto-input-pill {
-  display: inline-flex; align-items: center; gap: 0.4rem; background: #fff;
-  border: 1px solid var(--linea); border-radius: var(--pill); padding: 0.4rem 0.9rem;
-  font-weight: 800; font-size: 0.875rem; box-shadow: var(--shadow-sm);
-}
-.moto-input-pill input { width: 3.5rem; border: none; background: none; text-align: right; font-weight: 800; color: var(--ink); }
-.moto-input-pill input:focus { outline: none; }
-
-.sort-pill { display: flex; gap: 0.25rem; background: #fff; border-radius: var(--pill); padding: 0.25rem; box-shadow: var(--shadow-sm); border: 1px solid var(--linea); }
-.sort-pill button { padding: 0.45rem 1rem; border-radius: var(--pill); font-size: 0.775rem; font-weight: 700; color: var(--gris); transition: 0.2s; }
-.sort-pill button.on { background: var(--ink); color: #fff; }
-
-.inventory-grid { display: grid; gap: 1.15rem; grid-template-columns: 1fr; }
-@media(min-width: 640px) { .inventory-grid { grid-template-columns: repeat(2, 1fr); } }
-@media(min-width: 1100px) { .inventory-grid { grid-template-columns: repeat(3, 1fr); } }
-
-.stock-card {
-  background: var(--card-solid); border: 2px solid var(--linea); border-radius: var(--r);
-  padding: 1.35rem; position: relative; transition: all 0.25s var(--ease);
-  display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
-  box-shadow: var(--shadow-sm);
-}
-.stock-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
-.stock-card.selected { border-color: var(--lime); background: #F7FEE7; }
-
-.stock-top { display: flex; gap: 0.85rem; align-items: flex-start; }
-.stock-img {
-  width: 64px; height: 64px; border-radius: 16px; object-fit: cover; background: var(--card-inner);
-  border: 1px solid var(--linea); flex: none; display: grid; place-items: center; color: var(--tenue);
-}
-.stock-details { flex: 1; min-width: 0; }
-.stock-details b { font-size: 0.975rem; font-weight: 800; line-height: 1.35; display: block; color: var(--ink); }
-.stock-details small { color: var(--gris); font-size: 0.75rem; font-weight: 600; display: block; margin-top: 3px; }
-
-.select-checkbox {
-  width: 32px; height: 32px; border-radius: 10px; border: 2px solid var(--linea);
-  background: #fff; display: grid; place-items: center; color: transparent; flex: none; transition: 0.2s;
-  box-shadow: var(--shadow-inset);
-}
-.stock-card.selected .select-checkbox {
-  background: var(--ink); border-color: var(--ink); color: var(--lime); box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
-}
-
-.tags-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-.badge-tag { border-radius: var(--pill); padding: 0.3rem 0.7rem; font-size: 0.725rem; font-weight: 800; }
-.badge-tag.frozen { background: #ECFDF5; color: var(--emerald-dark); border: 1px solid #A7F3D0; }
-.badge-tag.days { background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; }
-
-.price-options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-.price-btn {
-  border: 1.5px solid var(--linea); border-radius: var(--r3); padding: 0.6rem 0.35rem; text-align: center;
-  transition: 0.2s; background: rgba(255, 255, 255, 0.6);
-}
-.price-btn:hover { border-color: var(--ink); background: #fff; }
-.price-btn.on { border-color: var(--ink); background: var(--ink); color: #fff; box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25); }
-.price-btn span { display: block; font-size: 0.65rem; font-weight: 700; color: var(--gris); text-transform: uppercase; margin-bottom: 2px; }
-.price-btn.on span { color: rgba(255, 255, 255, 0.7); }
-.price-btn b { font-size: 0.925rem; font-weight: 800; }
-
-.custom-price-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.775rem; font-weight: 700; color: var(--gris); }
-.calc-summary-box {
-  background: var(--card-inner); border-radius: var(--r3); padding: 0.85rem;
-  font-size: 0.775rem; line-height: 1.55; color: var(--gris); font-weight: 600; border: 1px solid rgba(210, 220, 233, 0.5);
-}
-.calc-summary-box b { color: var(--ink); font-weight: 800; }
-.calc-summary-box b.neg { color: var(--rose); }
-.calc-summary-box b.pos { color: var(--emerald-dark); }
-
-/* FLOATING ACTION STRIP */
-.bottom-dock {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 100;
-  padding: 0 1rem calc(1.25rem + env(safe-area-inset-bottom));
-  transform: translateY(140%); transition: transform 0.45s var(--ease);
-}
-.bottom-dock.active { transform: translateY(0); }
-.dock-card {
-  max-width: 900px; margin: 0 auto; background: rgba(15, 23, 42, 0.94);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); color: #fff;
-  border-radius: 28px; padding: 1.1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.25rem;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.15);
-}
-.dock-text small { display: block; font-size: 0.725rem; color: rgba(255, 255, 255, 0.65); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.dock-text b { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; color: var(--lime); }
-
-.action-btn {
-  border-radius: var(--pill); padding: 0.8rem 1.5rem; font-size: 0.9rem; font-weight: 800;
-  transition: all 0.2s var(--ease); white-space: nowrap;
-}
-.action-btn.primary { background: var(--lime); color: #0F172A; }
-.action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -4px var(--lime-glow); }
-.action-btn.primary:disabled { background: rgba(255, 255, 255, 0.15); color: rgba(255, 255, 255, 0.4); transform: none; box-shadow: none; cursor: not-allowed; }
-.action-btn.ghost { border: 1px solid rgba(255, 255, 255, 0.25); color: #fff; }
-.action-btn.ghost:hover { background: rgba(255, 255, 255, 0.1); }
-
-/* MODAL OVERLAY */
-.modal-backdrop {
-  position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px); display: grid; place-items: center; padding: 1.25rem;
-  opacity: 0; visibility: hidden; transition: all 0.3s var(--ease);
-}
-.modal-backdrop.open { opacity: 1; visibility: visible; }
-.modal-content {
-  background: var(--card-solid); border-radius: var(--r); padding: 2.25rem 2rem;
-  width: min(640px, 100%); max-height: 85vh; overflow: auto;
-  transform: scale(0.92); transition: transform 0.3s var(--ease);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3); border: 1px solid rgba(255, 255, 255, 0.8);
-}
-.modal-backdrop.open .modal-content { transform: scale(1); }
-.modal-content h3 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.875rem; }
-.modal-content p { color: var(--gris); font-size: 0.925rem; line-height: 1.7; margin-bottom: 1.1rem; }
-.modal-content p b { color: var(--ink); }
-.modal-content textarea {
-  width: 100%; min-height: 180px; background: var(--card-inner); border: 1px solid var(--linea);
-  border-radius: var(--r2); padding: 1rem; font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem; white-space: pre; resize: vertical; color: var(--ink); margin-bottom: 1.25rem;
-}
-
-/* HELPER POPUPS & INFOS */
-.info-trigger-btn {
-  margin-top: 1.25rem; border: 1px solid var(--linea); border-radius: var(--pill);
-  padding: 0.5rem 1.1rem; font-size: 0.775rem; font-weight: 700; color: var(--gris);
-  background: rgba(255,255,255,0.4); transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;
-}
-.info-trigger-btn:hover { border-color: var(--ink); color: var(--ink); background: #fff; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-
-.alert-banner {
-  border-radius: var(--r2); padding: 1.1rem 1.25rem; font-size: 0.85rem; line-height: 1.55;
-  margin-top: 1.25rem; font-weight: 600; display: flex; gap: 0.85rem; align-items: flex-start;
-}
-.alert-banner.warn { background: #FFF7ED; color: #9A3412; border: 1px solid #FFEDD5; }
-.alert-banner.ok { background: #ECFDF5; color: #065F46; border: 1px solid #D1FAE5; }
-
-/* CHARTS & DONUT */
-.chart-box { position: relative; margin-top: 1.25rem; }
-.chart-box svg { width: 100%; height: 210px; display: block; overflow: visible; }
-.chart-box .path-line { fill: none; stroke: url(#gradientStroke); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2200; stroke-dashoffset: 2200; animation: trace 1.6s var(--ease) 0.2s forwards; }
-@keyframes trace { to { stroke-dashoffset: 0; } }
-.chart-box .path-area { fill: url(#gradientArea); opacity: 0; animation: fadeIn 0.8s ease 1s forwards; }
-@keyframes fadeIn { to { opacity: 1; } }
-.chart-box .chart-pt { fill: #fff; stroke: var(--emerald-dark); stroke-width: 3.5; cursor: pointer; transition: all 0.2s var(--ease); }
-.chart-box .chart-pt:hover, .chart-box .chart-pt.active { r: 7.5; fill: var(--lime); }
-.chart-box .axis-labels { display: flex; justify-content: space-between; margin-top: 0.75rem; font-size: 0.75rem; color: var(--tenue); font-weight: 700; }
-
-.chart-tooltip {
-  position: absolute; pointer-events: none; background: var(--ink); color: #fff;
-  border-radius: 12px; padding: 0.5rem 0.85rem; font-size: 0.775rem; font-weight: 700; white-space: nowrap;
-  opacity: 0; transform: translate(-50%, -140%); transition: opacity 0.2s, transform 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.25); z-index: 10;
-}
-.chart-tooltip.active { opacity: 1; transform: translate(-50%, -125%); }
-
-.donut-box { position: relative; width: 220px; height: 220px; margin: 1rem auto; flex: none; }
-.donut-box svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.donut-box circle { fill: none; stroke-width: 24; transition: stroke-dasharray 1s var(--ease); }
-.donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; place-content: center; text-align: center; }
-.donut-center b { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; display: block; line-height: 1.1; }
-.donut-center span { font-size: 0.75rem; color: var(--gris); font-weight: 700; text-transform: uppercase; margin-top: 3px; }
-
-.legend-list { display: grid; gap: 0.5rem; margin-top: 1.25rem; }
-.legend-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.875rem; border-radius: var(--r2); background: rgba(255,255,255,0.4); width: 100%; font-size: 0.825rem; font-weight: 700; transition: all 0.2s; }
-.legend-item:hover { background: #fff; transform: translateX(4px); box-shadow: var(--shadow-sm); }
-.legend-dot { width: 12px; height: 12px; border-radius: 4px; flex: none; }
-
-.loading-state { grid-column: 1 / -1; text-align: center; padding: 6rem 1rem; color: var(--gris); font-weight: 700; }
-.spinner { width: 48px; height: 48px; border: 4px solid var(--linea); border-top-color: var(--emerald); border-radius: 50%; margin: 0 auto 1.25rem; animation: spin 0.9s linear infinite; }
-
-@media(prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiosko.css?v=1">
 </head>
 <body>
 
-<!-- PIN LOGIN MODAL -->
-<div class="pin-layer" id="pin-screen">
-  <div class="pin-card ani">
-    <div class="pin-brand">Ki</div>
-    <h1>Workspace Strategist</h1>
-    <p>Ingresa tu PIN de Alex para ingresar a la toma de decisiones</p>
-    <input id="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autofocus>
-    <div class="pin-err" id="pin-error"></div>
+<div class="pin" id="pin"><div class="pin-c">
+  <div class="logo-icon">Ki</div>
+  <h1>Análisis Estratégico</h1>
+  <p>Ingresa tu PIN de Kiosko</p>
+  <input id="pin-in" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autofocus>
+  <div class="pin-e" id="pin-e"></div>
+</div></div>
+
+<div id="app" class="oculto"><div class="app">
+  <aside class="lado">
+    <div class="marca"><div class="logo-icon">Ki</div><div><b>Kiosko</b><small>Ocosingo</small></div></div>
+    <div class="nav-t">DECISIONES CLAVE</div>
+    <button class="nav on" data-ir="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Resumen</button>
+    <button class="nav" data-ir="rotacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>1. Qué comprar</button>
+    <button class="nav" data-ir="remate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg>2. Plan de remate <span class="pin-n" id="nav-n"></span></button>
+    <button class="nav" data-ir="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>3. A cuánto vender</button>
+    <div class="nav-t">HISTÓRICO</div>
+    <button class="nav" data-ir="ventas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>Ventas por mes</button>
+    <button class="nav" data-ir="parado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 12V7M12 12l4 2"/></svg>Dinero detenido</button>
+    <div class="nav-t">OTRAS PANTALLAS</div>
+    <button class="nav" onclick="location.href='alta.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
+  </aside>
+
+  <div>
+    <div class="movil" id="movil"></div>
+    <main class="main">
+      <div class="cab">
+        <div><h1>Tablero de decisiones</h1><p>Dónde está tu dinero, qué comprar y cuánto recuperar hoy mismo</p></div>
+        <div class="rango"><button id="r-todo" class="on">Todo el tiempo</button><button id="r-12m">Últimos 12 meses</button></div>
+      </div>
+      <div class="bento" id="rej"><div class="cargando"><div class="spin"></div>Cargando datos de tu negocio…</div></div>
+    </main>
   </div>
-</div>
+</div></div>
 
-<!-- MAIN APP WRAPPER -->
-<div id="app" class="oculto">
-  <div class="app-container">
-    
-    <!-- HEADER STRIP -->
-    <header class="app-header ani">
-      <div class="brand-badge">
-        <div class="brand-icon">Ki</div>
-        <div class="brand-title">
-          <h1>Análisis Estratégico</h1>
-          <p>Kiosko Ocosingo — Decision Engine</p>
-        </div>
-      </div>
-      
-      <div class="header-actions">
-        <div class="range-picker">
-          <button id="range-all" class="on">Todo el Tiempo</button>
-          <button id="range-12m">Últimos 12 Meses</button>
-        </div>
-      </div>
-    </header>
-
-    <!-- TOP DECISION STEPPER TABS -->
-    <nav class="decision-tabs ani" style="animation-delay: 0.1s">
-      <button class="tab-btn on" data-hub="hub-1">
-        <div class="tab-num">1</div>
-        <div class="tab-info">
-          <b>¿Qué comprar?</b>
-          <span>Velocidad de rotación</span>
-        </div>
-      </button>
-
-      <button class="tab-btn" data-hub="hub-2">
-        <div class="tab-num">2</div>
-        <div class="tab-info">
-          <b>¿De dónde sacar dinero?</b>
-          <span>Plan de Remate e Inventario</span>
-        </div>
-        <span class="badge-count" id="badge-stuck-count">0</span>
-      </button>
-
-      <button class="tab-btn" data-hub="hub-3">
-        <div class="tab-num">3</div>
-        <div class="tab-info">
-          <b>¿A cuánto vender?</b>
-          <span>Margen Real vs Flete</span>
-        </div>
-      </button>
-    </nav>
-
-    <!-- HERO AURA BANNER -->
-    <section class="hero-aura ani" style="animation-delay: 0.15s">
-      <div class="hero-content">
-        <div class="hero-tag">Capital Congelado en Mercancía</div>
-        <div class="hero-val mono" id="hero-capital-val">$0</div>
-        <p class="hero-sub" id="hero-pieces-sub">Cargando inventario físico en bodega...</p>
-      </div>
-      <div class="hero-stats">
-        <span class="pill-stat highlight" id="hero-months-stat">— meses de ganancia</span>
-        <span class="pill-stat" id="hero-avg-profit">Ganancia prom: $0/mes</span>
-      </div>
-    </section>
-
-    <!-- KPI STRIP -->
-    <div class="kpi-grid ani" style="animation-delay: 0.2s">
-      <div class="kpi-tile">
-        <div class="kpi-head">
-          <span class="lbl">Riesgo (+6 Meses)</span>
-          <div class="kpi-icon" style="background:#FFF7ED;color:var(--orange)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>
-          </div>
-        </div>
-        <div class="val mono" id="kpi-risk-val">$0</div>
-        <span class="sub" id="kpi-risk-sub">0 pzas · 0 productos</span>
-      </div>
-
-      <div class="kpi-tile">
-        <div class="kpi-head">
-          <span class="lbl">Margen Real General</span>
-          <div class="kpi-icon" style="background:#ECFDF5;color:var(--emerald-dark)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-        </div>
-        <div class="val mono" id="kpi-margin-val">0%</div>
-        <span class="sub">Libre de costo mercancía y flete</span>
-      </div>
-
-      <div class="kpi-tile">
-        <div class="kpi-head">
-          <span class="lbl">Utilidad del Periodo</span>
-          <div class="kpi-icon" style="background:#EFF6FF;color:var(--blue)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
-          </div>
-        </div>
-        <div class="val mono" id="kpi-profit-val">$0</div>
-        <span class="sub" id="kpi-profit-sub">0 ventas registradas</span>
-      </div>
-    </div>
-
-    <!-- HUB 1: WHAT TO BUY (DECISION 1) -->
-    <div class="hub-section active" id="hub-1">
-      <div class="section-banner">
-        <div class="banner-text">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
-            Radar de Velocidad de Rotación
-          </h2>
-          <p>Compara días que tarda en venderse (verde) vs. días que lleva detenido hoy (naranja/rojo). Invierte en lo verde, frena en lo rojo.</p>
-        </div>
-      </div>
-
-      <div class="radar-grid">
-        <div class="radar-card w7">
-          <div id="rotation-list-container">
-            <!-- Dynamic rotation meters generated here -->
-          </div>
-          <button class="info-trigger-btn" data-exp="rotacion">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            ¿Cómo interpretar la rotación?
-          </button>
-        </div>
-
-        <div class="radar-card w5">
-          <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:0.4rem">En Qué Está Parado Tu Dinero</h3>
-          <p style="font-size:0.825rem;color:var(--gris)">Distribución de capital guardado en cajas.</p>
-          <div id="donut-chart-container"></div>
-          <div class="legend-list" id="donut-legend"></div>
-          <button class="info-trigger-btn" data-exp="capital">¿Por qué es vital vigilar esto?</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- HUB 2: WHERE TO GET CASH / LIQUIDATION (DECISION 2) -->
-    <div class="hub-section" id="hub-2">
-      <div class="section-banner">
-        <div class="banner-text">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg>
-            Motor de Recuperación de Liquidez
-          </h2>
-          <p>Tienes dinero dormido en mercancía con más de 6 meses parada. Selecciona productos para armar tu Plan de Remate instantáneo.</p>
-        </div>
-      </div>
-
-      <div class="engine-controls">
-        <div style="display:flex;align-items:center;gap:0.75rem">
-          <span>Motomandado por pieza:</span>
-          <span class="moto-input-pill">$<input id="moto-cost-input" type="number" step="5" min="0" value="35"></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:0.5rem">
-          <span style="font-size:0.8rem;color:var(--gris);font-weight:700">Ordenar por:</span>
-          <div class="sort-pill">
-            <button data-ord="dinero" class="on">Dinero</button>
-            <button data-ord="dias">Antigüedad</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="inventory-grid" id="liquidation-products-grid">
-        <!-- Stock cards rendered dynamically -->
-      </div>
-      
-      <button class="vermas-btn oculto" id="load-more-btn" style="width:100%;border:2px dashed var(--linea);border-radius:var(--r2);padding:1rem;font-size:0.875rem;font-weight:800;color:var(--gris);margin-top:1.5rem;transition:0.2s">
-        Cargar más productos parados
-      </button>
-
-      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1.5rem">
-        <button class="info-trigger-btn" data-exp="remate">¿Vender al costo es perder?</button>
-        <button class="info-trigger-btn" data-exp="pildoras">¿De dónde salen los 3 precios?</button>
-        <button class="info-trigger-btn" data-exp="envio">¿Por qué descontar el envío?</button>
-      </div>
-    </div>
-
-    <!-- HUB 3: PRICING STRATEGY & MARGIN (DECISION 3) -->
-    <div class="hub-section" id="hub-3">
-      <div class="section-banner">
-        <div class="banner-text">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Margen Real y Protección de Piso de Envío
-          </h2>
-          <p>Ganancia neta real deduciendo mercancía y flete por categoría. Evita vender al precio equivocado.</p>
-        </div>
-      </div>
-
-      <div class="radar-card" style="margin-bottom:1.5rem">
-        <h3 style="font-size:1.15rem;font-weight:800;margin-bottom:0.4rem">Rendimiento Real por Categoría</h3>
-        <p style="font-size:0.85rem;color:var(--gris);margin-bottom:1.25rem">La barra más larga representa la línea de productos que más ganancia neta te deja en el bolsillo.</p>
-        <div id="margin-category-list"></div>
-        <button class="info-trigger-btn" data-exp="margen">¿Qué es el margen real?</button>
-      </div>
-
-      <div class="radar-card">
-        <h3 style="font-size:1.15rem;font-weight:800;margin-bottom:0.4rem">Comportamiento Histórico de Ventas</h3>
-        <p style="font-size:0.85rem;color:var(--gris);margin-bottom:1rem">Tendencia de facturación mensual.</p>
-        <div id="sales-chart-wrapper"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- FLOATING ACTION DOCK -->
-<div class="bottom-dock" id="bottom-action-dock">
-  <div class="dock-card">
-    <div class="dock-text">
-      <small id="dock-status-label">Selecciona mercancía a rematar</small>
-      <b class="mono" id="dock-recovered-val">$0</b>
-    </div>
-    <div style="display:flex;gap:0.75rem;align-items:center">
-      <button class="action-btn ghost" id="btn-clear-selection">Limpiar</button>
-      <button class="action-btn primary" id="btn-generate-plan" disabled>Generar Plan</button>
-    </div>
-  </div>
-</div>
-
-<!-- GLOBAL MODAL -->
-<div class="modal-backdrop" id="modal-container">
-  <div class="modal-content" id="modal-body"></div>
-</div>
+<div class="bottom-bar" id="bot"><div class="bottom-bar-inner">
+  <div class="bottom-bar-text"><small id="bot-s">Selecciona mercancía a rematar</small><b class="mono" id="bot-v">$0</b></div>
+  <button class="btn-action gh" id="b-limpiar">Limpiar</button>
+  <button class="btn-action pri" id="b-plan" disabled>Generar plan</button>
+</div></div>
+<div class="modal-overlay" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
 <script src="config.js"></script>
 <script>
 (function(){
 "use strict";
+var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
+function api(a,p,b,ms){ms=ms||30000;
+  if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
+  var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
+  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
+  else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
+  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok)throw new Error("Respuesta del servidor: "+r.status);return r.text();})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
+   .catch(function(e){clearTimeout(t);if(e&&e.name==="AbortError")throw new Error("El servidor tardó demasiado");throw e;});}
 
-var CFG = window.OC_CONFIG || {},
-    API_URL = CFG.API_URL || "",
-    API_TOKEN = CFG.API_TOKEN || "";
+var $=function(i){return document.getElementById(i);};
+function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
+function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
+function a10(n){return Math.ceil(n/10)*10;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
+function dias(d){if(!d)return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
+var PAL=["#10B981","#84CC16","#3B82F6","#F97316","#8B5CF6","#14B8A6","#EF4444","#F59E0B","#EC4899","#64748B"];
+var D=null,MESES=[],rango="todo",sel={},FOTOS={},MOTO=35,orden="dinero",verTodo=false,seccion="resumen";
 
-/* API FETCH HELPER */
-function api(accion, params, body, timeoutMs){
-  timeoutMs = timeoutMs || 30000;
-  if(!API_URL || !API_TOKEN) return Promise.reject(new Error("Falta la configuración de config.js"));
-  
-  var url = new URL(API_URL),
-      controller = new AbortController(),
-      timer = setTimeout(function(){ controller.abort(); }, timeoutMs),
-      opts = { redirect: "follow", signal: controller.signal };
-      
-  if(body){
-    opts.method = "POST";
-    opts.headers = { "Content-Type": "text/plain;charset=utf-8" };
-    opts.body = JSON.stringify(Object.assign({ token: API_TOKEN, accion: accion }, body));
-  } else {
-    url.search = new URLSearchParams(Object.assign({ token: API_TOKEN, accion: accion }, params || {})).toString();
-  }
-  
-  return fetch(url, opts)
-    .then(function(r){
-      clearTimeout(timer);
-      if(!r.ok) throw new Error("Respuesta del servidor: " + r.status);
-      return r.text();
-    })
-    .then(function(rawText){
-      var res;
-      try { res = JSON.parse(rawText); } catch(e){ throw new Error("Respuesta no válida del servidor"); }
-      if(!res.ok) throw new Error(res.error || "Error de servidor");
-      return res.data;
-    })
-    .catch(function(err){
-      clearTimeout(timer);
-      if(err && err.name === "AbortError") throw new Error("El servidor tardó demasiado tiempo");
-      throw err;
-    });
+function cuenta(el,hasta,fmt){
+  if(!el)return;var t0=performance.now(),dur=1000;
+  (function paso(t){var k=Math.min(1,(t-t0)/dur);k=1-Math.pow(1-k,3);el.textContent=fmt(hasta*k);if(k<1)requestAnimationFrame(paso);})(t0);
 }
 
-var $ = function(id){ return document.getElementById(id); };
-function num(v){ var n = parseFloat(String(v == null ? "" : v).replace(/[^0-9.\-]/g, "")); return isFinite(n) ? n : 0; }
-function mx(n){ return "$" + Math.round(Number(n) || 0).toLocaleString("es-MX"); }
-function a10(n){ return Math.ceil(n / 10) * 10; }
-function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
-function norm(s){ return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim(); }
-function dias(d){
-  if(!d) return "—";
-  if(d < 45) return d + " días";
-  var m = Math.round(d / 30.4);
-  return m < 24 ? m + " meses" : (Math.round(d / 365 * 10) / 10) + " años";
-}
-
-var PALETTE = ["#10B981","#84CC16","#3B82F6","#F97316","#8B5CF6","#14B8A6","#EF4444","#F59E0B","#EC4899","#64748B"];
-var D = null, MESES = [], rango = "todo", sel = {}, FOTOS = {}, MOTO = 35, orden = "dinero", verTodo = false, activeHub = "hub-1";
-
-/* ANIMATED NUMBER COUNTER */
-function animateValue(el, target, formatter){
-  var t0 = performance.now(), duration = 800;
-  (function step(t){
-    var progress = Math.min(1, (t - t0) / duration);
-    var eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = formatter(target * eased);
-    if(progress < 1) requestAnimationFrame(step);
-  })(t0);
-}
-
-/* AUTHENTICATION */
-var pinIn = $("pin-input");
-pinIn.addEventListener("input", function(){
-  if(pinIn.value.length < 4) return;
-  var val = pinIn.value;
-  pinIn.disabled = true;
-  $("pin-error").textContent = "";
-  
-  api("verificarPin", null, { pin: val })
-    .then(function(res){
-      if(!res || !res.valido) throw new Error((res && res.error) || "PIN incorrecto");
-      if(res.vendedor !== "Alex") throw new Error("Pantalla restringida únicamente para Alex");
-      $("pin-screen").classList.add("oculto");
-      $("app").classList.remove("oculto");
-      loadData();
-    })
-    .catch(function(err){
-      $("pin-error").textContent = err.message;
-      pinIn.value = "";
-      pinIn.disabled = false;
-      pinIn.focus();
-    });
+var pi=$("pin-in");
+pi.addEventListener("input",function(){
+  if(pi.value.length<4)return;
+  var v=pi.value;pi.disabled=true;$("pin-e").textContent="";
+  api("verificarPin",null,{pin:v}).then(function(d){
+    if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
+    if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
+    $("pin").classList.add("oculto");$("app").classList.remove("oculto");cargar();
+  }).catch(function(e){$("pin-e").textContent=e.message;pi.value="";pi.disabled=false;pi.focus();});
 });
 
-function loadData(){
-  $("hero-capital-val").textContent = "$...";
-  $("bottom-action-dock").classList.remove("active");
-  
+function cargar(){
+  $("rej").innerHTML='<div class="cargando"><div class="spin"></div>Sincronizando tu hoja…</div>';
+  $("bot").classList.remove("on");
   Promise.all([
-    api("analisis", { rango: rango }, null, 45000),
-    api("catalogo", null, null, 30000).catch(function(){ return []; }),
-    api("inicio", { usuario: "Alex" }, null, 35000).catch(function(){ return {}; })
-  ]).then(function(results){
-    D = results[0];
-    sel = {}; FOTOS = {};
-    (results[1] || []).forEach(function(item){
-      if(item && item.descripcion && item.imagen) FOTOS[norm(item.descripcion)] = item.imagen;
+    api("analisis",{rango:rango},null,45000),
+    api("catalogo",null,null,30000).catch(function(){return[];}),
+    api("inicio",{usuario:"Alex"},null,35000).catch(function(){return{};})
+  ]).then(function(r){
+    D=r[0];sel={};FOTOS={};
+    (r[1]||[]).forEach(function(x){if(x&&x.descripcion&&x.imagen)FOTOS[norm(x.descripcion)]=x.imagen;});
+    MESES=(r[2]&&r[2].ventasMes)||[];
+    pintar();
+  }).catch(function(e){$("rej").innerHTML='<div class="cargando">'+esc(e.message)+"</div>";});
+}
+$("r-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcaR();cargar();});
+$("r-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcaR();cargar();});
+function marcaR(){$("r-todo").classList.toggle("on",rango==="todo");$("r-12m").classList.toggle("on",rango==="12m");}
+function meses(){if(rango==="12m")return 12;var d=D&&D.resumen&&D.resumen.desde;if(!d)return 12;
+  return Math.max(1,Math.round((Date.now()-Number(d))/(30.4*864e5)));}
+function viejos(){var V=(D.viejos||[]).filter(function(x){return x.dias>180;}).slice();
+  V.sort(orden==="dinero"?function(a,b){return b.capital-a.capital;}:function(a,b){return b.dias-a.dias;});return V;}
+function costoU(x){return x.piezas?x.capital/x.piezas:0;}
+
+/* Gráfica: escala proporcional, raya de promedio y el mes en curso marcado aparte */
+function area(){
+  if(!MESES.length)return "";
+  var W=680,H=200,P={t:26,b:10,l:4,r:4};
+  var vals=MESES.map(function(m){return Number(m.total)||0;}),n=vals.length;
+  var completos=n>1?vals.slice(0,n-1):vals;
+  var prom=completos.reduce(function(a,b){return a+b;},0)/Math.max(1,completos.length);
+  var max=Math.max.apply(null,vals.concat([1]));
+  var px=function(i){return P.l+i*((W-P.l-P.r)/Math.max(1,n-1));};
+  var py=function(v){return P.t+(H-P.t-P.b)*(1-v/max);};
+  var pts=vals.map(function(v,i){return [px(i),py(v)];});
+  var d=pts.map(function(q,i){if(!i)return "M"+q[0].toFixed(1)+","+q[1].toFixed(1);
+    var p0=pts[i-1],cx=(p0[0]+q[0])/2;
+    return "C"+cx.toFixed(1)+","+p0[1].toFixed(1)+" "+cx.toFixed(1)+","+q[1].toFixed(1)+" "+q[0].toFixed(1)+","+q[1].toFixed(1);}).join(" ");
+  var ar=d+" L"+pts[n-1][0].toFixed(1)+","+H+" L"+pts[0][0].toFixed(1)+","+H+" Z";
+  var yp=py(prom);
+  return '<div class="chart-container" id="chart"><svg viewBox="0 0 '+W+" "+H+'">'+
+    '<defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10B981"/><stop offset="1" stop-color="#84CC16"/></linearGradient>'+
+    '<linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10B981" stop-opacity=".3"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>'+
+    '<line x1="'+P.l+'" y1="'+yp.toFixed(1)+'" x2="'+(W-P.r)+'" y2="'+yp.toFixed(1)+'" stroke="#94A3B8" stroke-width="1" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>'+
+    '<text x="'+(W-P.r)+'" y="'+(yp-7).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#94A3B8">promedio '+mx(prom)+'</text>'+
+    '<path class="area" d="'+ar+'"/><path class="linea" vector-effect="non-scaling-stroke" d="'+d+'"/>'+
+    pts.map(function(q,i){return '<circle class="pt'+(i===n-1?" curso":"")+'" data-i="'+i+'" cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="5"/>';}).join("")+
+    '</svg><div class="tip" id="tip"></div>'+
+    '<div class="ejes"><span>'+esc(MESES[0].label)+"</span><span>"+esc(MESES[n-1].label)+" · en curso</span></div></div>";
+}
+/* Texto honesto: compara meses completos y deja el actual aparte */
+function textoVentas(){
+  var n=MESES.length,curso=MESES[n-1],comp=n>1?MESES[n-2]:null,ant=n>2?MESES[n-3]:null;
+  var dif=(comp&&ant)?(Number(comp.total)-Number(ant.total)):0;
+  return '<p class="sub">Historial de los últimos '+n+' meses. La raya punteada es tu promedio mensual: arriba fue buen mes, abajo fue flojo.'+
+    (comp?" Tu último mes completo, <b>"+esc(comp.label)+"</b>, cerró en <b>"+mx(comp.total)+"</b>"+
+      (ant?" ("+(dif>=0?"<b style='color:var(--verde-deep)'>+"+mx(dif)+"</b>":"<b style='color:var(--rojo)'>−"+mx(-dif)+"</b>")+" contra "+esc(ant.label)+")":"")+".":"")+
+    " <b>"+esc(curso.label)+"</b> va a la mitad, por eso no se compara todavía.</p>";
+}
+function dona(segs,total){
+  var C=2*Math.PI*78,off=0;
+  var arcos=segs.filter(function(s){return s.v>0;}).map(function(s){
+    var len=Math.max(0,s.v/total*C-3);
+    var h='<circle cx="95" cy="95" r="78" stroke="'+s.c+'" stroke-linecap="round" stroke-dasharray="'+len.toFixed(1)+" "+(C-len).toFixed(1)+'" stroke-dashoffset="'+(-off).toFixed(1)+'"/>';
+    off+=s.v/total*C;return h;}).join("");
+  return '<div class="dona-wrapper"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" stroke="rgba(210,220,233,.4)"/>'+arcos+
+    '</svg><div class="ctr"><b class="mono">'+mx(total)+"</b><span>en cajas</span></div></div>";
+}
+
+var SECS=[["resumen","Resumen"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Precios"],["ventas","Ventas"],["parado","Parado"]];
+
+function pintar(){
+  var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
+  var porMes=R.utilidad/meses(),cong=porMes>0?D.capitalTotal/porMes:0;
+  var capV=V.reduce(function(s,x){return s+x.capital;},0),pzV=V.reduce(function(s,x){return s+x.piezas;},0);
+  var T=D.capitalTotal||1,h="";
+  $("movil").innerHTML=SECS.map(function(s,i){return '<button data-ir="'+s[0]+'"'+(i===0?' class="on"':"")+">"+s[1]+"</button>";}).join("");
+  $("nav-n").textContent=V.length?V.length:"";
+
+  h+='<section class="hero-bento ani" id="s-resumen"><div><div class="lb">Capital congelado en mercancía</div>'+
+    '<div class="big mono" id="hero-v">$0</div>'+
+    '<div class="lb">'+D.piezasTotal+' piezas pagadas que siguen en cajas</div></div>'+
+    '<div class="pillas"><span class="hp lima">'+(cong?cong.toFixed(1):"—")+" meses de ganancia</span>"+
+    '<span class="hp">Ganas '+mx(porMes)+" al mes</span></div></section>";
+
+  var ks=[
+    ["En riesgo (+6 meses)",mx(capV),pzV+" pzas · "+V.length+" productos","var(--naranja)","#FFF7ED",'<path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/>'],
+    ["Margen general",Math.round(R.margen)+"%","de cada $100 que entran","var(--verde-deep)","#ECFDF5",'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',R.margen],
+    ["Ganancia del periodo",mx(R.utilidad),R.ventas+" ventas · "+mx(R.porVenta)+" c/u","var(--azul)","#EFF6FF",'<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>']
+  ];
+  h+=ks.map(function(k,i){return '<div class="kpi-card ani" style="animation-delay:'+(.08*(i+1))+'s">'+
+    '<div class="ico" style="background:'+k[4]+';color:'+k[3]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+k[5]+"</svg></div>"+
+    '<div><div class="lb">'+k[0]+'</div><b class="mono">'+k[1]+"</b><small>"+k[2]+"</small></div>"+
+    (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,k[6]).toFixed(0)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div></div>':"")+
+    "</div>";}).join("");
+
+  var maxD=Math.max.apply(null,rot.map(function(x){return Math.max(x.diasVenta,x.diasStock);}).concat([1]));
+  var ator=rot.filter(function(x){return x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2;});
+  h+='<section class="b-card w7 ani" id="s-rotacion">'+
+    '<span class="decision-tag d1">Decisión 1: Qué comprar</span>'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg> Rotación de inventario</h2>'+
+    '<p class="sub">Verde: <b>días que tarda en venderse</b>. Naranja: <b>días que lleva parado hoy</b>. Invierte en verde, frena en naranja.</p>'+
+    '<div style="margin-top:1.25rem">'+rot.map(function(x){
+      var mal=x.piezas&&x.ventas>=3&&x.diasStock>x.diasVenta*2;
+      return '<div class="rot-item"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" ventas · "+(x.piezas?x.piezas+" en stock":"sin stock")+"</small></div></div>"+
+        '<div class="rb"><span class="et">Venta</span><div class="tr"><i class="fi" style="width:'+Math.max(4,x.diasVenta/maxD*100).toFixed(1)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div><span class="vl mono">'+dias(x.diasVenta)+"</span></div>"+
+        '<div class="rb"><span class="et">Parado</span><div class="tr"><i class="fi" style="width:'+Math.max(4,x.diasStock/maxD*100).toFixed(1)+'%;background:'+(mal?"linear-gradient(90deg,#EF4444,#F97316)":"linear-gradient(90deg,#F97316,#F59E0B)")+'"></i></div><span class="vl mono">'+dias(x.diasStock)+"</span></div></div>";
+    }).join("")+"</div>"+
+    (ator.length?'<div class="aviso warn"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span><div>Atención en <b>'+ator.map(function(x){return esc(x.categoria);}).join("</b>, <b>")+"</b>: lo que te queda lleva parado más del doble de lo que tarda en venderse.</div></div>":'<div class="aviso ok"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><div>Rotación saludable: nada excede sus tiempos normales.</div></div>')+
+    '<button class="btn-help" data-exp="rotacion">¿Cómo interpretar esto?</button></section>';
+
+  h+='<section class="b-card w5 ani" id="s-parado">'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 12V7M12 12l4 2"/></svg> Distribución del capital</h2>'+
+    '<p class="sub">Cada rebanada es una categoría. Mientras más grande, más dinero tuyo espera ahí.</p>'+
+    '<div style="margin-top:1rem">'+dona(cap.map(function(x,i){return{v:x.capital,c:PAL[i%PAL.length]};}),T)+"</div>"+
+    '<div class="legenda">'+cap.slice(0,7).map(function(x,i){
+      return '<button><i style="background:'+PAL[i%PAL.length]+'"></i><span class="t">'+esc(x.categoria)+'</span><span class="v mono">'+mx(x.capital)+" · "+Math.round(x.capital/T*100)+"%</span></button>";}).join("")+"</div>"+
+    '<button class="btn-help" data-exp="capital">¿Por qué es vital?</button></section>';
+
+  h+='<section class="b-card ani" id="s-remate">'+
+    '<span class="decision-tag d2">Decisión 2: Recuperar efectivo</span>'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg> Plan de remate</h2>'+
+    '<p class="sub">Tienes <b>'+mx(capV)+'</b> parados hace más de 6 meses en <b>'+pzV+' piezas</b>. Elige cuáles mover y a qué precio.</p>'+
+    (V.length>4?'<div class="aviso warn"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span><div><b>Empieza por aquí:</b> '+esc(V.slice(0,4).map(function(x){return x.descripcion;}).join(", "))+" concentran <b>"+mx(V.slice(0,4).reduce(function(s,x){return s+x.capital;},0))+"</b>. Mover esos cuatro vale más que mover los otros "+(V.length-4)+" juntos.</div></div>":"")+
+    '<div class="ctrl-bar"><span>Envío que absorbes por pieza:</span><span class="inp-pill">$<input id="moto" type="number" step="5" min="0" value="'+MOTO+'"></span>'+
+    '<span style="margin-left:auto">Ordenar:</span><div class="ord-pill"><button data-ord="dinero"'+(orden==="dinero"?' class="on"':"")+'>Dinero</button><button data-ord="dias"'+(orden==="dias"?' class="on"':"")+'>Antigüedad</button></div>'+
+    '<small>El motomandado sale de tu bolsa en casi todas tus entregas. Ya viene restado en cada cuenta.</small></div>'+
+    '<div class="product-grid">'+(V.length?V.slice(0,verTodo?999:12).map(pcHTML).join(""):'<div class="aviso ok" style="grid-column:1/-1"><span class="ic"></span><div>Nada lleva más de 6 meses parado. Vas bien.</div></div>')+"</div>"+
+    (V.length>12&&!verTodo?'<button class="vermas-btn" id="vermas">Ver los '+(V.length-12)+" productos restantes · suman "+mx(V.slice(12).reduce(function(s,x){return s+x.capital;},0))+"</button>":"")+
+    '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.25rem"><button class="btn-help" data-exp="remate">¿Vender al costo es perder?</button>'+
+    '<button class="btn-help" data-exp="pildoras">¿De dónde salen los 3 precios?</button>'+
+    '<button class="btn-help" data-exp="envio">¿Por qué descuento el envío?</button></div></section>';
+
+  h+='<section class="b-card ani" id="s-margen">'+
+    '<span class="decision-tag d3">Decisión 3: A cuánto vender</span>'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Rendimiento por categoría</h2>'+
+    '<p class="sub">La barra compara el margen entre categorías: la más larga es la que mejor te paga. Ojo: la que más margen deja no siempre es la que más dinero te da.</p>'+
+    '<div style="margin-top:1.25rem">'+(function(){var mm=Math.max.apply(null,mar.map(function(y){return y.margen;}).concat([1]));
+      return mar.map(function(x,i){
+        return '<div class="rot-item"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" ventas · "+mx(x.porVenta)+' c/u</small></div><div style="text-align:right"><b style="color:var(--verde-deep)" class="mono">'+mx(x.utilidad)+'</b><small>'+Math.round(x.margen)+"% margen</small></div></div>"+
+          '<div class="rb"><div class="tr"><i class="fi" style="width:'+Math.max(6,x.margen/mm*100).toFixed(1)+'%;background:'+PAL[i%PAL.length]+'"></i></div></div></div>';}).join("");})()+"</div>"+
+    '<button class="btn-help" data-exp="margen">¿Qué es el margen?</button></section>';
+
+  if(MESES.length){
+    h+='<section class="b-card ani" id="s-ventas">'+
+      '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg> Comportamiento de ventas</h2>'+
+      textoVentas()+area()+"</section>";
+  }
+
+  $("rej").innerHTML=h;
+  cuenta($("hero-v"),D.capitalTotal,mx);
+  cablearChart();espiar();total();
+}
+
+function pcHTML(x,i){
+  var cu=costoU(x),img=FOTOS[norm(x.descripcion)];
+  return '<article class="prod-card" data-i="'+i+'">'+
+    '<div class="top">'+
+      (img?'<img class="im" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="im sin"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.4"/><path d="m21 15-5-5L5 19"/></svg></span>')+
+      '<div class="tx"><b>'+esc(x.descripcion)+"</b><small>"+esc(x.categoria)+" · "+x.piezas+" pza · te costó "+mx(cu)+" c/u</small></div>"+
+      '<button class="chk-box" data-act="tog"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg></button>'+
+    "</div>"+
+    '<div class="tags"><span class="tg cong">'+mx(x.capital)+' congelados</span><span class="tg dias">'+dias(x.dias)+"</span></div>"+
+    (function(){var op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
+      op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
+      return '<div class="precios-opt" style="grid-template-columns:repeat('+u.length+',1fr)">'+u.map(function(o){
+        return '<button class="po-btn" data-act="p" data-v="'+o[1]+'"><span>'+o[0]+'</span><b class="mono">'+mx(o[1])+"</b></button>";}).join("")+"</div>";})()+
+    '<div class="libre-input">o pon tu precio: <span class="inp-pill">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu+MOTO)+'"></span></div>'+
+    '<div class="cuenta-box" data-f="1">Toca la palomita para incluirlo en el plan.</div></article>';
+}
+
+function render(card,i,x){
+  if(!x)return;
+  var on=sel[i]!=null&&sel[i]>0;card.classList.toggle("on",on);
+  var p=num(card.querySelector("[data-act=in]").value),cu=costoU(x);
+  card.querySelectorAll(".po-btn").forEach(function(o){o.classList.toggle("on",num(o.getAttribute("data-v"))===p);});
+  var neto=(p-MOTO)*x.piezas,dif=neto-x.capital,porPza=p-MOTO-cu;
+  card.querySelector("[data-f]").innerHTML=on
+    ? "<b>Si vendes una:</b> entra "+mx(p)+" − envío "+mx(MOTO)+" − costo "+mx(cu)+" = "+
+      (porPza>=0?'<b class="bien">+'+mx(porPza)+"</b>":'<b class="mal">'+mx(porPza)+"</b>")+" libre.<br>"+
+      "<b>Si salen las "+x.piezas+":</b> recuperas <b class='mono'>"+mx(neto)+"</b> de "+mx(x.capital)+" · "+
+      (dif>=0?'<b class="bien">+'+mx(dif)+"</b>":'te faltan <b class="mal">'+mx(-dif)+"</b>")
+    : "Toca la palomita para incluirlo en el plan.";
+}
+
+function verBarra(){
+  var hay=Object.keys(sel).some(function(i){return sel[i]>0;});
+  $("bot").classList.toggle("on",hay||seccion==="remate");
+}
+function total(){
+  var V=viejos(),lib=0,cost=0,pz=0,n=0;
+  Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;lib+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;n++;});
+  $("bot-v").textContent=mx(lib);
+  $("bot-s").textContent=n?(pz+" piezas · "+n+" productos · pagaste "+mx(cost)):"Selecciona mercancía a rematar";
+  $("b-plan").disabled=!n;
+  verBarra();
+}
+
+function cablearChart(){
+  var ch=$("chart");if(!ch)return;
+  ch.addEventListener("mouseover",function(e){
+    var p=e.target.closest(".pt");if(!p)return;
+    var m=MESES[Number(p.getAttribute("data-i"))];if(!m)return;
+    var tip=$("tip"),r=ch.getBoundingClientRect(),pr=p.getBoundingClientRect();
+    tip.textContent=m.label+" · "+mx(m.total)+(m.cantidad?" · "+m.cantidad+" pzas":"");
+    tip.style.left=(pr.left-r.left+pr.width/2)+"px";tip.style.top=(pr.top-r.top)+"px";
+    tip.classList.add("on");p.classList.add("on");
+  });
+  ch.addEventListener("mouseout",function(e){
+    var p=e.target.closest(".pt");if(!p)return;
+    $("tip").classList.remove("on");p.classList.remove("on");
+  });
+}
+function espiar(){
+  var obs=new IntersectionObserver(function(ents){
+    ents.forEach(function(en){
+      if(!en.isIntersecting)return;
+      var id=en.target.id.replace("s-","");
+      if(id===seccion)return;seccion=id;
+      document.querySelectorAll("[data-ir]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-ir")===id);});
+      verBarra();
     });
-    MESES = (results[2] && results[2].ventasMes) || [];
-    renderWorkspace();
-  }).catch(function(err){
-    alert("Error al cargar datos: " + err.message);
-  });
+  },{rootMargin:"-45% 0px -50% 0px"});
+  SECS.forEach(function(s){var el=$("s-"+s[0]);if(el)obs.observe(el);});
 }
 
-/* RANGE PICKER */
-$("range-all").addEventListener("click", function(){ if(rango !== "todo"){ rango = "todo"; updateRangeButtons(); loadData(); } });
-$("range-12m").addEventListener("click", function(){ if(rango !== "12m"){ rango = "12m"; updateRangeButtons(); loadData(); } });
-function updateRangeButtons(){
-  $("range-all").classList.toggle("on", rango === "todo");
-  $("range-12m").classList.toggle("on", rango === "12m");
-}
+document.addEventListener("click",function(e){
+  var ir=e.target.closest("[data-ir]");
+  if(ir){var el=$("s-"+ir.getAttribute("data-ir"));if(el)el.scrollIntoView({behavior:"smooth",block:"start"});return;}
+  var ex=e.target.closest("[data-exp]");if(ex){abrir(ex.getAttribute("data-exp"));return;}
+  var od=e.target.closest("[data-ord]");if(od){orden=od.getAttribute("data-ord");sel={};verTodo=false;pintar();return;}
+  if(e.target.closest("#vermas")){verTodo=true;pintar();return;}
+  var card=e.target.closest(".prod-card");if(!card)return;
+  var b=e.target.closest("[data-act]");if(!b)return;
+  var i=card.getAttribute("data-i"),x=viejos()[i],act=b.getAttribute("data-act");
+  if(act==="tog"){if(sel[i])delete sel[i];else sel[i]=num(card.querySelector("[data-act=in]").value)||a10(costoU(x)+MOTO);}
+  if(act==="p"){var v=num(b.getAttribute("data-v"));card.querySelector("[data-act=in]").value=v;sel[i]=v;}
+  render(card,i,x);total();
+});
+document.addEventListener("input",function(e){
+  if(e.target.id==="moto"){MOTO=num(e.target.value);
+    document.querySelectorAll(".prod-card").forEach(function(c){render(c,c.getAttribute("data-i"),viejos()[c.getAttribute("data-i")]);});total();return;}
+  var b=e.target.closest("[data-act=in]");if(!b)return;
+  var card=b.closest(".prod-card"),i=card.getAttribute("data-i");
+  sel[i]=num(b.value);render(card,i,viejos()[i]);total();
+});
+$("b-limpiar").addEventListener("click",function(){
+  sel={};document.querySelectorAll(".prod-card").forEach(function(c){c.classList.remove("on");
+    c.querySelector("[data-f]").textContent="Toca la palomita para incluirlo en el plan.";
+    c.querySelectorAll(".po-btn").forEach(function(o){o.classList.remove("on");});});
+  total();});
 
-/* TAB NAVIGATION HUB SWITCHER */
-document.querySelectorAll(".tab-btn").forEach(function(btn){
-  btn.addEventListener("click", function(){
-    document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("on"); });
-    document.querySelectorAll(".hub-section").forEach(function(s){ s.classList.remove("active"); });
-    btn.classList.add("on");
-    var target = btn.getAttribute("data-hub");
-    activeHub = target;
-    $(target).classList.add("active");
-    updateDockVisibility();
-  });
+$("b-plan").addEventListener("click",function(){
+  var V=viejos(),lin=[],lib=0,cost=0,pz=0;
+  Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;
+    lib+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;
+    lin.push("• "+x.descripcion+" — "+x.piezas+" pza · REMATE "+mx(sel[i])+" (antes "+mx(x.precio)+")");});
+  var txt="REMATE KIOSKO\n"+pz+" piezas · recuperas "+mx(lib)+" ya con el envío descontado\n\n"+lin.join("\n");
+  abrirHTML("<h3>Tu plan de remate</h3>"+
+    "<p>Vas a mover <b>"+pz+" piezas</b> paradas hace meses y a recuperar <b>"+mx(lib)+"</b> limpios, ya descontado el envío de "+mx(MOTO)+" por pieza. Te costaron "+mx(cost)+".</p>"+
+    (lib<cost?"<p>Recuperas menos de lo que pagaste. <b>Eso está bien</b> si llevan un año sin moverse: un billete dormido no vale más por esperar.</p>":"")+
+    "<p><b>Véndelas en paquete.</b> El envío cuesta lo mismo lleves una pieza o tres: es por viaje. Ofrece lotes o pide que lo recojan y esa resta desaparece.</p>"+
+    '<textarea readonly id="plan-txt">'+esc(txt)+"</textarea>"+
+    '<div style="display:flex;gap:.75rem;margin-top:1.25rem"><button class="btn-action pri" id="cp">Copiar lista</button><button class="btn-action gh" data-cerrar="1">Cerrar</button></div>');
+  $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();
+    try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
 });
 
-function getMonthsCount(){
-  if(rango === "12m") return 12;
-  var desde = D && D.resumen && D.resumen.desde;
-  if(!desde) return 12;
-  return Math.max(1, Math.round((Date.now() - Number(desde)) / (30.4 * 864e5)));
-}
-
-function getStuckItems(){
-  var items = (D.viejos || []).filter(function(x){ return x.dias > 180; }).slice();
-  items.sort(orden === "dinero" ? function(a,b){ return b.capital - a.capital; } : function(a,b){ return b.dias - a.dias; });
-  return items;
-}
-function unitCost(x){ return x.piezas ? x.capital / x.piezas : 0; }
-
-function renderWorkspace(){
-  var R = D.resumen || {}, cap = D.capital || [], rot = D.rotacion || [], mar = D.margen || [], V = getStuckItems();
-  var monthlyProfit = R.utilidad / getMonthsCount();
-  var frozenMonths = monthlyProfit > 0 ? D.capitalTotal / monthlyProfit : 0;
-  var totalStuckCapital = V.reduce(function(s,x){ return s + x.capital; }, 0);
-  var totalStuckPieces = V.reduce(function(s,x){ return s + x.piezas; }, 0);
-
-  // Update Hero & KPI Banner
-  animateValue($("hero-capital-val"), D.capitalTotal, mx);
-  $("hero-pieces-sub").textContent = D.piezasTotal + " piezas físicas pagadas actualmente en bodega";
-  $("hero-months-stat").textContent = (frozenMonths ? frozenMonths.toFixed(1) : "—") + " meses de tu ganancia";
-  $("hero-avg-profit").textContent = "Ganancia prom: " + mx(monthlyProfit) + "/mes";
-
-  $("kpi-risk-val").textContent = mx(totalStuckCapital);
-  $("kpi-risk-sub").textContent = totalStuckPieces + " pzas · " + V.length + " productos";
-  $("badge-stuck-count").textContent = V.length;
-
-  $("kpi-margin-val").textContent = Math.round(R.margen) + "%";
-  $("kpi-profit-val").textContent = mx(R.utilidad);
-  $("kpi-profit-sub").textContent = R.ventas + " ventas · " + mx(R.porVenta) + " c/u";
-
-  // RENDER HUB 1: ROTATION RADAR & DONUT
-  renderRotationRadar(rot);
-  renderDonutChart(cap, D.capitalTotal || 1);
-
-  // RENDER HUB 2: LIQUIDATION ENGINE
-  renderLiquidationGrid(V);
-
-  // RENDER HUB 3: MARGINS & SALES CHART
-  renderMarginsList(mar);
-  renderSalesAreaChart();
-
-  updateDockTotal();
-}
-
-function renderRotationRadar(rot){
-  var maxDays = Math.max.apply(null, rot.map(function(x){ return Math.max(x.diasVenta, x.diasStock); }).concat([1]));
-  var ator = rot.filter(function(x){ return x.piezas > 0 && x.ventas >= 3 && x.diasStock > x.diasVenta * 2; });
-  
-  var html = rot.map(function(x){
-    var isWarning = x.piezas && x.ventas >= 3 && x.diasStock > x.diasVenta * 2;
-    return '<div class="velocity-item">' +
-      '<div class="velocity-header"><div><b>' + esc(x.categoria) + '</b><small>' + x.ventas + ' ventas · ' + (x.piezas ? x.piezas + ' en stock' : 'sin stock') + '</small></div></div>' +
-      '<div class="meter-row"><span class="meter-label">Venta</span><div class="meter-track"><i class="meter-fill" style="width:' + Math.max(4, x.diasVenta / maxDays * 100).toFixed(1) + '%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div><span class="meter-val mono">' + dias(x.diasVenta) + '</span></div>' +
-      '<div class="meter-row"><span class="meter-label">Parado</span><div class="meter-track"><i class="meter-fill" style="width:' + Math.max(4, x.diasStock / maxDays * 100).toFixed(1) + '%;background:' + (isWarning ? 'linear-gradient(90deg,#EF4444,#F97316)' : 'linear-gradient(90deg,#F97316,#F59E0B)') + '"></i></div><span class="meter-val mono">' + dias(x.diasStock) + '</span></div>' +
-      '</div>';
-  }).join("");
-
-  if(ator.length){
-    html += '<div class="alert-banner warn">Atención prioritaria en <b>' + ator.map(function(x){ return esc(x.categoria); }).join("</b>, <b>") + '</b>: el stock sobrante lleva parado más del doble del tiempo normal de rotación.</div>';
-  } else {
-    html += '<div class="alert-banner ok">Rotación saludable en todos los grupos de producto.</div>';
-  }
-
-  $("rotation-list-container").innerHTML = html;
-}
-
-function renderDonutChart(cap, total){
-  var C = 2 * Math.PI * 78, offset = 0;
-  var circles = cap.filter(function(s){ return s.capital > 0; }).map(function(s, i){
-    var color = PALETTE[i % PALETTE.length];
-    var len = Math.max(0, s.capital / total * C - 3);
-    var circleHtml = '<circle cx="95" cy="95" r="78" stroke="' + color + '" stroke-linecap="round" stroke-dasharray="' + len.toFixed(1) + ' ' + (C - len).toFixed(1) + '" stroke-dashoffset="' + (-offset).toFixed(1) + '"/>';
-    offset += s.capital / total * C;
-    return circleHtml;
-  }).join("");
-
-  $("donut-chart-container").innerHTML = '<div class="donut-box"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" stroke="rgba(210, 220, 233, 0.4)"/>' + circles + '</svg><div class="donut-center"><b class="mono">' + mx(total) + '</b><span>En Cajas</span></div></div>';
-
-  $("donut-legend").innerHTML = cap.slice(0, 6).map(function(x, i){
-    return '<div class="legend-item"><i class="legend-dot" style="background:' + PALETTE[i % PALETTE.length] + '"></i><span style="flex:1">' + esc(x.categoria) + '</span><span class="mono" style="color:var(--gris)">' + mx(x.capital) + '</span></div>';
-  }).join("");
-}
-
-function renderLiquidationGrid(items){
-  if(!items.length){
-    $("liquidation-products-grid").innerHTML = '<div class="alert-banner ok" style="grid-column:1/-1">No hay productos estancados por más de 6 meses. ¡Excelente gestión de inventario!</div>';
-    return;
-  }
-  
-  var visible = items.slice(0, verTodo ? 999 : 12);
-  $("liquidation-products-grid").innerHTML = visible.map(createStockCardHTML).join("");
-
-  if(items.length > 12 && !verTodo){
-    $("load-more-btn").classList.remove("oculto");
-    $("load-more-btn").textContent = "Mostrar " + (items.length - 12) + " productos más (suman " + mx(items.slice(12).reduce(function(s,x){return s+x.capital;},0)) + ")";
-  } else {
-    $("load-more-btn").classList.add("oculto");
-  }
-}
-
-function createStockCardHTML(x, i){
-  var uCost = unitCost(x), imgUrl = FOTOS[norm(x.descripcion)];
-  return '<article class="stock-card" data-idx="' + i + '">' +
-    '<div>' +
-      '<div class="stock-top">' +
-        (imgUrl ? '<img class="stock-img" src="' + esc(imgUrl) + '" alt="" loading="lazy" onerror="this.remove()">' : '<div class="stock-img"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.4"/><path d="m21 15-5-5L5 19"/></svg></div>') +
-        '<div class="stock-details"><b>' + esc(x.descripcion) + '</b><small>' + esc(x.categoria) + ' · ' + x.piezas + ' pza · costo base: ' + mx(uCost) + '</small></div>' +
-        '<button class="select-checkbox" data-action="toggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg></button>' +
-      '</div>' +
-      '<div class="tags-row" style="margin:0.85rem 0">' +
-        '<span class="badge-tag frozen">' + mx(x.capital) + ' congelados</span>' +
-        '<span class="badge-tag days">' + dias(x.dias) + '</span>' +
-      '</div>' +
-      (function(){
-        var options = [["Sin perder", a10(uCost + MOTO)], ["Ganas $50", a10(uCost + MOTO + 50)], ["50% Off", a10(x.precio / 2)]];
-        var seen = {}, unique = [];
-        options.forEach(function(o){ if(!seen[o[1]]){ seen[o[1]]=1; unique.push(o); } });
-        return '<div class="price-options-grid" style="grid-template-columns:repeat(' + unique.length + ',1fr)">' +
-          unique.map(function(o){ return '<button class="price-btn" data-action="set-price" data-val="' + o[1] + '"><span>' + o[0] + '</span><b class="mono">' + mx(o[1]) + '</b></button>'; }).join("") +
-        '</div>';
-      })() +
-      '<div class="custom-price-row" style="margin-top:0.75rem"><span>o pon tu precio:</span><span class="moto-input-pill">$<input data-action="custom-input" type="number" step="10" min="0" value="' + a10(uCost + MOTO) + '"></span></div>' +
-    '</div>' +
-    '<div class="calc-summary-box" data-calc="1">Haz clic en el cuadro para añadir este producto al plan de remate.</div>' +
-  '</article>';
-}
-
-function updateCardCalc(card, idx, x){
-  if(!x) return;
-  var isSelected = sel[idx] != null && sel[idx] > 0;
-  card.classList.toggle("selected", isSelected);
-  
-  var price = num(card.querySelector("[data-action=custom-input]").value);
-  var uCost = unitCost(x);
-  
-  card.querySelectorAll(".price-btn").forEach(function(btn){
-    btn.classList.toggle("on", num(btn.getAttribute("data-val")) === price);
-  });
-  
-  var netPrice = price - MOTO;
-  var totalNet = netPrice * x.piezas;
-  var diff = totalNet - x.capital;
-  var profitPerUnit = netPrice - uCost;
-  
-  var calcBox = card.querySelector("[data-calc]");
-  if(isSelected){
-    calcBox.innerHTML = "<b>Por unidad:</b> precio " + mx(price) + " − envío " + mx(MOTO) + " − costo " + mx(uCost) + " = " +
-      (profitPerUnit >= 0 ? '<b class="pos">+' + mx(profitPerUnit) + '</b>' : '<b class="neg">' + mx(profitPerUnit) + '</b>') + " libre.<br>" +
-      "<b>En " + x.piezas + " pzas:</b> recuperas <b class='mono'>" + mx(totalNet) + "</b> de " + mx(x.capital) + " · " +
-      (diff >= 0 ? '<b class="pos">+' + mx(diff) + '</b>' : 'diferencia <b class="neg">' + mx(-diff) + '</b>');
-  } else {
-    calcBox.textContent = "Haz clic en el cuadro para añadir este producto al plan de remate.";
-  }
-}
-
-function renderMarginsList(mar){
-  var maxMargin = Math.max.apply(null, mar.map(function(y){ return y.margen; }).concat([1]));
-  $("margin-category-list").innerHTML = mar.map(function(x, i){
-    return '<div class="velocity-item">' +
-      '<div class="velocity-header"><div><b>' + esc(x.categoria) + '</b><small>' + x.ventas + ' ventas · ' + mx(x.porVenta) + ' c/u</small></div><div style="text-align:right"><b style="color:var(--emerald-dark)" class="mono">' + mx(x.utilidad) + '</b><small>' + Math.round(x.margen) + '% margen real</small></div></div>' +
-      '<div class="meter-row"><div class="meter-track"><i class="meter-fill" style="width:' + Math.max(6, x.margen / maxMargin * 100).toFixed(1) + '%;background:' + PALETTE[i % PALETTE.length] + '"></i></div></div>' +
-    '</div>';
-  }).join("");
-}
-
-function renderSalesAreaChart(){
-  if(!MESES.length){ $("sales-chart-wrapper").innerHTML = ""; return; }
-  var W = 680, H = 200, P = { t: 20, b: 10, l: 4, r: 4 };
-  var vals = MESES.map(function(m){ return Number(m.total) || 0; });
-  var maxVal = Math.max.apply(null, vals.concat([1])), n = vals.length;
-  
-  var px = function(i){ return P.l + i * ((W - P.l - P.r) / Math.max(1, n - 1)); };
-  var py = function(v){ return P.t + (H - P.t - P.b) * (1 - v / maxVal); };
-  var pts = vals.map(function(v, i){ return [px(i), py(v)]; });
-  
-  var d = pts.map(function(q, i){
-    if(!i) return "M" + q[0].toFixed(1) + "," + q[1].toFixed(1);
-    var p0 = pts[i-1], cx = (p0[0] + q[0]) / 2;
-    return "C" + cx.toFixed(1) + "," + p0[1].toFixed(1) + " " + cx.toFixed(1) + "," + q[1].toFixed(1) + " " + q[0].toFixed(1) + "," + q[1].toFixed(1);
-  }).join(" ");
-  
-  var areaPath = d + " L" + pts[n-1][0].toFixed(1) + "," + H + " L" + pts[0][0].toFixed(1) + "," + H + " Z";
-  
-  $("sales-chart-wrapper").innerHTML = '<div class="chart-box" id="sales-svg-chart">' +
-    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
-      '<defs>' +
-        '<linearGradient id="gradientStroke" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10B981"/><stop offset="1" stop-color="#84CC16"/></linearGradient>' +
-        '<linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10B981" stop-opacity=".3"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient>' +
-      '</defs>' +
-      '<path class="path-area" d="' + areaPath + '"/>' +
-      '<path class="path-line" d="' + d + '"/>' +
-      pts.map(function(q, i){ return '<circle class="chart-pt" data-i="' + i + '" cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="5"/>'; }).join("") +
-    '</svg>' +
-    '<div class="chart-tooltip" id="chart-hover-tooltip"></div>' +
-    '<div class="axis-labels"><span>' + esc(MESES[0].label) + '</span><span>' + esc(MESES[n-1].label) + '</span></div>' +
-  '</div>';
-
-  attachChartHoverEvents();
-}
-
-function attachChartHoverEvents(){
-  var container = $("sales-svg-chart");
-  if(!container) return;
-  container.addEventListener("mouseover", function(e){
-    var circle = e.target.closest(".chart-pt");
-    if(!circle) return;
-    var idx = Number(circle.getAttribute("data-i"));
-    var monthData = MESES[idx];
-    if(!monthData) return;
-    var tip = $("chart-hover-tooltip");
-    var cRect = container.getBoundingClientRect(), pRect = circle.getBoundingClientRect();
-    tip.textContent = monthData.label + " · " + mx(monthData.total) + (monthData.cantidad ? " · " + monthData.cantidad + " pzas" : "");
-    tip.style.left = (pRect.left - cRect.left + pRect.width / 2) + "px";
-    tip.style.top = (pRect.top - cRect.top) + "px";
-    tip.classList.add("active");
-    circle.classList.add("active");
-  });
-  container.addEventListener("mouseout", function(e){
-    if(e.target.closest(".chart-pt")){
-      $("chart-hover-tooltip").classList.remove("active");
-      e.target.closest(".chart-pt").classList.remove("active");
-    }
-  });
-}
-
-function updateDockVisibility(){
-  var hasSelection = Object.keys(sel).some(function(i){ return sel[i] > 0; });
-  $("bottom-action-dock").classList.toggle("active", hasSelection || activeHub === "hub-2");
-}
-
-function updateDockTotal(){
-  var V = getStuckItems(), recovered = 0, origCost = 0, totalPzas = 0, count = 0;
-  Object.keys(sel).forEach(function(i){
-    var item = V[i];
-    if(!item || !(sel[i] > 0)) return;
-    recovered += (sel[i] - MOTO) * item.piezas;
-    origCost += item.capital;
-    totalPzas += item.piezas;
-    count++;
-  });
-  $("dock-recovered-val").textContent = mx(recovered);
-  $("dock-status-label").textContent = count ? (totalPzas + " piezas (" + count + " prod.) · costo: " + mx(origCost) + " · flete restado") : "Selecciona mercancía a rematar";
-  $("btn-generate-plan").disabled = !count;
-  updateDockVisibility();
-}
-
-document.addEventListener("click", function(e){
-  var expBtn = e.target.closest("[data-exp]");
-  if(expBtn){ openExplanationModal(expBtn.getAttribute("data-exp")); return; }
-  
-  var sortBtn = e.target.closest("[data-ord]");
-  if(sortBtn){
-    orden = sortBtn.getAttribute("data-ord");
-    sel = {}; verTodo = false;
-    document.querySelectorAll(".sort-pill button").forEach(function(b){ b.classList.remove("on"); });
-    sortBtn.classList.add("on");
-    renderWorkspace();
-    return;
-  }
-  
-  if(e.target.closest("#load-more-btn")){
-    verTodo = true;
-    renderLiquidationGrid(getStuckItems());
-    return;
-  }
-  
-  var card = e.target.closest(".stock-card");
-  if(!card) return;
-  var actionBtn = e.target.closest("[data-action]");
-  if(!actionBtn) return;
-  
-  var idx = card.getAttribute("data-idx"), item = getStuckItems()[idx], action = actionBtn.getAttribute("data-action");
-  
-  if(action === "toggle"){
-    if(sel[idx]) delete sel[idx];
-    else sel[idx] = num(card.querySelector("[data-action=custom-input]").value) || a10(unitCost(item) + MOTO);
-  }
-  if(action === "set-price"){
-    var val = num(actionBtn.getAttribute("data-val"));
-    card.querySelector("[data-action=custom-input]").value = val;
-    sel[idx] = val;
-  }
-  updateCardCalc(card, idx, item);
-  updateDockTotal();
-});
-
-document.addEventListener("input", function(e){
-  if(e.target.id === "moto-cost-input"){
-    MOTO = num(e.target.value);
-    var V = getStuckItems();
-    document.querySelectorAll(".stock-card").forEach(function(card){
-      updateCardCalc(card, card.getAttribute("data-idx"), V[card.getAttribute("data-idx")]);
-    });
-    updateDockTotal();
-    return;
-  }
-  var input = e.target.closest("[data-action=custom-input]");
-  if(!input) return;
-  var card = input.closest(".stock-card"), idx = card.getAttribute("data-idx");
-  sel[idx] = num(input.value);
-  updateCardCalc(card, idx, getStuckItems()[idx]);
-  updateDockTotal();
-});
-
-$("btn-clear-selection").addEventListener("click", function(){
-  sel = {};
-  var V = getStuckItems();
-  document.querySelectorAll(".stock-card").forEach(function(card){
-    updateCardCalc(card, card.getAttribute("data-idx"), V[card.getAttribute("data-idx")]);
-  });
-  updateDockTotal();
-});
-
-$("btn-generate-plan").addEventListener("click", function(){
-  var V = getStuckItems(), lines = [], recovered = 0, origCost = 0, totalPzas = 0;
-  Object.keys(sel).forEach(function(i){
-    var item = V[i];
-    if(!item || !(sel[i] > 0)) return;
-    recovered += (sel[i] - MOTO) * item.piezas;
-    origCost += item.capital;
-    totalPzas += item.piezas;
-    lines.push("• " + item.descripcion + " — " + item.piezas + " pza · PRECIO REMATE " + mx(sel[i]) + " (antes " + mx(item.precio) + ")");
-  });
-  
-  var text = "PLAN DE REMATE KIOSKO\n" + totalPzas + " piezas · Efectivo neto recuperable: " + mx(recovered) + " (envío descontado)\n\n" + lines.join("\n");
-  
-  showModalHTML('<h3>Estrategia de Liquidez Generada</h3>' +
-    '<p>Recuperarás <b>' + mx(recovered) + '</b> líquidos limpios liberando <b>' + totalPzas + ' piezas</b> de inventario. Costo de adquisición original: ' + mx(origCost) + '.</p>' +
-    (recovered < origCost ? '<p>Nota: El monto recuperado está por debajo del costo inicial. <b>Esto es correcto estratégicamente</b> para productos parados hace meses: el dinero inmóvil pierde valor contra la inflación y costo de oportunidad.</p>' : '') +
-    '<p><b>Consejo de venta:</b> Intenta vender en paquetes o combos. Como el costo del envío es fijo por viaje, al vender lotes multiplicas tu margen libre.</p>' +
-    '<textarea readonly id="plan-copy-textarea">' + esc(text) + '</textarea>' +
-    '<div style="display:flex;gap:0.75rem"><button class="action-btn primary" id="btn-copy-clipboard">Copiar lista al portapapeles</button><button class="action-btn ghost" style="color:var(--ink);border-color:var(--linea)" data-close="1">Cerrar</button></div>');
-    
-  $("btn-copy-clipboard").addEventListener("click", function(){
-    var ta = $("plan-copy-textarea");
-    ta.removeAttribute("readonly"); ta.select();
-    try { document.execCommand("copy"); } catch(e){}
-    ta.setAttribute("readonly", "readonly");
-    this.textContent = "¡Copiado con éxito!";
-  });
-});
-
-var EXPLANATIONS = {
-  capital: ["Capital Congelado", "Representa el valor directo invertido en productos guardados en cajas. No es una pérdida financiera inmediata, pero restringe la liquidez de tu negocio impidiéndote comprar inventario de alta rotación."],
-  remate: ["¿Vender al costo es perder?", "No. La verdadera pérdida es mantener dinero estancado durante más de medio año.<br><br>Si un artículo de $150 no se vende a $300, su valor real del mercado actual es inferior. Rematarlo a $180 te devuelve capital fresco para comprar productos que rotan rápidamente."],
-  pildoras: ["Estructura de los 3 Precios Sugeridos", "<b>Sin perder:</b> Costo del producto + flete. Es el piso financiero real para no registrar pérdidas operativas.<br><br><b>Ganas $50:</b> Recupera costo base y genera $50 de margen libre por pieza.<br><br><b>Mitad de precio:</b> 50% de descuento directo sobre el precio de lista anterior. Maximiza la velocidad de salida."],
-  envio: ["Impacto del Motomandado", "Descontar el envío por producto asegura que tus cálculos de liquidez sean exactos y no asumas ganancias ficticias que luego absorbe la logística de entrega."],
-  rotacion: ["Días de Rotación", "Indica el promedio de días necesarios para completar la venta de un inventario desde su compra original."],
-  margen: ["Margen Real por Categoría", "El porcentaje neto retenido por el negocio una vez deducidos costos de adquisición y gastos de envío."]
+var EXP={
+  capital:["Capital congelado","Es el dinero que ya pagaste y sigue en cajas. No lo perdiste, pero tampoco lo tienes: no puede comprar nada nuevo hasta que se venda.<br><br>La medida que usan los negocios es cuántos <b>meses de ganancia</b> tienes congelados. Uno o dos es normal. Cinco o más significa que compraste más rápido de lo que vendes."],
+  remate:["¿Vender al costo es perder?","No. Perder es que el dinero siga parado un año más.<br><br>Una pieza que compraste en $150 y no sale a $300 no vale $300: vale lo que alguien pague hoy. Si la rematas en $180 recuperas tu dinero, compras algo que sí rota y ese billete da la vuelta tres veces al año.<br><br>El que empieza se aferra al precio que <b>quería</b> ganar. El que lleva años mira el calendario, no el precio."],
+  pildoras:["Los tres precios que te propongo","<b>Sin perder</b> = costo del producto + envío. Es tu piso real: debajo de ahí pagas por regalar mercancía.<br><br><b>Ganas $50</b> = ese piso más cincuenta pesos limpios por pieza.<br><br><b>Mitad de precio</b> = la mitad de lo que pides hoy. No sale de tus costos, sale de la cabeza del comprador: “50% de descuento” se entiende sin pensar."],
+  envio:["El envío te cuesta más de lo que crees","De tus 461 ventas, <b>225 se entregaron a domicilio</b> y en ellas pagaste <b>$10,485</b> de motomandado.<br><br>Cobraste el extra en <b>30 de esas 225</b>: el 13%. Recuperaste $330. <b>Absorbiste $10,155.</b><br><br>Además el moto no siempre cuesta $35: hay 16 entregas de $100 y 10 de $80. Tu promedio real es <b>$47</b>.<br><br>Si empiezas a cobrarlo siempre, este número mejora solo y sin invertir un peso."],
+  rotacion:["Rotación","Cuántos días pasan, en promedio, desde que compras una pieza hasta que se vende.<br><br>Lo importante es compararlo contra <b>cuánto lleva parado lo que tienes hoy</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, esas piezas concretas son las que no salen. Esas son las que rematas."],
+  margen:["Margen","De cada $100 que entran, cuántos te quedas después de pagar el producto y el envío.<br><br>El margen no es la ganancia. Puedes tener margen alto y ganar poco si vendes pocas piezas: fíjate siempre en las dos columnas juntas."]
 };
-
-function openExplanationModal(key){
-  var exp = EXPLANATIONS[key];
-  if(!exp) return;
-  showModalHTML('<h3>' + exp[0] + '</h3><p>' + exp[1] + '</p><button class="action-btn primary" data-close="1">Entendido</button>');
-}
-
-function showModalHTML(html){
-  $("modal-body").innerHTML = html;
-  $("modal-container").classList.add("open");
-}
-
-$("modal-container").addEventListener("click", function(e){
-  if(e.target === this || e.target.closest("[data-close]")) this.classList.remove("open");
-});
-
+function abrir(k){var e=EXP[k];if(!e)return;abrirHTML("<h3>"+e[0]+"</h3><p>"+e[1]+'</p><button class="btn-action pri" data-cerrar="1">Entendido</button>');}
+function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
+$("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 })();
 </script>
 </body>
