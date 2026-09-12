@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alta de pedido — Kiosko</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#EDEFEC; --lienzo:#FFFFFF; --tuyo:#F1F8F4;
+  --regla:#DCE2DD; --regla-fuerte:#C2CBC4;
+  --tinta:#0C1512; --gris:#5F6E67; --tenue:#94A099;
+  --verde:#12855F; --verde-claro:#1AA878; --verde-lavado:#DCEFE5;
+  --mango:#B45309; --mango-lavado:#FBEEDC;
+  --rojo:#B42318;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --papel:#0A100E; --lienzo:#131B18; --tuyo:#10201A;
+    --regla:#232E29; --regla-fuerte:#35433C;
+    --tinta:#E7EDE9; --gris:#9AA9A1; --tenue:#6B7A72;
+    --verde:#2FC08C; --verde-claro:#3FD79E; --verde-lavado:#11291F;
+    --mango:#E8A33D; --mango-lavado:#2A2011;
+    --rojo:#F2705F;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--papel);color:var(--tinta);
+  font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:.875rem;line-height:1.45;-webkit-font-smoothing:antialiased;
+}
+input,select,button{font:inherit;color:inherit}
+.n{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* ---------- encabezado ---------- */
+.top{max-width:1240px;margin:0 auto;padding:1.75rem 1.5rem .875rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.top h1{margin:0;font-size:1.5rem;font-weight:700;letter-spacing:-.03em}
+.top .sub{color:var(--gris);font-size:.8125rem;margin:.125rem 0 0}
+.fechabox{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--gris)}
+
+/* ---------- marco de dos vías ---------- */
+.marco{max-width:1240px;margin:0 auto 3rem;padding:0 1.5rem}
+.hoja{background:var(--lienzo);border:1px solid var(--regla);border-radius:var(--r);overflow:hidden}
+
+.vias{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--regla)}
+.via{padding:.625rem 1.125rem;font-size:.75rem;font-weight:600;letter-spacing:.01em;color:var(--gris)}
+.via.mia{background:var(--tuyo);color:var(--verde);border-left:1px solid var(--regla)}
+@media (min-width:960px){ .vias{grid-template-columns:1.15fr 1fr} }
+
+.fila{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--regla)}
+@media (min-width:960px){ .fila{grid-template-columns:1.15fr 1fr} }
+.lado{padding:1rem 1.125rem}
+.lado.mio{background:var(--tuyo);border-left:1px solid var(--regla);display:flex;flex-direction:column;justify-content:center;gap:.5rem}
+@media (max-width:959px){ .lado.mio{border-left:none;border-top:1px dashed var(--regla-fuerte)} }
+
+/* ---------- campos ---------- */
+.desc{
+  width:100%;border:none;background:none;padding:0 0 .375rem;
+  font-size:1rem;font-weight:600;letter-spacing:-.015em;
+  border-bottom:1.5px solid transparent;
+}
+.desc:focus{outline:none;border-bottom-color:var(--verde)}
+.desc::placeholder{color:var(--tenue);font-weight:500}
+
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.625rem}
+.chip{
+  display:inline-flex;align-items:center;gap:.25rem;
+  border:1px solid var(--regla-fuerte);border-radius:999px;
+  padding:.25rem .625rem;background:var(--lienzo);font-size:.8125rem;
+}
+.chip:focus-within{border-color:var(--verde);box-shadow:0 0 0 3px var(--verde-lavado)}
+.chip label{color:var(--gris);font-size:.75rem}
+.chip input,.chip select{border:none;background:none;padding:0;width:auto}
+.chip input:focus,.chip select:focus{outline:none}
+.chip input.dinero{width:5.5rem;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.chip input.piezas{width:2.25rem;text-align:center;font-weight:600}
+.chip select{cursor:pointer;max-width:11rem}
+
+.quitar{margin-left:auto;border:none;background:none;color:var(--tenue);cursor:pointer;padding:.25rem;border-radius:6px;line-height:0}
+.quitar:hover{color:var(--rojo);background:var(--mango-lavado)}
+.quitar:focus-visible{outline:2px solid var(--verde);outline-offset:2px}
+
+/* foto */
+.fotorow{display:flex;align-items:center;gap:.625rem;margin-top:.75rem}
+.thumb{width:34px;height:34px;border-radius:8px;border:1px solid var(--regla-fuerte);object-fit:cover;background:var(--papel);flex:none;display:grid;place-items:center;color:var(--tenue)}
+.pick{border:1px dashed var(--regla-fuerte);border-radius:999px;padding:.25rem .75rem;font-size:.75rem;color:var(--gris);cursor:pointer;background:none}
+.pick:hover{border-color:var(--verde);color:var(--verde)}
+
+/* ---------- lado derecho ---------- */
+.cuesta{font-size:.8125rem;color:var(--gris)}
+.cuesta b{display:block;font-size:1.5rem;font-weight:700;letter-spacing:-.035em;color:var(--tinta);font-variant-numeric:tabular-nums;line-height:1.15}
+.vende{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}
+.vende span{font-size:.8125rem;color:var(--gris)}
+.precio{
+  width:6.5rem;border:1.5px solid var(--verde);border-radius:8px;
+  padding:.3125rem .5rem;text-align:right;font-weight:700;font-size:1rem;
+  background:var(--lienzo);font-variant-numeric:tabular-nums;
+}
+.precio:focus{outline:none;box-shadow:0 0 0 3px var(--verde-lavado)}
+.queda{font-size:.8125rem;color:var(--verde);font-weight:600}
+.queda.flojo{color:var(--mango)}
+.espera{color:var(--tenue);font-size:.8125rem}
+
+/* ---------- pie: agregar + el cargo ---------- */
+.mas{padding:.875rem 1.125rem;border-bottom:1px solid var(--regla)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  border:1px solid var(--regla-fuerte);background:var(--lienzo);
+  border-radius:999px;padding:.4375rem .875rem;font-size:.8125rem;font-weight:600;cursor:pointer;
+}
+.btn:hover{border-color:var(--verde);color:var(--verde)}
+.btn:focus-visible{outline:2px solid var(--verde);outline-offset:2px}
+
+.cierre{display:grid;grid-template-columns:1fr}
+@media (min-width:960px){ .cierre{grid-template-columns:1.15fr 1fr} }
+.cierre .lado{padding:1.125rem}
+.cuenta{display:grid;gap:.5rem}
+.ren{display:flex;justify-content:space-between;align-items:center;gap:1rem;font-size:.875rem}
+.ren span{color:var(--gris)}
+.ren b{font-weight:600;font-variant-numeric:tabular-nums}
+.cargo{
+  border:1.5px solid var(--tinta);border-radius:8px;padding:.375rem .625rem;
+  width:8rem;text-align:right;font-weight:700;font-size:1rem;background:var(--lienzo);
+  font-variant-numeric:tabular-nums;
+}
+.cargo:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px var(--verde-lavado)}
+
+.reparto{font-size:.8125rem;line-height:1.5}
+.factor{
+  display:inline-block;font-size:1.25rem;font-weight:700;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--verde);
+}
+.reparto p{margin:.375rem 0 0;color:var(--gris)}
+.alerta{background:var(--mango-lavado);color:var(--mango);border-radius:8px;padding:.5rem .625rem;font-size:.75rem;margin-top:.625rem;font-weight:500}
+
+/* ---------- acción ---------- */
+.accion{max-width:1240px;margin:0 auto;padding:0 1.5rem 3rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.primario{
+  background:var(--verde);border:none;color:#fff;border-radius:999px;
+  padding:.75rem 1.5rem;font-size:.9375rem;font-weight:700;cursor:pointer;
+}
+.primario:hover{background:var(--verde-claro)}
+.primario:disabled{background:var(--regla-fuerte);color:var(--tenue);cursor:not-allowed}
+.primario:focus-visible{outline:2px solid var(--tinta);outline-offset:3px}
+.estado{font-size:.8125rem;color:var(--gris)}
+
+details.ajustes{margin-left:auto}
+details.ajustes summary{cursor:pointer;font-size:.75rem;color:var(--tenue);list-style:none}
+details.ajustes summary::-webkit-details-marker{display:none}
+details.ajustes summary:hover{color:var(--verde)}
+.ajustes-caja{
+  margin-top:.625rem;background:var(--lienzo);border:1px solid var(--regla);
+  border-radius:var(--r);padding:.875rem;display:flex;gap:1rem;flex-wrap:wrap;
+}
+.ajustes-caja label{font-size:.75rem;color:var(--gris);display:grid;gap:.25rem}
+.ajustes-caja input{
+  width:5rem;border:1px solid var(--regla-fuerte);border-radius:8px;
+  padding:.3125rem .5rem;text-align:right;font-variant-numeric:tabular-nums;background:var(--papel);
+}
+.ajustes-caja input:focus{outline:none;border-color:var(--verde)}
+
+/* ---------- salida ---------- */
+.salida{max-width:1240px;margin:0 auto 4rem;padding:0 1.5rem}
+.salida .hoja{padding:1.25rem}
+.salida h2{margin:0 0 .25rem;font-size:1.0625rem;font-weight:700;letter-spacing:-.02em}
+.paso{margin-top:1.125rem}
+.paso-t{font-size:.8125rem;font-weight:600;margin-bottom:.375rem}
+.paso-t em{font-style:normal;color:var(--gris);font-weight:500}
+textarea{
+  width:100%;min-height:96px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;
+  border:1px solid var(--regla);border-radius:8px;padding:.625rem;background:var(--papel);
+  color:var(--tinta);white-space:pre;resize:vertical;
+}
+.peligro{
+  margin-top:1.125rem;border-left:3px solid var(--rojo);background:var(--mango-lavado);
+  padding:.75rem .875rem;border-radius:0 8px 8px 0;font-size:.8125rem;line-height:1.5;
+}
+.oculto{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div>
+    <h1>Alta de pedido</h1>
+    <p class="sub">Traduce lo que pagaste afuera a lo que te cuesta aquí</p>
+  </div>
+  <div class="fechabox">
+    <label for="fecha">Comprado el</label>
+    <input class="chip" id="fecha" type="date" style="padding:.3125rem .625rem;border:1px solid var(--regla-fuerte)">
+  </div>
+</div>
+
+<div class="marco">
+  <div class="hoja">
+    <div class="vias">
+      <div class="via">Lo que dice la plataforma</div>
+      <div class="via mia">Lo que significa para tu tienda</div>
+    </div>
+
+    <div id="filas"></div>
+
+    <div class="mas">
+      <button class="btn" id="agregar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Otro producto
+      </button>
+    </div>
+
+    <div class="cierre">
+      <div class="lado">
+        <div class="cuenta">
+          <div class="ren"><span>Suma de lo de arriba</span><b class="n" id="suma">$0</b></div>
+          <div class="ren">
+            <span><b style="color:var(--tinta)">Tu tarjeta pagó</b></span>
+            <input class="cargo" id="pagado" type="number" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+      <div class="lado mio">
+        <div class="reparto" id="reparto">
+          <span class="espera">Escribe el cargo de tu tarjeta y reparto los costos.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="accion">
+  <button class="primario" id="generar" disabled>Preparar las filas</button>
+  <span class="estado" id="estado">Faltan datos</span>
+  <details class="ajustes">
+    <summary>Ajustar cómo calculo tu ganancia</summary>
+    <div class="ajustes-caja">
+      <label>Motomandado<input id="moto" type="number" value="35" min="0" step="5"></label>
+      <label>Cobro a domicilio<input id="extra" type="number" value="10" min="0" step="5"></label>
+      <label>Multiplicar costo<input id="mult" type="number" value="2" min="1" step=".1"></label>
+      <label>Ganancia mínima<input id="piso" type="number" value="80" min="0" step="10"></label>
+    </div>
+  </details>
+</div>
+
+<div class="salida oculto" id="salida">
+  <div class="hoja">
+    <h2 id="salida-t">Listo para pegar</h2>
+    <p class="sub" style="margin:0;color:var(--gris);font-size:.8125rem">En <b>ALEX_NUEVO</b>, párate en la primera fila vacía.</p>
+
+    <div class="paso">
+      <div class="paso-t">1. Pega esto en la columna <b>A</b> <em>— cubre A hasta F</em></div>
+      <textarea id="tsvAF" readonly spellcheck="false"></textarea>
+      <button class="btn" data-copia="tsvAF" style="margin-top:.5rem">Copiar</button>
+    </div>
+
+    <div class="paso">
+      <div class="paso-t">2. Pega esto en la columna <b>J</b>, en la misma fila <em>— cubre J hasta S</em></div>
+      <textarea id="tsvJS" readonly spellcheck="false"></textarea>
+      <button class="btn" data-copia="tsvJS" style="margin-top:.5rem">Copiar</button>
+    </div>
+
+    <div class="peligro">
+      <b>Nunca pegues nada en la columna I.</b> Ahí vive el ARRAYFORMULA que calcula la utilidad de
+      todas tus filas. Si le escribes aunque sea un espacio, se rompe el derrame y pierdes la columna
+      completa. Por eso son dos pegados y no uno: el segundo empieza en la J y salta la I.
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CATEGORIAS = ["Audífonos","Bocinas y altavoces","Cuidado personal","Relojes inteligentes",
+    "Accesorios para celular","Hogar","Cocina","Iluminación","Herramientas","Otros"];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var filas = [], seq = 1;
+
+  function num(v){
+    if (v === null || v === undefined) return 0;
+    var n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+    return isFinite(n) ? n : 0;
+  }
+  function r2(n){ return Math.round(n * 100) / 100; }
+  function mx(n){
+    var v = r2(n), redondo = Math.abs(v % 1) < 0.005;
+    return "$" + v.toLocaleString("es-MX", {
+      minimumFractionDigits: redondo ? 0 : 2, maximumFractionDigits: redondo ? 0 : 2
+    });
+  }
+  function a10(n){ return Math.ceil(n / 10) * 10; }
+
+  function cats(sel){
+    var h = '<option value="">Categoría…</option>';
+    CATEGORIAS.forEach(function(c){
+      h += '<option value="' + c + '"' + (c === sel ? " selected" : "") + ">" + c + "</option>";
+    });
+    return h;
+  }
+
+  function nuevaFila(d){
+    d = d || {};
+    var id = seq++;
+    var el = document.createElement("div");
+    el.className = "fila";
+    el.innerHTML =
+      '<div class="lado">' +
+        '<input class="desc" data-k="desc" placeholder="¿Qué compraste?" autocomplete="off">' +
+        '<div class="meta">' +
+          '<span class="chip"><select data-k="cat">' + cats(d.cat) + "</select></span>" +
+          '<span class="chip"><input class="piezas" data-k="q" type="number" min="1" step="1" value="1"><label>piezas</label></span>' +
+          '<span class="chip"><label>c/u</label><input class="dinero" data-k="costo" type="number" min="0" step="0.01" placeholder="0.00"></span>' +
+          '<span class="chip"><label>lista</label><input class="dinero" data-k="lista" type="number" min="0" step="0.01" placeholder="—"></span>' +
+          '<button class="quitar" data-k="x" title="Quitar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' +
+        "</div>" +
+        '<div class="fotorow">' +
+          '<span class="thumb" data-k="thumb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.4"/><path d="m21 15-5-5L5 19"/></svg></span>' +
+          '<button class="pick" data-k="pick">Agregar foto</button>' +
+          '<input type="file" accept="image/*" data-k="file" style="display:none">' +
+        "</div>" +
+      "</div>" +
+      '<div class="lado mio" data-k="mio"><span class="espera">Falta el costo</span></div>';
+
+    var f = { id:id, el:el, foto:null, tocado:false };
+    ["desc","cat","q","costo","lista","thumb","pick","file","mio","x"].forEach(function(k){
+      f[k] = el.querySelector('[data-k="' + k + '"]');
+    });
+
+    if (d.desc) f.desc.value = d.desc;
+    if (d.q) f.q.value = d.q;
+    if (d.costo) f.costo.value = d.costo;
+    if (d.lista) f.lista.value = d.lista;
+
+    [f.desc, f.cat, f.q, f.costo, f.lista].forEach(function(c){
+      c.addEventListener("input", calcular);
+      c.addEventListener("change", calcular);
+    });
+
+    f.pick.addEventListener("click", function(){ f.file.click(); });
+    f.file.addEventListener("change", function(){
+      var a = f.file.files && f.file.files[0];
+      if (!a) return;
+      f.foto = a;
+      var lec = new FileReader();
+      lec.onload = function(e){
+        var img = document.createElement("img");
+        img.className = "thumb"; img.alt = ""; img.src = e.target.result;
+        f.thumb.parentNode.replaceChild(img, f.thumb);
+        f.thumb = img;
+        f.pick.textContent = "Cambiar foto";
+      };
+      lec.readAsDataURL(a);
+    });
+
+    f.x.addEventListener("click", function(){
+      if (filas.length === 1) return;
+      filas = filas.filter(function(o){ return o.id !== id; });
+      el.remove(); calcular();
+    });
+
+    filas.push(f);
+    $("filas").appendChild(el);
+    return f;
+  }
+
+  function calcular(){
+    var pagado = num($("pagado").value);
+    var moto = num($("moto").value), extra = num($("extra").value);
+    var mult = num($("mult").value) || 2, piso = num($("piso").value);
+
+    var suma = 0, piezas = 0;
+    filas.forEach(function(f){
+      var q = Math.max(0, Math.round(num(f.q.value)));
+      suma += num(f.costo.value) * q;
+      piezas += q;
+    });
+
+    var factor = (suma > 0 && pagado > 0) ? pagado / suma : 1;
+    var hayFactor = suma > 0 && pagado > 0;
+
+    filas.forEach(function(f){
+      var costo = num(f.costo.value);
+      if (costo <= 0){ f.mio.innerHTML = '<span class="espera">Falta el costo</span>'; return; }
+      if (!hayFactor){ f.mio.innerHTML = '<span class="espera">Falta el cargo de tu tarjeta</span>'; return; }
+
+      var cf = r2(costo * factor);
+      var sug = a10(cf * mult);
+      if (!f.tocado) f.precioVal = sug;
+      var precio = f.tocado ? num(f.precioVal) : sug;
+      var gana = r2(precio + extra - cf - moto);
+      var flojo = gana < piso;
+
+      f.mio.innerHTML =
+        '<div class="cuesta">Te cuesta, ya puesto aquí<b class="n">' + mx(cf) + "</b></div>" +
+        '<div class="vende"><span>Véndelo en</span>' +
+          '<input class="precio n" type="number" step="10" min="0" value="' + precio + '">' +
+          '<span class="queda' + (flojo ? " flojo" : "") + '">te quedan ' + mx(gana) +
+          (flojo ? " · poco" : "") + "</span></div>";
+
+      var inp = f.mio.querySelector(".precio");
+      inp.addEventListener("input", function(){
+        f.tocado = true; f.precioVal = num(inp.value);
+        var g = r2(num(inp.value) + extra - cf - moto);
+        var q2 = f.mio.querySelector(".queda");
+        q2.textContent = "te quedan " + mx(g) + (g < piso ? " · poco" : "");
+        q2.className = "queda" + (g < piso ? " flojo" : "");
+      });
+    });
+
+    $("suma").textContent = mx(suma);
+
+    var rep = $("reparto"), dif = r2(pagado - suma);
+    if (!hayFactor){
+      rep.innerHTML = '<span class="espera">Escribe el cargo de tu tarjeta y reparto los costos.</span>';
+    } else {
+      var verbo = dif >= 0
+        ? "Los " + mx(Math.abs(dif)) + " de más que te cobraron (impuestos, envío, lo que sea) se reparten"
+        : "Los " + mx(Math.abs(dif)) + " que te descontaron se reparten";
+      rep.innerHTML =
+        '<span class="factor">&times;' + factor.toFixed(4) + "</span>" +
+        "<p>" + verbo + " entre las " + piezas + " piezas, en proporción a lo que costó cada una. " +
+        "Por eso el costo de la izquierda no es el costo de verdad.</p>" +
+        ((factor < 0.6 || factor > 2.2)
+          ? '<div class="alerta">Ese reparto se ve raro. Revisa que el cargo de la tarjeta y los costos por pieza sean del mismo pedido.</div>'
+          : "");
+    }
+
+    var completas = filas.filter(function(f){
+      return f.desc.value.trim() !== "" && f.cat.value !== "" && num(f.costo.value) > 0
+        && Math.round(num(f.q.value)) > 0;
+    });
+    var listo = hayFactor && completas.length === filas.length && piezas > 0;
+
+    $("generar").disabled = !listo;
+    $("estado").textContent = listo
+      ? "Se crean " + piezas + (piezas === 1 ? " fila, una por pieza" : " filas, una por pieza")
+      : (suma <= 0 ? "Captura al menos un producto con su costo"
+        : pagado <= 0 ? "Falta el cargo de tu tarjeta"
+        : "Falta descripción o categoría en algún producto");
+  }
+
+  function generar(){
+    var pagado = num($("pagado").value), suma = 0;
+    filas.forEach(function(f){ suma += num(f.costo.value) * Math.max(0, Math.round(num(f.q.value))); });
+    var factor = suma > 0 ? pagado / suma : 1;
+
+    var p = ($("fecha").value || "").split("-");
+    var fecha = p.length === 3 ? (Number(p[2]) + "/" + Number(p[1]) + "/" + p[0]) : "";
+
+    var af = [], js = [];
+    filas.forEach(function(f){
+      var q = Math.max(0, Math.round(num(f.q.value)));
+      var cf = r2(num(f.costo.value) * factor);
+      var lista = num(f.lista.value);
+      var precio = f.tocado ? num(f.precioVal) : a10(cf * (num($("mult").value) || 2));
+      for (var i = 0; i < q; i++){
+        af.push([fecha, f.cat.value, f.desc.value.trim(),
+          (lista > 0 ? lista : num(f.costo.value)).toFixed(2), cf.toFixed(2), precio.toFixed(2)].join("\t"));
+        // J estatus, K vendedor, L fecha venta, M transferencia, N ID, O ventaID, P pago, Q pid, R lista, S corte
+        js.push(["RECIBIDO", "", "", "", "", "", "", "", "", ""].join("\t"));
+      }
+    });
+
+    $("tsvAF").value = af.join("\n");
+    $("tsvJS").value = js.join("\n");
+    $("salida-t").textContent = "Listo para pegar — " + af.length + (af.length === 1 ? " fila" : " filas");
+    $("salida").classList.remove("oculto");
+    $("salida").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  ["pagado","moto","extra","mult","piso"].forEach(function(id){
+    $(id).addEventListener("input", calcular);
+  });
+  $("agregar").addEventListener("click", function(){ nuevaFila(); calcular(); });
+  $("generar").addEventListener("click", generar);
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("[data-copia]") : null;
+    if (!b) return;
+    var ta = $(b.getAttribute("data-copia"));
+    ta.removeAttribute("readonly"); ta.select();
+    try { document.execCommand("copy"); } catch(err) {}
+    ta.setAttribute("readonly", "readonly");
+    var t = b.textContent; b.textContent = "Copiado";
+    setTimeout(function(){ b.textContent = t; }, 1400);
+  });
+
+  // Precargado con tu pedido de Temu del 30 de agosto.
+  $("fecha").value = "2026-08-30";
+  $("pagado").value = "573.07";
+  nuevaFila({ desc:"Kemei KM-1419 Cortadora de Pelo Recargable 3 en 1", cat:"Cuidado personal", q:2, costo:105, lista:149.99 });
+  nuevaFila({ desc:"Kemei KM-1407 Cortadora de Pelo Recargable 3 en 1", cat:"Cuidado personal", q:2, costo:114.98, lista:164.25 });
+  calcular();
+})();
+</script>
+</body>
+</html>
