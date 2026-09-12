@@ -101,8 +101,10 @@ button{cursor:pointer}
 .hpill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff}
 .hpill.lima{background:var(--lime);color:var(--green);border-color:transparent}
 .hpill.mango{background:var(--mango);color:#3A2100;border-color:transparent}
-.factor{margin-left:auto;font-size:2rem;font-weight:800;letter-spacing:-.03em;color:var(--lime);line-height:1}
-.factor small{font-size:.75rem;color:rgba(255,255,255,.7);display:block;font-weight:700;letter-spacing:0;text-align:right}
+.factor{margin-left:auto;font-size:2.25rem;font-weight:800;letter-spacing:-.03em;color:var(--lime);line-height:1;text-align:right}
+.factor small{font-size:.6875rem;color:rgba(255,255,255,.7);display:block;font-weight:700;letter-spacing:0;margin-bottom:.125rem}
+.factor.tic span{animation:tic .45s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes tic{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
 .reparto{margin-top:1.125rem}
 .barra{height:14px;border-radius:var(--r-pill);overflow:hidden;display:flex;background:rgba(255,255,255,.12)}
 .barra i{display:block;height:100%;transition:width .35s cubic-bezier(.2,.8,.2,1)}
@@ -112,7 +114,9 @@ button{cursor:pointer}
 .hero p.lee{margin:.875rem 0 0;font-size:.8125rem;color:rgba(255,255,255,.78);max-width:56ch;line-height:1.5}
 
 /* tarjeta de producto */
-.prod{grid-column:1/-1;padding:.75rem;display:flex;flex-direction:column;gap:.75rem;position:relative}
+.prod{grid-column:1/-1;padding:.75rem;display:flex;flex-direction:column;gap:.75rem;position:relative;animation:entra .5s cubic-bezier(.2,.9,.3,1.2) both;transition:transform .2s,box-shadow .2s}
+@keyframes entra{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+@media (hover:hover){.prod:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(20,31,25,.05),0 22px 44px -20px rgba(20,31,25,.3)}}
 .foto{
   position:relative;height:150px;border-radius:var(--r-lg);overflow:hidden;cursor:pointer;
   background:linear-gradient(135deg,var(--tint,#DFF7C8),#fff 140%);
@@ -234,6 +238,16 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
 .hero-side{display:none;padding:1.375rem;flex-direction:column;justify-content:space-between;gap:1rem}
 @media (min-width:1100px){.hero-side{display:flex}}
 .hero-side .k{font-size:.8125rem;font-weight:700;color:var(--ink2)}
+.side-top{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.anillo{position:relative;width:132px;height:132px;flex:none}
+.anillo svg{width:100%;height:100%;transform:rotate(-90deg)}
+.anillo circle{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1),stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+.a-base{stroke:var(--card2)}
+.a-c{stroke:var(--green)}
+.a-g{stroke:var(--lime2)}
+.a-txt{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.1}
+.a-txt b{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.a-txt span{font-size:.625rem;font-weight:700;color:var(--ink2)}
 .hero-side .big{font-size:2.5rem;font-weight:800;letter-spacing:-.04em;line-height:1}
 .hero-side .mini{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
 .hero-side .mini div{background:var(--card2);border-radius:var(--r-md);padding:.75rem .875rem}
@@ -269,7 +283,7 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
       <div class="hero-row">
         <span class="pill hpill">Suma de la plataforma <b class="num" id="suma">$0</b></span>
         <span class="pill hpill" id="dif-pill">Sin cargo todavía</span>
-        <div class="factor" id="factor">×1.00<small>reparto</small></div>
+        <div class="factor" id="factor" title="Factor de importación: por cuánto se multiplica cada costo de la plataforma para llegar a tu costo real"><small>cada costo se multiplica por</small><span class="num" id="factor-n">×1.00</span></div>
       </div>
       <div class="reparto">
         <div class="barra rayada" id="barra"></div>
@@ -279,7 +293,10 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
     </section>
 
     <aside class="card hero-side">
-      <div><div class="k">Piezas que vas a dar de alta</div><div class="big num" id="side-piezas">0</div></div>
+      <div class="side-top">
+        <div><div class="k">Piezas que vas a dar de alta</div><div class="big num" id="side-piezas">0</div></div>
+        <div class="anillo"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="a-base"/><circle cx="60" cy="60" r="52" class="a-c" id="anillo-c"/><circle cx="60" cy="60" r="52" class="a-g" id="anillo-g"/></svg><div class="a-txt"><b id="anillo-pct">—</b><span>es ganancia</span></div></div>
+      </div>
       <div class="mini">
         <div><b class="num" id="side-costo">$0</b><span>te cuestan en total</span></div>
         <div><b class="num" id="side-gana">$0</b><span>ganarías si vendes todo</span></div>
@@ -334,6 +351,15 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
   function norm(s){ return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim(); }
   function uuid(){ return "ap-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10); }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]; }); }
+  var _tw = {};
+  function tween(id, hasta, fmt){
+    var el = $(id); if (!el) return;
+    var desde = _tw[id] == null ? hasta : _tw[id]; _tw[id] = hasta;
+    if (desde === hasta){ el.textContent = fmt(hasta); return; }
+    var t0 = performance.now(), dur = 420, padre = el.parentNode;
+    if (padre && padre.classList.contains("factor")){ padre.classList.remove("tic"); void padre.offsetWidth; padre.classList.add("tic"); }
+    (function paso(t){ var k = Math.min(1, (t - t0) / dur); k = 1 - Math.pow(1 - k, 3); el.textContent = fmt(desde + (hasta - desde) * k); if (k < 1) requestAnimationFrame(paso); })(t0);
+  }
   var PALETA = ["#D4FF5A","#7FE3B0","#8CD4FF","#FFB27A","#C9B8FF","#FFD166","#9EF0E4"];
   var TINTES = ["#E9FFC2","#DDF7EA","#DDF0FF","#FFE8D6","#EDE7FF","#FFF3CC","#DFF9F5"];
 
@@ -483,13 +509,13 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
       sl.addEventListener("input", function(){ fijar(sl.value); });
     });
 
-    $("suma").textContent = mx(suma);
+    tween("suma", suma, mx);
     var dif = r2(pagado - suma), dp = $("dif-pill");
-    if (!hay){ dp.className = "pill hpill"; dp.textContent = "Sin cargo todavía"; $("factor").innerHTML = "×1.00<small>reparto</small>"; }
+    if (!hay){ dp.className = "pill hpill"; dp.textContent = "Sin cargo todavía"; tween("factor-n", 1, function(v){ return "×" + v.toFixed(2); }); }
     else {
       dp.className = "pill hpill " + (dif >= 0 ? "lima" : "mango");
       dp.textContent = (dif >= 0 ? "+" : "−") + mx(Math.abs(dif)) + (dif >= 0 ? " de más" : " de descuento");
-      $("factor").innerHTML = "×" + factor.toFixed(2) + "<small>reparto</small>";
+      tween("factor-n", factor, function(v){ return "×" + v.toFixed(2); });
     }
     var barra = $("barra"), ley = $("leyenda");
     barra.className = "barra" + (hay ? "" : " rayada"); barra.innerHTML = ""; ley.innerHTML = "";
@@ -504,7 +530,12 @@ textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,Consolas,mono
     $("lee").textContent = hay
       ? (dif >= 0 ? "Los " + mx(Math.abs(dif)) + " de más que te cobraron" : "Los " + mx(Math.abs(dif)) + " que te descontaron") + " se reparten entre las " + piezas + " piezas en proporción a lo que costó cada una: cada costo se multiplica por " + factor.toFixed(4) + ". Por eso el costo que ves en la plataforma no es tu costo de verdad." + ((factor < .6 || factor > 2.2) ? " Ese reparto se ve raro: revisa que el cargo y los costos sean del mismo pedido." : "")
       : "Escribe lo que la plataforma cobró por cada producto y, arriba, lo que tu tarjeta pagó en total. La diferencia —impuestos, envío, cupones, lo que sea— se reparte sola entre las piezas.";
-    $("side-piezas").textContent = piezas; $("side-costo").textContent = mx(totalCosto); $("side-gana").textContent = mx(totalGana);
+    tween("side-piezas", piezas, function(v){ return String(Math.round(v)); }); tween("side-costo", totalCosto, mx); tween("side-gana", totalGana, mx);
+    var ing = totalCosto + totalGana, pg = ing > 0 ? totalGana / ing : 0, C = 2 * Math.PI * 52;
+    $("anillo-g").style.strokeDasharray = (C * pg).toFixed(1) + " " + C.toFixed(1);
+    $("anillo-c").style.strokeDasharray = (C * (1 - pg)).toFixed(1) + " " + C.toFixed(1);
+    $("anillo-c").style.strokeDashoffset = (-C * pg).toFixed(1);
+    $("anillo-pct").textContent = ing > 0 ? Math.round(pg * 100) + "%" : "—";
     actualizarEstado();
   }
 
