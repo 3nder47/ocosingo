@@ -3,136 +3,161 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080D0B">
+<meta name="theme-color" content="#EEF0F3">
 <title>Análisis — Kiosko</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080D0B; --card:#111A16; --card2:#18231E; --linea:rgba(255,255,255,.07);
-  --tinta:#E9F2ED; --gris:#8CA096; --tenue:#5E7168;
-  --verde:#1E7A52; --lima:#C6FF4A; --lima2:#A8E82E;
-  --mango:#FFA033; --coral:#FF6B5A;
-  --r:24px; --r2:16px; --pill:999px;
+  --bg:#EEF0F3; --card:#FFFFFF; --card2:#F5F7F9;
+  --ink:#0E1620; --gris:#69747F; --tenue:#9AA5B0;
+  --linea:#E6EAEE;
+  --lima:#C4F53F; --lima2:#AEE81F; --limaSuave:#EDFBC9;
+  --verde:#0F7A52; --verdeSuave:#E3F5EC;
+  --naranja:#F97316; --naranjaSuave:#FFEEDF;
+  --rojo:#E0453F; --rojoSuave:#FDECEC;
+  --azul:#5B8DEF; --morado:#A78BFA; --cyan:#2DD4BF;
+  --r:22px; --r2:14px; --pill:999px;
+  --sombra:0 1px 2px rgba(14,22,32,.04),0 10px 30px -18px rgba(14,22,32,.25);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--tinta);font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:.9375rem;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
-input,button,select{font:inherit;color:inherit}
-button{cursor:pointer}
-.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+body{background:var(--bg);color:var(--ink);font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:.9375rem;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
+input,button{font:inherit;color:inherit}button{cursor:pointer}
+.n{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 .oculto{display:none!important}
-.glow{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;z-index:0}
-.glow.a{width:70vw;height:70vw;max-width:760px;max-height:760px;left:-22vw;top:-26vw;background:radial-gradient(circle,rgba(30,122,82,.55),transparent 68%)}
-.glow.b{width:55vw;height:55vw;max-width:620px;max-height:620px;right:-18vw;bottom:-18vw;background:radial-gradient(circle,rgba(255,160,51,.22),transparent 68%)}
 
 /* PIN */
 .pin{position:fixed;inset:0;display:grid;place-items:center;z-index:40;padding:1.5rem;background:var(--bg)}
-.pin-card{width:min(370px,100%);text-align:center}
-.mark{width:56px;height:56px;border-radius:18px;background:var(--verde);color:var(--lima);display:grid;place-items:center;font-weight:800;font-size:1.25rem;margin:0 auto 1rem}
-.pin-card h1{margin:0;font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.pin-card{width:min(370px,100%);text-align:center;background:var(--card);border-radius:var(--r);padding:2rem 1.75rem;box-shadow:var(--sombra)}
+.mark{width:52px;height:52px;border-radius:16px;background:var(--ink);color:var(--lima);display:grid;place-items:center;font-weight:800;font-size:1.125rem;margin:0 auto 1rem}
+.pin-card h1{margin:0;font-size:1.375rem;font-weight:800;letter-spacing:-.03em}
 .pin-card p{margin:.25rem 0 1.25rem;color:var(--gris);font-size:.875rem}
-.pin-card input{width:100%;font-size:2rem;font-weight:800;letter-spacing:.45em;text-align:center;padding:.75rem;border:1px solid var(--linea);border-radius:var(--pill);background:var(--card)}
-.pin-card input:focus{outline:none;border-color:var(--lima);box-shadow:0 0 0 4px rgba(198,255,74,.14)}
-.pin-err{color:var(--coral);font-size:.8125rem;min-height:1.25rem;margin-top:.75rem;font-weight:700}
+.pin-card input{width:100%;font-size:1.875rem;font-weight:800;letter-spacing:.4em;text-align:center;padding:.7rem;border:1px solid var(--linea);border-radius:var(--pill);background:var(--card2)}
+.pin-card input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 4px rgba(14,22,32,.06)}
+.pin-err{color:var(--rojo);font-size:.8125rem;min-height:1.25rem;margin-top:.75rem;font-weight:700}
 
 /* barra */
-.top{position:sticky;top:0;z-index:20;padding:.75rem 1rem 0;max-width:1240px;margin:0 auto}
-.top-in{background:rgba(17,26,22,.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--linea);border-radius:var(--pill);display:flex;align-items:center;gap:.75rem;padding:.5rem .75rem}
+.top{position:sticky;top:0;z-index:20;padding:.75rem 1rem 0;max-width:1320px;margin:0 auto}
+.top-in{background:rgba(255,255,255,.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--linea);border-radius:var(--pill);display:flex;align-items:center;gap:.75rem;padding:.5rem .625rem;box-shadow:var(--sombra)}
 .top .mark{width:36px;height:36px;border-radius:11px;font-size:.875rem;margin:0}
 .top h1{margin:0;font-size:.9375rem;font-weight:800;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top h1 small{display:block;font-size:.6875rem;color:var(--gris);font-weight:600}
-.seg{display:flex;gap:.25rem;background:var(--card2);border-radius:var(--pill);padding:.2rem}
-.seg button{border:none;background:none;color:var(--gris);border-radius:var(--pill);padding:.35rem .75rem;font-size:.75rem;font-weight:700}
-.seg button.on{background:var(--lima);color:#0B1410}
+.seg{display:flex;gap:.2rem;background:var(--card2);border-radius:var(--pill);padding:.2rem}
+.seg button{border:none;background:none;color:var(--gris);border-radius:var(--pill);padding:.35rem .8rem;font-size:.75rem;font-weight:700}
+.seg button.on{background:var(--ink);color:#fff}
 
-.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:1rem 1rem 10rem;display:grid;gap:.875rem;grid-template-columns:repeat(12,1fr)}
-.c{background:var(--card);border:1px solid var(--linea);border-radius:var(--r);padding:1.25rem;grid-column:1/-1}
-.k{font-size:.75rem;font-weight:700;color:var(--gris);margin-bottom:.5rem}
-.big{font-size:clamp(2.5rem,9vw,3.75rem);font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--lima)}
-.lee{font-size:.8125rem;color:var(--gris);line-height:1.55;margin:.875rem 0 0}
-.lee b{color:var(--tinta)}
-.que{margin-top:.75rem;border:1px solid var(--linea);background:none;color:var(--gris);border-radius:var(--pill);padding:.3rem .75rem;font-size:.6875rem;font-weight:700}
-.que:hover{border-color:var(--lima);color:var(--lima)}
-.tres{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:1rem}
-.tres div{background:var(--card2);border-radius:var(--r2);padding:.75rem .875rem}
-.tres b{display:block;font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
-.tres small{font-size:.6875rem;color:var(--gris);font-weight:700}
-.alerta{border-left:3px solid var(--mango);background:rgba(255,160,51,.08);padding:.75rem .875rem;border-radius:0 var(--r2) var(--r2) 0;color:var(--tinta);font-size:.8125rem;line-height:1.55;margin-top:1rem}
-.alerta b{color:var(--mango)}
+.wrap{max-width:1320px;margin:0 auto;padding:1rem 1rem 10rem;display:grid;gap:.875rem;grid-template-columns:repeat(12,1fr)}
+.c{background:var(--card);border-radius:var(--r);padding:1.25rem;grid-column:1/-1;box-shadow:var(--sombra)}
+.k{font-size:.75rem;font-weight:700;color:var(--gris)}
+.tit{font-size:1.0625rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .25rem}
+.sub{font-size:.8125rem;color:var(--gris);margin:0;line-height:1.55}
+.sub b{color:var(--ink)}
+
+/* fila de indicadores */
+.kpis{grid-column:1/-1;display:grid;gap:.875rem;grid-template-columns:repeat(2,1fr)}
+@media(min-width:820px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--card);border-radius:var(--r);padding:1.125rem;box-shadow:var(--sombra);position:relative;overflow:hidden}
+.kpi .lbl{display:flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:700;color:var(--gris)}
+.kpi .lbl i{width:8px;height:8px;border-radius:3px;display:inline-block}
+.kpi b{display:block;font-size:1.875rem;font-weight:800;letter-spacing:-.035em;margin:.35rem 0 .2rem;line-height:1}
+.kpi small{font-size:.6875rem;color:var(--tenue);font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:.25rem;border-radius:var(--pill);padding:.15rem .5rem;font-size:.6875rem;font-weight:800}
+.chip.mal{background:var(--naranjaSuave);color:var(--naranja)}
+.chip.bien{background:var(--verdeSuave);color:var(--verde)}
+.kpi.acento{background:var(--lima)}
+.kpi.acento .lbl,.kpi.acento small{color:rgba(14,22,32,.6)}
+
+/* dona */
+.dona-wrap{display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;margin-top:.875rem}
+.dona{position:relative;width:168px;height:168px;flex:none}
+.dona svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dona circle{fill:none;stroke-width:20;transition:stroke-dasharray .7s cubic-bezier(.2,.8,.2,1)}
+.dona .ctr{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.15}
+.dona .ctr b{font-size:1.375rem;font-weight:800;letter-spacing:-.03em}
+.dona .ctr span{font-size:.6875rem;color:var(--gris);font-weight:700}
+.leg{flex:1;min-width:180px;display:grid;gap:.5rem}
+.leg div{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;font-weight:700}
+.leg i{width:9px;height:9px;border-radius:3px;flex:none}
+.leg .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leg .v{font-variant-numeric:tabular-nums;color:var(--gris)}
 
 /* barras */
 .lista{display:grid;gap:.75rem;margin-top:.875rem}
-.row{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
-.row b{font-size:.875rem;font-weight:700}
-.row small{display:block;color:var(--gris);font-size:.6875rem;font-weight:600}
-.row .v{font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.row .v small{color:var(--tenue)}
-.bar{height:7px;border-radius:var(--pill);background:var(--card2);overflow:hidden;margin-top:.35rem}
+.fil b{font-size:.875rem;font-weight:700}
+.fil small{color:var(--gris);font-size:.6875rem;font-weight:600;display:block}
+.fil .row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.fil .v{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:8px;border-radius:var(--pill);background:var(--card2);overflow:hidden;margin-top:.35rem}
 .bar i{display:block;height:100%;width:0;border-radius:var(--pill);transition:width .7s cubic-bezier(.2,.8,.2,1)}
-.dob{display:grid;grid-template-columns:1fr auto;gap:.25rem .625rem;align-items:center;margin-top:.35rem}
-.dob span{font-size:.6875rem;color:var(--gris);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.leyenda{display:flex;gap:1rem;font-size:.6875rem;font-weight:700;color:var(--gris);margin-bottom:.25rem}
+.dob{display:grid;grid-template-columns:1fr 4.5rem;gap:.25rem .625rem;align-items:center;margin-top:.35rem}
+.dob span{font-size:.6875rem;color:var(--gris);font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.leyenda{display:flex;gap:1rem;font-size:.6875rem;font-weight:700;color:var(--gris);margin-top:.5rem}
 .leyenda i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:.35rem}
+.aviso{border-radius:var(--r2);padding:.75rem .875rem;font-size:.8125rem;line-height:1.55;margin-top:1rem;font-weight:600}
+.aviso.mango{background:var(--naranjaSuave);color:#8A4508}
+.aviso.mango b{color:var(--naranja)}
+.aviso.ok{background:var(--verdeSuave);color:#0B5E3F}
+.que{margin-top:.75rem;border:1px solid var(--linea);background:none;color:var(--gris);border-radius:var(--pill);padding:.35rem .8rem;font-size:.6875rem;font-weight:700}
+.que:hover{border-color:var(--ink);color:var(--ink)}
 
 /* remate */
-.rem{background:var(--card2);border:1px solid transparent;border-radius:var(--r2);padding:.875rem;display:grid;gap:.625rem;transition:border-color .15s,background .15s}
-.rem.on{border-color:var(--lima);background:rgba(198,255,74,.05)}
-.rem-h{display:flex;gap:.75rem;align-items:flex-start}
-.chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--tenue);background:none;flex:none;display:grid;place-items:center;color:transparent;padding:0;margin-top:.1rem}
-.rem.on .chk{background:var(--lima);border-color:var(--lima);color:#0B1410}
-.foto{width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none;background:var(--bg);border:1px solid var(--linea)}
-.foto.sin{display:grid;place-items:center;color:var(--tenue)}
-.ctrl{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;background:var(--card2);border-radius:var(--r2);padding:.75rem .875rem;margin-top:.875rem}
-.ctrl>span:first-child{font-size:.8125rem;font-weight:700}
+.ctrl{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;background:var(--card2);border-radius:var(--r2);padding:.75rem .875rem;margin-top:.875rem;font-size:.8125rem;font-weight:700}
 .ctrl small{flex-basis:100%;font-size:.6875rem;color:var(--gris);font-weight:600;line-height:1.5}
-.cuenta-h{font-size:.6875rem;font-weight:700;color:var(--tenue);margin-top:.875rem}
+.ctrl input{width:3.5rem;background:var(--card);border:1px solid var(--linea);border-radius:var(--pill);padding:.25rem .625rem;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.ctrl input:focus{outline:none;border-color:var(--ink)}
+.orden{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:.75rem;color:var(--gris);font-weight:700;margin:.875rem 0 0}
+.rem{border:1.5px solid var(--linea);border-radius:var(--r2);padding:.875rem;display:grid;gap:.625rem;transition:border-color .15s,background .15s}
+.rem.on{border-color:var(--lima2);background:var(--limaSuave)}
+.rem-h{display:flex;gap:.75rem;align-items:flex-start}
+.chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--tenue);background:var(--card);flex:none;display:grid;place-items:center;color:transparent;padding:0;margin-top:.1rem}
+.rem.on .chk{background:var(--ink);border-color:var(--ink);color:var(--lima)}
+.foto{width:54px;height:54px;border-radius:12px;object-fit:cover;flex:none;background:var(--card2);border:1px solid var(--linea)}
+.foto.sin{display:grid;place-items:center;color:var(--tenue)}
 .rem-t{flex:1;min-width:0}
-.rem-t b{font-size:.9375rem;font-weight:700;display:block}
+.rem-t b{font-size:.9375rem;font-weight:800;display:block}
 .rem-t small{color:var(--gris);font-size:.6875rem;font-weight:600}
-.dias{background:rgba(255,160,51,.14);color:var(--mango);border-radius:var(--pill);padding:.15rem .55rem;font-size:.6875rem;font-weight:800;white-space:nowrap}
+.rem-t .cong{color:var(--verde);font-weight:800}
+.dias{background:var(--naranjaSuave);color:var(--naranja);border-radius:var(--pill);padding:.15rem .55rem;font-size:.6875rem;font-weight:800;white-space:nowrap}
 .opts{display:flex;flex-wrap:wrap;gap:.375rem;align-items:center}
-.opt{border:1px solid var(--linea);background:none;border-radius:var(--pill);padding:.3rem .7rem;font-size:.6875rem;font-weight:700;color:var(--gris)}
-.opt.on{background:var(--verde);border-color:var(--verde);color:#fff}
-.opt:hover{border-color:var(--lima)}
-.precio-in{display:inline-flex;align-items:center;gap:.2rem;border:1px solid var(--lima);border-radius:var(--pill);padding:.25rem .6rem;font-weight:800;color:var(--lima)}
-.precio-in input{width:3.75rem;background:none;border:none;text-align:right;font-weight:800;color:var(--lima);padding:0;font-variant-numeric:tabular-nums}
+.opt{border:1px solid var(--linea);background:var(--card);border-radius:var(--pill);padding:.3rem .7rem;font-size:.6875rem;font-weight:700;color:var(--gris)}
+.opt.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.opt:hover{border-color:var(--ink)}
+.precio-in{display:inline-flex;align-items:center;gap:.2rem;border:1.5px solid var(--ink);border-radius:var(--pill);padding:.25rem .65rem;font-weight:800}
+.precio-in input{width:3.75rem;background:none;border:none;text-align:right;font-weight:800;padding:0;font-variant-numeric:tabular-nums}
 .precio-in input:focus{outline:none}
-.rem-f{font-size:.6875rem;color:var(--gris);font-weight:600}
-.rem-f b{color:var(--lima2)}
-.rem-f b.mal{color:var(--coral)}
+.rem-f{font-size:.75rem;color:var(--gris);font-weight:600;line-height:1.6}
+.rem-f b{color:var(--ink);font-weight:800}
+.rem-f b.mal{color:var(--rojo)}
+.vermas{width:100%;border:1.5px dashed var(--linea);background:none;color:var(--gris);border-radius:var(--r2);padding:.875rem;font-size:.8125rem;font-weight:700}
+.vermas:hover{border-color:var(--ink);color:var(--ink)}
 
-.orden{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:.75rem;color:var(--gris);font-weight:700;margin:.875rem 0 .25rem}
-.vermas{width:100%;border:1px dashed var(--linea);background:none;color:var(--gris);border-radius:var(--r2);padding:.875rem;font-size:.8125rem;font-weight:700}
-.vermas:hover{border-color:var(--lima);color:var(--lima)}
 /* barra inferior */
 .bot{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 1rem calc(1rem + env(safe-area-inset-bottom))}
-.bot-in{max-width:760px;margin:0 auto;background:rgba(17,26,22,.85);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--linea);border-radius:var(--r);padding:.875rem 1rem;display:flex;align-items:center;gap:1rem;box-shadow:0 18px 50px -12px #000}
+.bot-in{max-width:780px;margin:0 auto;background:var(--ink);color:#fff;border-radius:var(--r);padding:.875rem 1rem;display:flex;align-items:center;gap:1rem;box-shadow:0 18px 46px -14px rgba(14,22,32,.55)}
 .bot-t{flex:1;min-width:0}
-.bot-t small{display:block;font-size:.6875rem;color:var(--gris);font-weight:700}
+.bot-t small{display:block;font-size:.6875rem;color:rgba(255,255,255,.6);font-weight:700}
 .bot-t b{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:var(--lima);font-variant-numeric:tabular-nums}
-.cta{border:none;border-radius:var(--pill);background:var(--lima);color:#0B1410;font-weight:800;padding:.75rem 1.25rem;font-size:.875rem;white-space:nowrap}
-.cta:disabled{background:var(--card2);color:var(--tenue)}
-.cta.ghost{background:none;border:1px solid var(--linea);color:var(--tinta)}
-
+.cta{border:none;border-radius:var(--pill);background:var(--lima);color:var(--ink);font-weight:800;padding:.7rem 1.25rem;font-size:.875rem;white-space:nowrap}
+.cta:disabled{background:rgba(255,255,255,.12);color:rgba(255,255,255,.4)}
+.cta.ghost{background:none;border:1px solid rgba(255,255,255,.25);color:#fff}
 .cargando{grid-column:1/-1;text-align:center;color:var(--gris);padding:4rem 1rem;font-weight:700}
-.hoja{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:grid;place-items:end center;padding:1rem}
-.hoja-in{background:var(--card);border:1px solid var(--linea);border-radius:var(--r);padding:1.25rem;width:min(560px,100%);max-height:82vh;overflow:auto}
-.hoja-in h3{margin:0 0 .5rem;font-size:1.125rem;font-weight:800}
-.hoja-in p{color:var(--gris);font-size:.875rem;line-height:1.6;margin:0 0 .75rem}
-.hoja-in p b{color:var(--tinta)}
-textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(--linea);border-radius:var(--r2);color:var(--tinta);padding:.75rem;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;white-space:pre;resize:vertical}
-@media (min-width:900px){
-  .c.w6{grid-column:span 6}
-  .c.w7{grid-column:span 7}
-  .c.w5{grid-column:span 5}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* hoja */
+.hoja{position:fixed;inset:0;z-index:50;background:rgba(14,22,32,.45);display:grid;place-items:center;padding:1rem}
+.hoja-in{background:var(--card);border-radius:var(--r);padding:1.5rem;width:min(580px,100%);max-height:84vh;overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.4)}
+.hoja-in h3{margin:0 0 .625rem;font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
+.hoja-in p{color:var(--gris);font-size:.875rem;line-height:1.65;margin:0 0 .875rem}
+.hoja-in p b{color:var(--ink)}
+textarea{width:100%;min-height:170px;background:var(--card2);border:1px solid var(--linea);border-radius:var(--r2);color:var(--ink);padding:.75rem;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;white-space:pre;resize:vertical}
+.hoja-in .cta{background:var(--ink);color:#fff}
+.hoja-in .cta.ghost{background:none;border:1px solid var(--linea);color:var(--ink)}
+@media(min-width:900px){.c.w6{grid-column:span 6}.c.w7{grid-column:span 7}.c.w5{grid-column:span 5}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="glow a"></div><div class="glow b"></div>
 
 <div class="pin" id="pin"><div class="pin-card">
   <div class="mark">Ki</div><h1>Análisis</h1><p>Tu PIN de Kiosko</p>
@@ -153,7 +178,6 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     <button class="cta" id="btn-plan" disabled>Ver plan</button>
   </div></div>
 </div>
-
 <div class="hoja oculto" id="hoja"><div class="hoja-in" id="hoja-in"></div></div>
 
 <script src="config.js"></script>
@@ -172,16 +196,15 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
 
   var $=function(i){return document.getElementById(i);};
   function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
-  function mx(n){var v=Math.round(Number(n)||0);return "$"+v.toLocaleString("es-MX");}
+  function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
   function a10(n){return Math.ceil(n/10)*10;}
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
   function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
   function dias(d){if(!d)return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
-  var PAL=["#C6FF4A","#4ADE80","#38BDF8","#FFA033","#C084FC","#FF6B5A","#2DD4BF","#FBBF24","#F472B6","#94A3B8"];
+  var PAL=["#0F7A52","#AEE81F","#5B8DEF","#F97316","#A78BFA","#2DD4BF","#E0453F","#F4B740","#EC4899","#94A3B8"];
 
   var D=null,rango="todo",sel={},FOTOS={},MOTO=35,orden="dinero",verTodo=false;
 
-  /* ---------- PIN ---------- */
   var pi=$("pin-in");
   pi.addEventListener("input",function(){
     if(pi.value.length<4)return;
@@ -194,96 +217,94 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
   });
 
   function cargar(){
-    $("wrap").innerHTML='<div class="cargando">Leyendo tu hoja…</div>';
-    $("bot").classList.add("oculto");
-    Promise.all([
-      api("analisis",{rango:rango},null,45000),
-      api("catalogo",null,null,30000).catch(function(){return[];})
-    ]).then(function(r){
-      D=r[0];sel={};FOTOS={};
-      (r[1]||[]).forEach(function(x){if(x&&x.descripcion&&x.imagen)FOTOS[norm(x.descripcion)]=x.imagen;});
-      pintar();
-    }).catch(function(e){$("wrap").innerHTML='<div class="cargando">'+esc(e.message)+"</div>";});
+    $("wrap").innerHTML='<div class="cargando">Leyendo tu hoja…</div>';$("bot").classList.add("oculto");
+    Promise.all([api("analisis",{rango:rango},null,45000),api("catalogo",null,null,30000).catch(function(){return[];})])
+      .then(function(r){D=r[0];sel={};FOTOS={};
+        (r[1]||[]).forEach(function(x){if(x&&x.descripcion&&x.imagen)FOTOS[norm(x.descripcion)]=x.imagen;});
+        pintar();})
+      .catch(function(e){$("wrap").innerHTML='<div class="cargando">'+esc(e.message)+"</div>";});
   }
-  $("s-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcarSeg();cargar();});
-  $("s-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcarSeg();cargar();});
-  function marcarSeg(){$("s-todo").classList.toggle("on",rango==="todo");$("s-12m").classList.toggle("on",rango==="12m");}
+  $("s-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcar();cargar();});
+  $("s-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcar();cargar();});
+  function marcar(){$("s-todo").classList.toggle("on",rango==="todo");$("s-12m").classList.toggle("on",rango==="12m");}
+  function meses(){if(rango==="12m")return 12;var d=D&&D.resumen&&D.resumen.desde;if(!d)return 12;return Math.max(1,Math.round((Date.now()-Number(d))/(30.4*864e5)));}
+  function viejos(){var V=(D.viejos||[]).filter(function(x){return x.dias>180;}).slice();
+    V.sort(orden==="dinero"?function(a,b){return b.capital-a.capital;}:function(a,b){return b.dias-a.dias;});return V;}
+  function costoUnit(x){return x.piezas?x.capital/x.piezas:0;}
 
-  /* ---------- meses del periodo, para traducir capital a "meses de ganancia" ---------- */
-  function mesesPeriodo(){
-    if(rango==="12m")return 12;
-    var d=D&&D.resumen&&D.resumen.desde;
-    if(!d)return 12;
-    var m=Math.round((Date.now()-Number(d))/(30.4*864e5));
-    return Math.max(1,m);
+  function dona(segs,total){
+    var C=2*Math.PI*70,off=0;
+    var arcos=segs.filter(function(s){return s.v>0;}).map(function(s){
+      var len=Math.max(0,s.v/total*C-3);
+      var h='<circle cx="90" cy="90" r="70" stroke="'+s.c+'" stroke-linecap="round" stroke-dasharray="'+len.toFixed(1)+" "+(C-len).toFixed(1)+'" stroke-dashoffset="'+(-off).toFixed(1)+'"/>';
+      off+=s.v/total*C;return h;}).join("");
+    return '<div class="dona"><svg viewBox="0 0 180 180"><circle cx="90" cy="90" r="70" stroke="#F0F3F6"/>'+arcos+
+      '</svg><div class="ctr"><b class="num">'+mx(total)+"</b><span>detenidos</span></div></div>";
   }
 
-  /* ---------- pintar ---------- */
   function pintar(){
     var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
-    var meses=mesesPeriodo(),porMes=meses?R.utilidad/meses:0;
-    var mesesDetenido=porMes>0?D.capitalTotal/porMes:0;
+    var porMes=R.utilidad/meses(),congelado=porMes>0?D.capitalTotal/porMes:0;
     var capViejo=V.reduce(function(s,x){return s+x.capital;},0),pzViejo=V.reduce(function(s,x){return s+x.piezas;},0);
-    var T=D.capitalTotal||1;
-    var h="";
+    var T=D.capitalTotal||1,h="";
 
-    /* HERO */
-    h+='<section class="c w7"><div class="k">Dinero detenido en mercancía sin vender</div>'+
-      '<div class="big num">'+mx(D.capitalTotal)+"</div>"+
-      '<div class="tres">'+
-        '<div><b class="num">'+D.piezasTotal+'</b><small>piezas paradas</small></div>'+
-        '<div><b class="num">'+mx(porMes)+'</b><small>ganas al mes</small></div>'+
-        '<div><b class="num" style="color:var(--mango)">'+(mesesDetenido?mesesDetenido.toFixed(1):"—")+'</b><small>meses de ganancia<br>congelados</small></div>'+
-      "</div>"+
-      '<p class="lee">Ese dinero ya salió de tu bolsa y todavía no regresa. Mientras siga en cajas no puede comprar nada nuevo. '+
-      (mesesDetenido>3?'Tienes parado el equivalente a <b>'+mesesDetenido.toFixed(1)+" meses</b> de todo lo que ganas. Es mucho.":"Está en un rango manejable.")+"</p>"+
+    /* --- indicadores --- */
+    h+='<div class="kpis">'+
+      '<div class="kpi"><div class="lbl"><i style="background:var(--verde)"></i>Dinero detenido</div><b class="num">'+mx(D.capitalTotal)+"</b>"+
+        '<small>en '+D.piezasTotal+" piezas sin vender</small></div>"+
+      '<div class="kpi"><div class="lbl"><i style="background:var(--azul)"></i>Ganas al mes</div><b class="num">'+mx(porMes)+"</b>"+
+        '<small>promedio de '+meses()+" meses</small></div>"+
+      '<div class="kpi acento"><div class="lbl">Meses congelados</div><b class="num">'+(congelado?congelado.toFixed(1):"—")+"</b>"+
+        '<small>de ganancia parada en cajas</small></div>'+
+      '<div class="kpi"><div class="lbl"><i style="background:var(--naranja)"></i>Lleva +6 meses</div><b class="num">'+mx(capViejo)+"</b>"+
+        '<small>'+pzViejo+" piezas · "+V.length+" productos</small></div>"+
+    "</div>";
+
+    /* --- dona: en qué está parado --- */
+    h+='<section class="c w5"><h2 class="tit">En qué está parado tu dinero</h2>'+
+      '<p class="sub">Cada rebanada es una categoría. Mientras más grande, más dinero tuyo espera ahí.</p>'+
+      '<div class="dona-wrap">'+dona(cap.map(function(x,i){return{v:x.capital,c:PAL[i%PAL.length]};}),T)+
+      '<div class="leg">'+cap.slice(0,7).map(function(x,i){
+        return '<div><i style="background:'+PAL[i%PAL.length]+'"></i><span class="t">'+esc(x.categoria)+'</span><span class="v">'+mx(x.capital)+" · "+Math.round(x.capital/T*100)+"%</span></div>";}).join("")+
+      "</div></div>"+
       '<button class="que" data-exp="capital">¿Por qué importa? ›</button></section>';
 
-    /* COMPOSICIÓN */
-    h+='<section class="c w5"><div class="k">En qué está parado</div><div class="lista">'+
-      cap.map(function(x,i){return '<div><div class="row"><div><b>'+esc(x.categoria)+"</b><small>"+x.piezas+" pza"+(x.piezas===1?"":"s")+" · parado "+dias(x.diasStock)+'</small></div><div class="v">'+mx(x.capital)+"<small> "+Math.round(x.capital/T*100)+"%</small></div></div>"+
-        '<div class="bar"><i data-w="'+(x.capital/T*100).toFixed(1)+'%" style="background:'+PAL[i%PAL.length]+'"></i></div></div>';}).join("")+
-      "</div></section>";
-
-    /* PLAN DE REMATE */
-    h+='<section class="c"><div class="k">Plan de remate</div>'+
-      '<p class="lee" style="margin-top:0">Esto es lo que lleva más de 6 meses parado: <b>'+mx(capViejo)+"</b> en <b>"+pzViejo+" piezas</b>. "+
-      "Elige cuáles rematar y a qué precio. Abajo se va sumando el dinero que de verdad recuperas.</p>"+
-      '<div class="ctrl"><span>Envío que absorbes por pieza</span><span class="precio-in">$<input id="moto" type="number" step="5" min="0" value="'+MOTO+'"></span>'+
-      '<small>El motomandado sale de tu bolsa en casi todas tus entregas. Ya está descontado abajo.</small></div>'+
-      '<div class="cuenta-h">'+V.length+" producto"+(V.length===1?"":"s")+" · "+pzViejo+" piezas"+(V.length>=25?" · el servidor manda los 25 más viejos":"")+"</div>"+
-      (V.length>4?'<div class="alerta">Tus <b>4 productos más pesados</b> ('+esc(V.slice(0,4).map(function(x){return x.descripcion;}).join(", "))+
-        ") concentran <b>"+mx(V.slice(0,4).reduce(function(s,x){return s+x.capital;},0))+"</b> de los "+mx(capViejo)+
-        " parados. Mover esos cuatro vale más que mover los otros "+(V.length-4)+" juntos.</div>":"")+
-      '<button class="que" data-exp="remate">¿Vender al costo es perder? ›</button>'+
-      '<button class="que" data-exp="pildoras">¿De dónde salen los 3 precios? ›</button>'+
-      '<button class="que" data-exp="envio">¿Por qué descuento el envío? ›</button>'+
-      '<div class="orden"><span>Ordenar por</span><button class="opt'+(orden==="dinero"?" on":"")+'" data-ord="dinero">Dinero congelado</button>'+
-      '<button class="opt'+(orden==="dias"?" on":"")+'" data-ord="dias">Tiempo parado</button></div>'+
-      '<div class="lista" id="remates">'+
-        (V.length?V.slice(0,verTodo?999:12).map(remHTML).join(""):'<p class="lee">Nada lleva más de 6 meses parado. Vas bien.</p>')+
-        (V.length>12&&!verTodo?'<button class="vermas" id="vermas">Ver los '+(V.length-12)+" productos restantes · entre todos suman "+mx(V.slice(12).reduce(function(s,x){return s+x.capital;},0))+"</button>":"")+
-      "</div></section>";
-
-    /* ROTACIÓN */
+    /* --- rotación --- */
     var maxD=Math.max.apply(null,rot.map(function(x){return Math.max(x.diasVenta,x.diasStock);}).concat([1]));
     var atoradas=rot.filter(function(x){return x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2;});
-    h+='<section class="c w7"><div class="k">Qué tan rápido sale cada cosa</div>'+
-      '<div class="leyenda"><span><i style="background:var(--lima)"></i>Tarda en venderse</span><span><i style="background:var(--mango)"></i>Lleva parado hoy</span></div>'+
+    h+='<section class="c w7"><h2 class="tit">Qué tan rápido sale cada cosa</h2>'+
+      '<p class="sub">La barra clara es lo que <b>tarda en venderse</b>. La naranja es lo que <b>lleva parado hoy</b>. Cuando la naranja pasa del doble, se pone roja.</p>'+
       '<div class="lista">'+rot.map(function(x){
         var mal=x.piezas&&x.ventas>=3&&x.diasStock>x.diasVenta*2;
-        return '<div><div class="row"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" venta"+(x.ventas===1?"":"s")+(x.piezas?" · "+x.piezas+" en stock":"")+"</small></div></div>"+
-          '<div class="dob"><div class="bar"><i data-w="'+(x.diasVenta/maxD*100).toFixed(1)+'%" style="background:var(--lima)"></i></div><span>'+dias(x.diasVenta)+"</span>"+
-          '<div class="bar"><i data-w="'+(x.diasStock/maxD*100).toFixed(1)+'%" style="background:'+(mal?"var(--coral)":"var(--mango)")+'"></i></div><span>'+dias(x.diasStock)+"</span></div></div>";
+        return '<div class="fil"><div class="row"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" venta"+(x.ventas===1?"":"s")+(x.piezas?" · "+x.piezas+" en stock":"")+"</small></div></div>"+
+          '<div class="dob"><div class="bar"><i data-w="'+(x.diasVenta/maxD*100).toFixed(1)+'%" style="background:var(--lima2)"></i></div><span>'+dias(x.diasVenta)+"</span>"+
+          '<div class="bar"><i data-w="'+(x.diasStock/maxD*100).toFixed(1)+'%" style="background:'+(mal?"var(--rojo)":"var(--naranja)")+'"></i></div><span>'+dias(x.diasStock)+"</span></div></div>";
       }).join("")+"</div>"+
-      (atoradas.length?'<div class="alerta">En <b>'+atoradas.map(function(x){return esc(x.categoria);}).join("</b>, <b>")+"</b> lo que te queda lleva parado más del doble de lo que normalmente tarda en venderse. La categoría no es lenta: son <b>esas piezas</b> las que no salen.</div>":'<p class="lee">Nada se está atorando: tu stock está dentro de sus tiempos normales.</p>')+
+      (atoradas.length?'<div class="aviso mango">En <b>'+atoradas.map(function(x){return esc(x.categoria);}).join("</b>, <b>")+"</b> lo que te queda lleva parado más del doble de lo que tarda en venderse. La categoría no es lenta: son <b>esas piezas</b> las que no salen.</div>":'<div class="aviso ok">Nada se está atorando: tu stock está dentro de sus tiempos normales.</div>')+
       '<button class="que" data-exp="rotacion">¿Cómo se lee? ›</button></section>';
 
-    /* MARGEN */
-    h+='<section class="c w5"><div class="k">De dónde sale tu ganancia</div><div class="lista">'+
-      mar.map(function(x,i){return '<div><div class="row"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" venta"+(x.ventas===1?"":"s")+" · "+mx(x.porVenta)+' c/u</small></div><div class="v" style="color:var(--lima2)">'+mx(x.utilidad)+"<small> "+Math.round(x.margen)+"%</small></div></div>"+
-        '<div class="bar"><i data-w="'+Math.min(100,x.margen).toFixed(1)+'%" style="background:'+PAL[i%PAL.length]+'"></i></div></div>';}).join("")+
-      '</div><p class="lee">Margen alto con pocas ventas puede dejarte menos dinero que margen bajo con muchas. Mira siempre las dos columnas juntas.</p>'+
+    /* --- plan de remate --- */
+    h+='<section class="c"><h2 class="tit">Plan de remate</h2>'+
+      '<p class="sub">Esto lleva más de 6 meses parado: <b>'+mx(capViejo)+"</b> en <b>"+pzViejo+" piezas</b>. Elige cuáles mover y a qué precio.</p>"+
+      (V.length>4?'<div class="aviso mango">Tus <b>4 productos más pesados</b> ('+esc(V.slice(0,4).map(function(x){return x.descripcion;}).join(", "))+
+        ") concentran <b>"+mx(V.slice(0,4).reduce(function(s,x){return s+x.capital;},0))+"</b>. Mover esos cuatro vale más que mover los otros "+(V.length-4)+" juntos.</div>":"")+
+      '<div class="ctrl"><span>Envío que absorbes por pieza</span><span class="precio-in">$<input id="moto" type="number" step="5" min="0" value="'+MOTO+'"></span>'+
+      '<small>El motomandado sale de tu bolsa en casi todas tus entregas. Ya está descontado en cada cuenta de abajo.</small></div>'+
+      '<div class="orden"><span>Ordenar por</span><button class="opt'+(orden==="dinero"?" on":"")+'" data-ord="dinero">Dinero congelado</button>'+
+      '<button class="opt'+(orden==="dias"?" on":"")+'" data-ord="dias">Tiempo parado</button></div>'+
+      '<div class="lista">'+(V.length?V.slice(0,verTodo?999:12).map(remHTML).join(""):'<div class="aviso ok">Nada lleva más de 6 meses parado. Vas bien.</div>')+
+        (V.length>12&&!verTodo?'<button class="vermas" id="vermas">Ver los '+(V.length-12)+" productos restantes · entre todos suman "+mx(V.slice(12).reduce(function(s,x){return s+x.capital;},0))+"</button>":"")+
+      "</div>"+
+      '<button class="que" data-exp="remate">¿Vender al costo es perder? ›</button>'+
+      '<button class="que" data-exp="pildoras">¿De dónde salen los 3 precios? ›</button>'+
+      '<button class="que" data-exp="envio">¿Por qué descuento el envío? ›</button></section>';
+
+    /* --- margen --- */
+    h+='<section class="c"><h2 class="tit">De dónde sale tu ganancia</h2>'+
+      '<p class="sub">La barra es el margen: de cada $100 que entran por esa categoría, cuántos se quedan contigo.</p>'+
+      '<div class="lista">'+mar.map(function(x,i){
+        return '<div class="fil"><div class="row"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" venta"+(x.ventas===1?"":"s")+" · "+mx(x.porVenta)+' c/u</small></div><div class="v" style="color:var(--verde)">'+mx(x.utilidad)+' <small style="display:inline;color:var(--tenue)">'+Math.round(x.margen)+"%</small></div></div>"+
+          '<div class="bar"><i data-w="'+Math.min(100,x.margen).toFixed(1)+'%" style="background:'+PAL[i%PAL.length]+'"></i></div></div>';}).join("")+"</div>"+
       '<button class="que" data-exp="margen">¿Qué es el margen? ›</button></section>';
 
     $("wrap").innerHTML=h;
@@ -292,26 +313,20 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     total();
   }
 
-  function viejos(){
-    var V=(D.viejos||[]).filter(function(x){return x.dias>180;}).slice();
-    V.sort(orden==="dinero"?function(a,b){return b.capital-a.capital;}:function(a,b){return b.dias-a.dias;});
-    return V;
-  }
-  function costoUnit(x){return x.piezas?x.capital/x.piezas:0;}
   function remHTML(x,i){
     var cu=costoUnit(x),img=FOTOS[norm(x.descripcion)];
     return '<div class="rem" data-i="'+i+'">'+
       '<div class="rem-h"><button class="chk" data-act="tog"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></button>'+
       (img?'<img class="foto" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="foto sin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.4"/><path d="m21 15-5-5L5 19"/></svg></span>')+
-      '<div class="rem-t"><b>'+esc(x.descripcion)+"</b><small>"+esc(x.categoria)+" · "+x.piezas+" pza"+(x.piezas===1?"":"s")+" · te costó "+mx(cu)+" c/u · hoy lo tienes en "+mx(x.precio)+'</small></div>'+
+      '<div class="rem-t"><b>'+esc(x.descripcion)+"</b><small>"+esc(x.categoria)+" · "+x.piezas+" pza"+(x.piezas===1?"":"s")+" · te costó "+mx(cu)+" c/u · hoy lo tienes en "+mx(x.precio)+
+      '</small><small class="cong">'+mx(x.capital)+" congelados</small></div>"+
       '<span class="dias">'+dias(x.dias)+"</span></div>"+
       '<div class="opts">'+
-        '<button class="opt" data-act="p" data-v="'+a10(cu+MOTO)+'" title="Tu costo más el envío: ni ganas ni pierdes">Sin perder '+mx(a10(cu+MOTO))+"</button>"+
-        '<button class="opt" data-act="p" data-v="'+a10(cu+MOTO+50)+'" title="Te deja 50 pesos limpios por pieza">Ganas $50 '+mx(a10(cu+MOTO+50))+"</button>"+
-        '<button class="opt" data-act="p" data-v="'+a10(x.precio/2)+'" title="La mitad del precio que tiene hoy: es el descuento que más jala">Mitad de precio '+mx(a10(x.precio/2))+"</button>"+
-        '<span class="precio-in">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu*1.2)+'"></span>'+
-      "</div>"+
-      '<div class="rem-f" data-f="1"></div></div>';
+        '<button class="opt" data-act="p" data-v="'+a10(cu+MOTO)+'">Sin perder '+mx(a10(cu+MOTO))+"</button>"+
+        '<button class="opt" data-act="p" data-v="'+a10(cu+MOTO+50)+'">Ganas $50 '+mx(a10(cu+MOTO+50))+"</button>"+
+        '<button class="opt" data-act="p" data-v="'+a10(x.precio/2)+'">Mitad de precio '+mx(a10(x.precio/2))+"</button>"+
+        '<span class="precio-in">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu+MOTO)+'"></span>'+
+      "</div><div class=\"rem-f\" data-f=\"1\"></div></div>";
   }
 
   document.addEventListener("click",function(e){
@@ -319,25 +334,22 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     var od=e.target.closest("[data-ord]");if(od){orden=od.getAttribute("data-ord");sel={};verTodo=false;pintar();return;}
     if(e.target.closest("#vermas")){verTodo=true;pintar();return;}
     var card=e.target.closest(".rem");if(!card)return;
-    var i=card.getAttribute("data-i"),V=viejos(),x=V[i];
-    var b=e.target.closest("[data-act]");if(!b)return;
+    var i=card.getAttribute("data-i"),x=viejos()[i],b=e.target.closest("[data-act]");if(!b)return;
     var act=b.getAttribute("data-act");
-    if(act==="tog"){ if(sel[i])delete sel[i]; else sel[i]=num(card.querySelector("[data-act=in]").value)||a10(costoUnit(x)*1.2); }
-    if(act==="p"){ var v=num(b.getAttribute("data-v"));card.querySelector("[data-act=in]").value=v;sel[i]=v; }
+    if(act==="tog"){if(sel[i])delete sel[i];else sel[i]=num(card.querySelector("[data-act=in]").value)||a10(costoUnit(x)+MOTO);}
+    if(act==="p"){var v=num(b.getAttribute("data-v"));card.querySelector("[data-act=in]").value=v;sel[i]=v;}
     render(card,i,x);total();
   });
   document.addEventListener("input",function(e){
     if(e.target.id==="moto"){MOTO=num(e.target.value);
-      var W=viejos();
-      document.querySelectorAll(".rem").forEach(function(c){render(c,c.getAttribute("data-i"),W[c.getAttribute("data-i")]);});
-      total();return;}
+      document.querySelectorAll(".rem").forEach(function(c){render(c,c.getAttribute("data-i"),viejos()[c.getAttribute("data-i")]);});total();return;}
     var b=e.target.closest("[data-act=in]");if(!b)return;
     var card=b.closest(".rem"),i=card.getAttribute("data-i");
-    var V=viejos();
-    sel[i]=num(b.value);render(card,i,V[i]);total();
+    sel[i]=num(b.value);render(card,i,viejos()[i]);total();
   });
 
   function render(card,i,x){
+    if(!x)return;
     var on=sel[i]!=null&&sel[i]>0;card.classList.toggle("on",on);
     var p=num(card.querySelector("[data-act=in]").value),cu=costoUnit(x);
     card.querySelectorAll(".opt").forEach(function(o){o.classList.toggle("on",num(o.getAttribute("data-v"))===p);});
@@ -351,11 +363,10 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
   }
 
   function total(){
-    var V=viejos();
-    var libera=0,cost=0,pz=0,n=0;
+    var V=viejos(),libera=0,cost=0,pz=0,n=0;
     Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;libera+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;n++;});
     $("bot-val").textContent=mx(libera);
-    $("bot-sub").textContent=n?(pz+" pieza"+(pz===1?"":"s")+" · pagaste "+mx(cost)+" · recuperas ya con el envío descontado"):"Elige qué rematar";
+    $("bot-sub").textContent=n?(pz+" pieza"+(pz===1?"":"s")+" de "+n+" producto"+(n===1?"":"s")+" · pagaste "+mx(cost)+" · el envío ya va descontado"):"Elige qué rematar";
     $("btn-plan").disabled=!n;
   }
   $("btn-limpiar").addEventListener("click",function(){sel={};document.querySelectorAll(".rem").forEach(function(c){c.classList.remove("on");c.querySelector("[data-f]").textContent="Toca la palomita para incluirlo en el plan";});total();});
@@ -369,17 +380,17 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     abrirHoja("<h3>Tu plan de remate</h3>"+
       "<p>Vas a mover <b>"+pz+" piezas</b> que llevaban meses paradas y a recuperar <b>"+mx(libera)+"</b> limpios, ya descontado el motomandado de "+mx(MOTO)+" por pieza. Te costaron "+mx(cost)+".</p>"+
       (libera<cost?"<p>Recuperas menos de lo que pagaste. <b>Eso está bien</b> si esas piezas llevan un año sin moverse: un billete dormido no vale más por esperar.</p>":"")+
-      "<p>Publícalas juntas en Marketplace como un lote de ofertas: los remates atraen compradores que luego ven el resto de tu catálogo. Cuando se vendan, registra la venta con el precio de remate para que tus números sigan siendo ciertos.</p>"+
+      "<p><b>Véndelas en paquete.</b> El envío cuesta lo mismo lleves una pieza o tres: es por viaje. Ofrece lotes o pide que lo recojan y esa resta desaparece.</p>"+
       '<textarea readonly id="plan-txt">'+esc(txt)+"</textarea>"+
       '<div style="display:flex;gap:.5rem;margin-top:.75rem"><button class="cta" id="cp">Copiar lista</button><button class="cta ghost" data-cerrar="1">Cerrar</button></div>');
     $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
   });
 
   var EXP={
-    pildoras:["Los tres precios que te propongo","<b>Sin perder</b> = lo que te costó el producto más el envío. Es tu piso real: por debajo de ahí estás pagando por regalar mercancía. Para casi todo lo que lleva un año parado, este precio ya es suficiente, porque lo que ganas es recuperar el dinero, no la utilidad.<br><br><b>Ganas $50</b> = ese piso más cincuenta pesos limpios por pieza. Úsalo cuando el producto todavía tiene demanda y solo necesita un empujón.<br><br><b>Mitad de precio</b> = la mitad de lo que pides hoy. Este no sale de tus costos, sale de la cabeza del comprador: \"50% de descuento\" se entiende sin pensar y es el que más gente atrae. Úsalo cuando lo que te urge es que salga ya."],
     capital:["Capital detenido","Es el dinero que ya pagaste y sigue en cajas. No lo perdiste, pero tampoco lo tienes: no puede comprar nada nuevo hasta que se venda.<br><br>La medida que usan los negocios es cuántos <b>meses de ganancia</b> tienes congelados. Uno o dos es normal. Cinco o más significa que compraste más rápido de lo que vendes, o compraste cosas que no salen."],
-    remate:["¿Vender al costo es perder?","No. Perder es que el dinero siga parado un año más.<br><br>Una pieza que compraste en $150 y no sale a $300 no vale $300: vale lo que alguien pague hoy. Si la rematas en $170 recuperas tu dinero, compras algo que sí rota y esos $170 dan la vuelta tres veces al año.<br><br>El error clásico del que empieza es aferrarse al precio que <b>quería</b> ganar. El que lleva años mira el calendario, no el precio."],
-    envio:["El envío te está costando más de lo que crees","Revisé tus 461 ventas. <b>225 se entregaron a domicilio</b> —la mitad— y en ellas pagaste <b>$10,485</b> de motomandado.<br><br>Cobraste el extra al cliente en <b>30 de esas 225 entregas</b>: el 13%. En total recuperaste $330 de los $10,485. <b>Absorbiste $10,155.</b><br><br>Además el moto no siempre cuesta $35: hay 16 entregas de $100 y 10 de $80. Tu promedio real por entrega es de <b>$47</b>, no $35.<br><br>Por eso aquí el envío se descuenta completo. Si empiezas a cobrarlo siempre, este número mejora solo y sin invertir un peso."],
+    remate:["¿Vender al costo es perder?","No. Perder es que el dinero siga parado un año más.<br><br>Una pieza que compraste en $150 y no sale a $300 no vale $300: vale lo que alguien pague hoy. Si la rematas en $180 recuperas tu dinero, compras algo que sí rota y ese billete da la vuelta tres veces al año.<br><br>El error clásico del que empieza es aferrarse al precio que <b>quería</b> ganar. El que lleva años mira el calendario, no el precio."],
+    pildoras:["Los tres precios que te propongo","<b>Sin perder</b> = lo que te costó el producto más el envío. Es tu piso real: por debajo de ahí estás pagando por regalar mercancía. Para casi todo lo que lleva un año parado, este precio ya es suficiente, porque lo que ganas es recuperar el dinero, no la utilidad.<br><br><b>Ganas $50</b> = ese piso más cincuenta pesos limpios por pieza. Úsalo cuando el producto todavía tiene demanda y solo necesita un empujón.<br><br><b>Mitad de precio</b> = la mitad de lo que pides hoy. Este no sale de tus costos, sale de la cabeza del comprador: “50% de descuento” se entiende sin pensar y es el que más gente atrae. Úsalo cuando lo que urge es que salga ya."],
+    envio:["El envío te está costando más de lo que crees","Revisé tus 461 ventas. <b>225 se entregaron a domicilio</b> —la mitad— y en ellas pagaste <b>$10,485</b> de motomandado.<br><br>Cobraste el extra al cliente en <b>30 de esas 225 entregas</b>: el 13%. Recuperaste $330 de $10,485. <b>Absorbiste $10,155.</b><br><br>Además el moto no siempre cuesta $35: hay 16 entregas de $100 y 10 de $80. Tu promedio real por entrega es de <b>$47</b>.<br><br>Por eso aquí el envío se descuenta completo. Si empiezas a cobrarlo siempre, este número mejora solo y sin invertir un peso."],
     rotacion:["Rotación","Cuántos días pasan, en promedio, desde que compras una pieza hasta que se vende.<br><br>Lo importante no es el número solo: es compararlo contra <b>cuánto lleva parado lo que tienes hoy</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, esas piezas concretas son las que no salen. Esas son las que rematas."],
     margen:["Margen","De cada $100 que entran, cuántos te quedas después de pagar el producto, el envío y el motomandado.<br><br>El margen no es la ganancia. Puedes tener margen alto y ganar poco si vendes pocas piezas. Por eso al lado va siempre cuánto ganas <b>por venta</b> y cuántas ventas fueron."]
   };
