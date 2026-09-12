@@ -3,388 +3,395 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#171226">
-<title>Kiosko · lo que hay hoy</title>
-<meta name="description" content="Audífonos, relojes, bocinas y más en Ocosingo. Envío a domicilio $10.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#11241D">
+<title>Kiosko · Ocosingo</title>
+<meta name="description" content="Audífonos, relojes, bocinas y más. Te lo llevamos a tu casa en el centro de Ocosingo por $10.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Kiosko · lo que hay hoy">
-<meta property="og:description" content="Audífonos, relojes, bocinas y más en Ocosingo. Envío a domicilio $10.">
+<meta property="og:title" content="Kiosko · Ocosingo">
+<meta property="og:description" content="Audífonos, relojes, bocinas y más. Te lo llevamos a tu casa por $10.">
 <meta property="og:image" content="icons/icon-512.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ================================================================
+/* ==========================================================================
    Kiosko · catálogo público
-   Referencia: el puesto de mercado. Bandas de color saturado como el
-   telar chiapaneco, precios en etiqueta de cartulina, tipografía de
-   cartel pintado. La foto del producto manda; el color la enmarca.
-   ================================================================ */
+   Tienda, no panel: papel cálido, tinta de selva, jade para actuar, maíz para
+   señalar. El color fuerte lo ponen las fotos. Un solo momento con movimiento.
+   ========================================================================== */
 :root{
-  --tinta:#171226;        /* índigo casi negro, base de todo */
-  --papel:#FFFDF7;        /* blanco cálido de cartulina */
-  --fucsia:#E8175D;
-  --turquesa:#00B3A4;
-  --sol:#FFC42E;
-  --naranja:#FF6B35;
-  --violeta:#7B3FF2;
-  --verde:#1D9E75;
-  --humo:#6F6880;
-  --linea:#E6E0D6;
-  --r:20px;
-  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:light;
+  --papel:#F7F6F1;
+  --lienzo:#FFFFFF;
+  --tinta:#11241D;
+  --jade:#0F7A55;
+  --jade-claro:#E4F0EA;
+  --maiz:#E8B23A;
+  --niebla:#6E7B74;
+  --linea:rgba(17,36,29,.13);
+  --r:6px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --papel:#0C1512; --lienzo:#141F1A; --tinta:#EDEBE4;
+    --jade:#3FB585; --jade-claro:rgba(63,181,133,.15);
+    --niebla:#8A968F; --linea:rgba(237,235,228,.14);
+  }
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
-body{background:var(--papel);color:var(--tinta);
+html{scroll-behavior:smooth}
+body{
   font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
-  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
-  padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+  background:var(--papel);color:var(--tinta);
+  -webkit-font-smoothing:antialiased;font-size:16px;line-height:1.5;
+}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
-:focus-visible{outline:3px solid var(--fucsia);outline-offset:3px}
-.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
-.display{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;letter-spacing:-.02em;line-height:.92}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--jade);outline-offset:3px}
+.env{width:min(1120px,100%);margin-inline:auto;padding-inline:20px}
+@media (min-width:760px){.env{padding-inline:34px}}
 
-/* ---------- portada: bloque de color ---------- */
-.top{background:var(--tinta);color:var(--papel);padding:26px 0 0;position:relative;overflow:hidden}
-.top::after{content:'';position:absolute;left:0;right:0;bottom:0;height:7px;
-  background:linear-gradient(90deg,var(--fucsia) 0 20%,var(--sol) 20% 40%,var(--turquesa) 40% 60%,var(--naranja) 60% 80%,var(--violeta) 80% 100%)}
-.marca{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.marca h1{font-size:clamp(2.9rem,13vw,4.6rem);color:var(--papel)}
-.marca h1 em{font-style:normal;color:var(--sol)}
-.lema{font-size:1rem;font-weight:700;color:#C9C2DA;margin-top:10px;max-width:30ch;line-height:1.45}
-.cinta{margin-top:20px;background:var(--sol);color:var(--tinta);overflow:hidden;white-space:nowrap;
-  padding:9px 0;font-weight:800;font-size:0.875rem}
-.cinta div{display:inline-block;animation:corre 26s linear infinite}
-.cinta span{padding:0 26px}
-@keyframes corre{to{transform:translateX(-50%)}}
+/* --- tipografía de titulares --- */
+.disp{font-family:'Bricolage Grotesque','Plus Jakarta Sans',sans-serif;font-weight:800;
+  letter-spacing:-.035em;line-height:.95;font-variation-settings:'opsz' 48}
 
-/* ---------- buscador ---------- */
-.busca{position:sticky;top:0;z-index:20;background:var(--papel);padding:14px 0 10px;box-shadow:0 10px 18px -14px rgba(23,18,38,.4)}
-.campo{display:flex;align-items:center;gap:11px;background:#fff;border:2.5px solid var(--tinta);border-radius:999px;padding:13px 18px}
-.campo svg{width:19px;height:19px;stroke:var(--tinta);fill:none;stroke-width:2.6;stroke-linecap:round;flex-shrink:0}
-.campo input{flex:1;border:0;background:none;outline:0;font-size:1rem;font-weight:700;min-width:0;color:inherit}
-.campo input::placeholder{color:var(--humo);font-weight:600}
-.campo .x{width:26px;height:26px;border-radius:50%;background:var(--tinta);color:var(--papel);font-size:0.75rem;font-weight:800;flex-shrink:0;display:none}
-.campo.lleno .x{display:block}
+/* ==========================  PORTADA  ========================== */
+.portada{background:var(--tinta);color:#F7F6F1;padding:26px 0 0;position:relative;overflow:hidden}
+@media (prefers-color-scheme:dark){.portada{background:#081C15;color:#F7F6F1}}
+.marca{display:flex;align-items:baseline;gap:10px}
+.marca b{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:-.04em}
+.marca span{font-size:.8125rem;color:rgba(247,246,241,.58);font-weight:500}
+.lema{margin-top:30px;font-size:clamp(2.3rem,10.5vw,4.6rem);max-width:13ch}
+.lema em{font-style:normal;color:var(--maiz)}
+.reparto{margin-top:22px;max-width:34ch;font-size:.9375rem;color:rgba(247,246,241,.78);line-height:1.55}
+.reparto b{color:#F7F6F1;font-weight:700}
 
-/* ---------- rótulos de sección ---------- */
-.rotulo{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:30px 0 14px}
-.rotulo h2{font-family:'Archivo Black',sans-serif;font-size:1.5rem;letter-spacing:-.02em}
-.rotulo p{font-size:0.875rem;font-weight:700;color:var(--humo)}
-.rotulo button{font-size:0.875rem;font-weight:800;color:var(--fucsia);border-bottom:2.5px solid var(--fucsia);padding-bottom:1px}
+/* el único movimiento de la página: lo que hay hoy, desfilando */
+.cinta{margin-top:30px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.cinta-pista{display:flex;gap:12px;width:max-content;animation:desfile 46s linear infinite}
+.cinta:hover .cinta-pista{animation-play-state:paused}
+.cinta img{width:112px;height:112px;object-fit:cover;border-radius:var(--r);background:rgba(247,246,241,.07);flex-shrink:0}
+@keyframes desfile{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.cinta-pista{animation:none}}
+.pie-portada{height:26px}
 
-/* ---------- categorías ---------- */
-.cuadros{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media(min-width:620px){.cuadros{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:900px){.cuadros{grid-template-columns:repeat(4,1fr)}}
-.cuadro{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:1/1;background:var(--c,var(--turquesa));
-  text-align:left;display:block;transition:transform .16s var(--ease)}
-.cuadro:active{transform:scale(.96)}
-.cuadro img{position:absolute;right:-8%;bottom:2%;width:78%;height:68%;object-fit:contain;opacity:0;
-  transition:opacity .4s;filter:drop-shadow(0 10px 18px rgba(23,18,38,.3))}
-.cuadro img.ok{opacity:1}
-.cuadro b{position:absolute;left:14px;top:13px;right:14px;font-family:'Archivo Black',sans-serif;font-size:1.0625rem;
-  line-height:1.05;color:#fff;text-shadow:0 2px 10px rgba(23,18,38,.3)}
-.cuadro i{position:absolute;left:14px;bottom:12px;font-style:normal;font-size:0.75rem;font-weight:800;
-  background:rgba(23,18,38,.82);color:#fff;padding:5px 10px;border-radius:999px}
+/* ==========================  BUSCAR + CATEGORÍAS  ========================== */
+.barra{position:sticky;top:0;z-index:20;background:var(--papel);border-bottom:1px solid var(--linea)}
+.buscar{display:flex;align-items:center;gap:12px;padding:16px 0 14px}
+.buscar svg{width:19px;height:19px;stroke:var(--niebla);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.buscar input{flex:1;min-width:0;border:0;background:none;outline:0;font-size:1.0625rem;font-weight:500;color:inherit;padding:2px 0}
+.buscar input::placeholder{color:var(--niebla)}
+.buscar .limpiar{display:none;font-size:.8125rem;font-weight:700;color:var(--jade);flex-shrink:0}
+.buscar.escrito .limpiar{display:block}
 
-/* ---------- tarjeta de producto ---------- */
-.rejilla{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-@media(min-width:620px){.rejilla{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:900px){.rejilla{grid-template-columns:repeat(4,1fr)}}
-.tira{display:flex;gap:14px;overflow-x:auto;padding:2px 18px 10px;margin:0 -18px;scroll-snap-type:x proximity;
-  scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.tira::-webkit-scrollbar{display:none}
-.tira .pieza{flex:0 0 164px;scroll-snap-align:start}
-.pieza{position:relative;background:#fff;border:2.5px solid var(--tinta);border-radius:var(--r);overflow:hidden;
-  text-align:left;display:flex;flex-direction:column;transition:transform .16s var(--ease)}
-.pieza:active{transform:scale(.97)}
-.foto{position:relative;aspect-ratio:1/1;background:var(--c,#EFECE4);display:grid;place-items:center;overflow:hidden}
-.foto img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
-.foto img.ok{opacity:1}
-.sello{position:absolute;top:9px;left:-3px;font-size:0.6875rem;font-weight:800;letter-spacing:.02em;
-  padding:5px 11px 5px 12px;background:var(--fucsia);color:#fff;border-radius:0 999px 999px 0;
-  box-shadow:2px 2px 0 var(--tinta);z-index:2}
-.sello.nuevo{background:var(--violeta)}
-.fotos-n{position:absolute;right:8px;bottom:8px;font-size:0.6875rem;font-weight:800;background:rgba(23,18,38,.8);
-  color:#fff;padding:4px 9px;border-radius:999px}
-.datos{padding:11px 12px 13px;display:flex;flex-direction:column;gap:9px;flex:1}
-.datos b{font-size:0.875rem;font-weight:700;line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;
-  -webkit-box-orient:vertical;overflow:hidden;min-height:2.25em}
-.precio{align-self:flex-start;margin-top:auto;font-family:'Archivo Black',sans-serif;font-size:1.1875rem;
-  background:var(--sol);color:var(--tinta);padding:5px 11px;border-radius:7px;transform:rotate(-2deg);
-  box-shadow:2px 2px 0 var(--tinta)}
+.cats{display:flex;gap:22px;overflow-x:auto;padding:0 0 13px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+@media (pointer:fine){.cats{cursor:grab}}
+.cats.jalando{cursor:grabbing;user-select:none}
+.cats.jalando *{pointer-events:none}
+.cat{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:7px;width:66px;
+  font-size:.75rem;font-weight:600;color:var(--niebla);text-align:center;line-height:1.2;transition:color .2s}
+.cat u{display:block;width:52px;height:52px;border-radius:50%;overflow:hidden;background:var(--lienzo);
+  border:2px solid transparent;transition:border-color .2s,transform .2s}
+.cat u img{width:100%;height:100%;object-fit:cover}
+.cat .todo{display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+  font-size:1rem;color:var(--tinta);background:var(--jade-claro);border-radius:50%;width:100%;height:100%}
+.cat:active u{transform:scale(.93)}
+.cat.viva{color:var(--tinta)}
+.cat.viva u{border-color:var(--jade)}
 
-/* ---------- vista de categoría ---------- */
-.regreso{display:inline-flex;align-items:center;gap:8px;margin:16px 0 4px;padding:10px 18px 10px 13px;
-  border-radius:999px;background:var(--tinta);color:var(--papel);font-size:0.875rem;font-weight:800}
-.regreso svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.regreso:active{transform:scale(.96)}
-.encabeza{margin:16px 0 18px;padding:20px 18px;border-radius:var(--r);background:var(--c,var(--turquesa));color:#fff}
-.encabeza h2{font-family:'Archivo Black',sans-serif;font-size:2rem;line-height:1;letter-spacing:-.02em}
-.encabeza p{font-size:0.9375rem;font-weight:700;margin-top:7px;opacity:.92}
+/* ==========================  REJILLA  ========================== */
+.lista{padding:28px 0 10px}
+.encabezado{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:20px}
+.encabezado h2{font-size:clamp(1.5rem,5.5vw,2rem);font-family:'Bricolage Grotesque',sans-serif;font-weight:700;letter-spacing:-.03em}
+.encabezado p{font-size:.875rem;color:var(--niebla);font-weight:500;white-space:nowrap}
+.volver{display:inline-flex;align-items:center;gap:7px;font-size:.875rem;font-weight:700;color:var(--jade);margin-bottom:14px}
+.volver svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 
-/* ---------- ficha ---------- */
-.telon{position:fixed;inset:0;background:rgba(23,18,38,.55);z-index:60;display:flex;align-items:flex-end;
-  justify-content:center;animation:aparece .18s}
+.rejilla{display:grid;grid-template-columns:repeat(2,1fr);gap:30px 18px}
+@media (min-width:600px){.rejilla{grid-template-columns:repeat(3,1fr);gap:38px 26px}}
+@media (min-width:920px){.rejilla{grid-template-columns:repeat(4,1fr)}}
+
+.pieza{text-align:left;display:flex;flex-direction:column;position:relative}
+.pieza .foto{position:relative;background:var(--lienzo);border-radius:var(--r);overflow:hidden;aspect-ratio:1/1;
+  box-shadow:inset 0 0 0 1px var(--linea)}
+.pieza .foto img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s,transform .5s cubic-bezier(.22,.61,.36,1)}
+.pieza .foto img.lista{opacity:1}
+@media (pointer:fine){.pieza:hover .foto img.lista{transform:scale(1.045)}}
+.pieza:active .foto{transform:scale(.985)}
+.pieza .nombre{margin-top:12px;font-size:.9375rem;font-weight:600;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pieza .precio{margin-top:5px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+  font-size:1.375rem;letter-spacing:-.03em;color:var(--tinta)}
+.sello{position:absolute;top:9px;left:9px;background:var(--maiz);color:#2A1E00;font-size:.6875rem;
+  font-weight:700;padding:4px 9px;border-radius:99px;letter-spacing:.01em}
+.tomas{position:absolute;bottom:9px;right:9px;background:rgba(17,36,29,.62);color:#fff;font-size:.6875rem;
+  font-weight:700;padding:4px 9px;border-radius:99px;backdrop-filter:blur(5px)}
+
+/* ==========================  FICHA  ========================== */
+.velo{position:fixed;inset:0;background:rgba(17,36,29,.55);backdrop-filter:blur(5px);z-index:60;
+  display:flex;align-items:flex-end;justify-content:center;animation:aparece .22s ease}
 @keyframes aparece{from{opacity:0}}
-.ficha{width:100%;max-width:560px;background:var(--papel);border-radius:26px 26px 0 0;max-height:94vh;overflow-y:auto;
-  animation:sube .42s var(--ease)}
+.panel{width:100%;max-width:560px;background:var(--papel);border-radius:20px 20px 0 0;max-height:94vh;
+  overflow-y:auto;animation:sube .42s cubic-bezier(.32,.72,0,1);padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 @keyframes sube{from{transform:translateY(100%)}}
-.asa{width:40px;height:5px;border-radius:99px;background:rgba(23,18,38,.18);margin:10px auto 0}
-.galeria{position:relative;background:var(--c,#EFECE4);margin-top:10px}
-.pista{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
-.pista::-webkit-scrollbar{display:none}
-.pista img{flex:0 0 100%;width:100%;aspect-ratio:1/1;object-fit:cover;scroll-snap-align:start;display:block}
-.puntos{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;pointer-events:none}
-.puntos i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.6);transition:all .2s}
-.puntos i.on{background:#fff;width:20px;border-radius:4px}
-.cuerpo{padding:20px 20px 24px}
-.cat-chip{display:inline-block;font-size:0.75rem;font-weight:800;padding:5px 12px;border-radius:999px;
-  background:var(--c,var(--turquesa));color:#fff}
-.cuerpo h3{font-family:'Archivo Black',sans-serif;font-size:1.625rem;line-height:1.1;margin-top:12px;letter-spacing:-.02em}
-.precio-gr{display:inline-block;margin-top:16px;font-family:'Archivo Black',sans-serif;font-size:2.5rem;
-  background:var(--sol);color:var(--tinta);padding:9px 18px;border-radius:11px;transform:rotate(-1.6deg);
-  box-shadow:4px 4px 0 var(--tinta)}
-.envio{display:flex;gap:12px;margin-top:22px;padding:14px 16px;border:2.5px solid var(--tinta);border-radius:16px}
-.envio svg{width:22px;height:22px;stroke:var(--tinta);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px}
-.envio b{display:block;font-size:0.9375rem;font-weight:800}
-.envio small{display:block;font-size:0.8125rem;font-weight:600;color:var(--humo);margin-top:3px;line-height:1.45}
-.wa{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:18px;padding:19px;
-  border-radius:16px;background:var(--verde);color:#fff;font-size:1.0625rem;font-weight:800;
-  box-shadow:4px 4px 0 var(--tinta);transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
-.wa:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--tinta)}
-.wa svg{width:22px;height:22px;fill:currentColor;flex-shrink:0}
-.cierra{width:100%;padding:16px;font-weight:800;color:var(--humo);font-size:0.9375rem}
+.agarre{width:40px;height:4px;border-radius:99px;background:var(--linea);margin:11px auto 0}
+.galeria{position:relative;margin-top:12px}
+.galeria-pista{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.galeria-pista::-webkit-scrollbar{display:none}
+.galeria-pista img{flex:0 0 100%;width:100%;aspect-ratio:1/1;object-fit:cover;scroll-snap-align:start;background:var(--lienzo)}
+.puntos{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
+.puntos i{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.55);transition:width .25s,background .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.puntos i.viva{background:#fff;width:18px}
+.ficha{padding:22px 20px 0}
+.ficha .grupo{font-size:.8125rem;font-weight:600;color:var(--niebla)}
+.ficha h3{margin-top:5px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+  font-size:1.625rem;letter-spacing:-.03em;line-height:1.15}
+.ficha .valor{margin-top:14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+  font-size:2.75rem;letter-spacing:-.045em;line-height:1;color:var(--jade)}
+.entrega{margin-top:20px;padding-top:18px;border-top:1px solid var(--linea);font-size:.9375rem;
+  color:var(--niebla);line-height:1.55;max-width:42ch}
+.entrega b{color:var(--tinta);font-weight:700}
+.pedir{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:22px;
+  padding:18px;border-radius:12px;background:var(--jade);color:#fff;font-size:1.0625rem;font-weight:700;
+  transition:transform .16s,filter .16s}
+.pedir:active{transform:scale(.985)}
+@media (pointer:fine){.pedir:hover{filter:brightness(1.08)}}
+.pedir svg{width:21px;height:21px;fill:currentColor;flex-shrink:0}
+.cerrar{display:block;width:100%;padding:15px;margin-top:4px;font-size:.9375rem;font-weight:600;color:var(--niebla)}
 
-/* ---------- estados ---------- */
-.aviso{text-align:center;padding:70px 20px}
-.aviso b{display:block;font-family:'Archivo Black',sans-serif;font-size:1.25rem;margin-bottom:8px}
-.aviso p{font-size:0.9375rem;font-weight:600;color:var(--humo);line-height:1.5}
-.hueco{border:2.5px solid var(--linea);border-radius:var(--r);aspect-ratio:.78;background:#fff}
-.pie{margin-top:44px;padding:26px 18px 10px;border-top:2.5px solid var(--tinta);text-align:center}
-.pie p{font-size:0.8125rem;font-weight:600;color:var(--humo);line-height:1.6}
-.pie a{font-weight:800;color:var(--fucsia)}
-
-/* una sola entrada orquestada al cargar; nada de animar cada tarjeta en cada scroll */
-.entra>*{animation:asciende .5s var(--ease) both}
-.entra>*:nth-child(1){animation-delay:.02s}.entra>*:nth-child(2){animation-delay:.06s}
-.entra>*:nth-child(3){animation-delay:.1s}.entra>*:nth-child(4){animation-delay:.14s}
-.entra>*:nth-child(5){animation-delay:.18s}.entra>*:nth-child(n+6){animation-delay:.22s}
-@keyframes asciende{from{opacity:0;transform:translateY(14px)}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ==========================  ESTADOS Y PIE  ========================== */
+.aviso{padding:76px 0;text-align:center;color:var(--niebla);font-size:.9375rem;max-width:34ch;margin-inline:auto}
+.aviso b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.25rem;
+  color:var(--tinta);margin-bottom:8px;letter-spacing:-.02em}
+.hueso{background:var(--lienzo);border-radius:var(--r);aspect-ratio:1/1;box-shadow:inset 0 0 0 1px var(--linea)}
+.cierre{margin-top:50px;background:var(--tinta);color:rgba(247,246,241,.72);padding:40px 0 44px}
+@media (prefers-color-scheme:dark){.cierre{background:#081C15}}
+.cierre p{font-size:.9375rem;line-height:1.65;max-width:40ch}
+.cierre a{color:var(--maiz);font-weight:700}
+.cierre .nota{margin-top:16px;font-size:.8125rem;color:rgba(247,246,241,.45);max-width:44ch}
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap">
-    <div class="marca"><h1 class="display">Kios<em>ko</em></h1></div>
-    <p class="lema">Lo que tenemos hoy en Ocosingo. Si te gusta algo, mándanos un mensaje y te lo llevamos.</p>
+<header class="portada">
+  <div class="env">
+    <div class="marca"><b>Kiosko</b><span>Ocosingo</span></div>
+    <h1 class="lema disp">Lo que hay <em>hoy</em> en la tienda</h1>
+    <p class="reparto" id="reparto">Audífonos, relojes, bocinas y más. Te lo llevamos a tu casa en el centro por <b>$10</b>, de lunes a viernes de 9:00 a 20:30.</p>
   </div>
-  <div class="cinta"><div id="cinta"></div></div>
+  <div class="cinta" id="cinta" aria-hidden="true"></div>
+  <div class="pie-portada"></div>
 </header>
 
-<div class="wrap">
-  <div class="busca">
-    <div class="campo" id="campo">
+<div class="barra">
+  <div class="env">
+    <div class="buscar" id="caja-buscar">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="¿Qué estás buscando?" autocomplete="off">
-      <button class="x" id="qx" aria-label="Borrar búsqueda">&#10005;</button>
+      <input id="q" type="search" placeholder="Buscar audífonos, relojes…" autocomplete="off" aria-label="Buscar producto">
+      <button class="limpiar" id="limpiar">Limpiar</button>
     </div>
+    <div class="cats" id="cats"></div>
   </div>
-  <main id="vista"></main>
-  <footer class="pie">
-    <p>Los precios pueden cambiar. Lo que ves aquí es lo que hay.<br>
-    ¿No encuentras lo que buscas? <a id="pie-wa" href="#">Pregúntanos por WhatsApp</a></p>
-  </footer>
 </div>
+
+<main class="env lista" id="lista"></main>
+
+<footer class="cierre">
+  <div class="env">
+    <p>¿No encuentras lo que buscas? Escríbenos y lo conseguimos. <a id="pie-wa" href="#">Mándanos un WhatsApp</a></p>
+    <p class="nota">Los precios pueden cambiar. Lo que ves aquí es lo que tenemos disponible en este momento.</p>
+  </div>
+</footer>
 
 <div id="ficha"></div>
 
 <script src="config.js"></script>
 <script>
 /* Catálogo público de Kiosko.
-   Los datos vienen de catalogoPublico, la única acción del backend sin token:
-   descripción, categoría, precio, fotos, si es la última pieza y a qué WhatsApp
-   escribe el cliente. Nunca costos, ni cuántas piezas hay, ni de quién es. */
+   Datos de catalogoPublico, la única acción del backend sin token: descripción, categoría,
+   precio, fotos, si es la última pieza y a qué WhatsApp escribe el cliente. Nunca costos,
+   ni cuántas piezas quedan, ni de quién es la mercancía. */
 const API=(window.OC_CONFIG||{}).API_URL||'';
-const WA='525614842235';
-const CACHE='kiosko:catalogo';
-const BASE=location.origin+location.pathname;
-const NUEVO_DIAS=45;
+const WA_TIENDA='525614842235';
+const GUARDADO='kiosko:catalogo';
+const RAIZ=location.origin+location.pathname;
 
-/* Cada categoría tiene su color: el cliente aprende a reconocerlas por el tono. */
-const COLOR={
-  'Audífonos':'#E8175D','Smartwatch y relojes':'#7B3FF2','Bocinas y altavoces':'#FF6B35',
-  'Mesas y sillas plegables':'#00B3A4','Cuidado personal':'#F0417C','Herramientas':'#2B7FFF',
-  'Accesorios de celular':'#00A86B','Hogar':'#FF9B21','TV y electrónica':'#5B5BF0',
-  'Incubadoras':'#C2410C','Regalos':'#D4157E','Joyería':'#B8860B','Bolsos y accesorios':'#8B5CF6'
-};
-const PALETA=['#E8175D','#7B3FF2','#FF6B35','#00B3A4','#2B7FFF','#F0417C','#00A86B','#FF9B21'];
-function color(cat){
-  if(COLOR[cat])return COLOR[cat];
-  let h=0;for(const ch of String(cat||''))h=(h*31+ch.charCodeAt(0))>>>0;
-  return PALETA[h%PALETA.length];
-}
-
-let items=[],cat=null,abierta=null;
+var articulos=[],grupo=null,abierto=null;
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const pelar=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const pesos=n=>Math.round(Number(n)||0).toLocaleString('es-MX');
-const slug=s=>norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-const fotos=p=>[p.imagen].concat(p.extras||[]).filter(Boolean);
-const wa=(n,t)=>'https://wa.me/'+(n||WA)+'?text='+encodeURIComponent(t);
-const esNuevo=p=>p.agregado&&(Date.now()-p.agregado)<NUEVO_DIAS*864e5;
+const clave=s=>pelar(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const tomas=p=>[p.imagen].concat(p.extras||[]).filter(Boolean);
+const wa=(num,txt)=>'https://wa.me/'+num+'?text='+encodeURIComponent(txt);
 
-document.getElementById('pie-wa').href=wa(WA,'Hola, ¿tienen algo más disponible?');
+document.getElementById('pie-wa').href=wa(WA_TIENDA,'Hola, busco algo que no vi en el catálogo.');
 
-const q=document.getElementById('q'),campo=document.getElementById('campo');
-q.addEventListener('input',()=>{campo.classList.toggle('lleno',!!q.value);pinta();});
-document.getElementById('qx').onclick=()=>{q.value='';campo.classList.remove('lleno');pinta();q.focus();};
+const q=document.getElementById('q'),caja=document.getElementById('caja-buscar');
+q.addEventListener('input',function(){caja.classList.toggle('escrito',!!q.value);pintar();});
+document.getElementById('limpiar').onclick=function(){q.value='';caja.classList.remove('escrito');pintar();q.focus();};
 
-/* La cinta amarilla dice lo práctico: envío, horario, cuántas cosas hay. */
+/* La cinta de la portada: lo que hay hoy, desfilando despacio. Se duplica para que el ciclo cierre. */
 function cinta(){
-  const n=items.length;
-  const frases=['Envío a domicilio $10 en el centro de Ocosingo','De lunes a viernes, 9:00 a 20:30',
-    n?n+' productos disponibles ahora mismo':'Estamos surtiendo','Te lo llevamos el mismo día'];
-  const linea=frases.map(f=>'<span>'+esc(f)+'</span>').join('');
-  document.getElementById('cinta').innerHTML=linea+linea;
+  const fotos=articulos.slice(0,14).map(p=>p.imagen).filter(Boolean);
+  if(fotos.length<4){document.getElementById('cinta').innerHTML='';return;}
+  const tira=fotos.concat(fotos).map(u=>'<img src="'+esc(u)+'" alt="" loading="lazy" decoding="async">').join('');
+  document.getElementById('cinta').innerHTML='<div class="cinta-pista">'+tira+'</div>';
+}
+
+function cats(){
+  const cuenta={},foto={};
+  articulos.forEach(function(p){cuenta[p.categoria]=(cuenta[p.categoria]||0)+1;if(!foto[p.categoria])foto[p.categoria]=p.imagen;});
+  const orden=Object.keys(cuenta).sort(function(a,b){return cuenta[b]-cuenta[a];});
+  const uno=(nom,img,activa,n)=>'<button class="cat '+(activa?'viva':'')+'" data-c="'+esc(nom)+'">'+
+    '<u>'+(img?'<img src="'+esc(img)+'" alt="" loading="lazy">':'<span class="todo">'+n+'</span>')+'</u>'+esc(nom)+'</button>';
+  document.getElementById('cats').innerHTML=
+    uno('Todo','',!grupo,articulos.length)+orden.map(function(c){return uno(c,foto[c],grupo===c);}).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('.cat'),function(b){
+    b.onclick=function(){ir(b.dataset.c==='Todo'?null:b.dataset.c);};
+  });
+}
+
+function ir(c){
+  grupo=c;
+  history.replaceState(null,'',c?'#'+clave(c):RAIZ);
+  cats();pintar();
+  document.querySelector('.barra').scrollIntoView({block:'start'});
 }
 
 function tarjeta(p){
-  const n=fotos(p).length;
-  const sello=p.ultima?'<span class="sello">Última pieza</span>'
-    :(esNuevo(p)?'<span class="sello nuevo">Nuevo</span>':'');
-  return `<button class="pieza" data-s="${esc(slug(p.descripcion))}">
-    <div class="foto" style="--c:${color(p.categoria)}22">${sello}
-      ${n>1?'<span class="fotos-n">'+n+' fotos</span>':''}
-      <img src="${esc(p.imagen)}" alt="${esc(p.descripcion)}" loading="lazy" decoding="async"
-        onload="this.classList.add('ok')" onerror="this.closest('.pieza').remove()"></div>
-    <div class="datos"><b>${esc(p.descripcion)}</b><span class="precio">$${pesos(p.precio)}</span></div>
-  </button>`;
+  const n=tomas(p).length;
+  return '<button class="pieza" data-p="'+esc(clave(p.descripcion))+'">'+
+    '<span class="foto">'+(p.ultima?'<span class="sello">Última pieza</span>':'')+
+    (n>1?'<span class="tomas">'+n+' fotos</span>':'')+
+    '<img src="'+esc(p.imagen)+'" alt="'+esc(p.descripcion)+'" loading="lazy" decoding="async" '+
+    'onload="this.classList.add(\'lista\')" onerror="this.closest(\'.pieza\').remove()"></span>'+
+    '<span class="nombre">'+esc(p.descripcion)+'</span>'+
+    '<span class="precio">$'+pesos(p.precio)+'</span></button>';
 }
 
-function pinta(){
-  const vista=document.getElementById('vista');
-  const t=norm(q.value.trim()),palabras=t?t.split(/\s+/):[];
+function pintar(){
+  const el=document.getElementById('lista');
+  const t=pelar(q.value.trim()),palabras=t?t.split(/\s+/):[];
+  var lista=articulos,titulo='Todo lo disponible',sub=articulos.length+' productos',atras='';
 
   if(palabras.length){
-    const l=items.filter(p=>{const x=norm(p.descripcion+' '+p.categoria);return palabras.every(w=>x.indexOf(w)>-1);});
-    vista.innerHTML=l.length
-      ?`<div class="rotulo"><h2 class="display">${l.length} resultado${l.length===1?'':'s'}</h2></div>
-        <div class="rejilla entra">${l.map(tarjeta).join('')}</div>`
-      :`<div class="aviso"><b>No encontramos eso</b><p>Prueba con otra palabra, o borra la búsqueda para ver todo lo que hay.</p></div>`;
-    cablea();return;
+    lista=articulos.filter(function(p){
+      const texto=pelar(p.descripcion+' '+p.categoria);
+      return palabras.every(function(w){return texto.indexOf(w)>-1;});
+    });
+    titulo='Resultados';sub=lista.length+(lista.length===1?' producto':' productos');
+  }else if(grupo){
+    lista=articulos.filter(function(p){return p.categoria===grupo;});
+    titulo=grupo;sub=lista.length+(lista.length===1?' producto':' productos');
+    atras='<button class="volver" id="atras"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Ver todo</button>';
   }
 
-  if(cat){
-    const l=items.filter(p=>p.categoria===cat),c=color(cat);
-    vista.innerHTML=`<button class="regreso" id="regreso"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Todas las categorías</button>
-      <div class="encabeza" style="--c:${c}"><h2>${esc(cat)}</h2><p>${l.length} producto${l.length===1?'':'s'} disponible${l.length===1?'':'s'}</p></div>
-      <div class="rejilla entra">${l.map(tarjeta).join('')}</div>`;
-    cablea();return;
+  if(!lista.length){
+    el.innerHTML=atras+'<div class="aviso"><b>No hay nada con ese nombre</b>Prueba con otra palabra, o mira todas las categorías de arriba.</div>';
+    const a=document.getElementById('atras');if(a)a.onclick=function(){ir(null);};
+    return;
   }
-
-  const nuevos=items.filter(esNuevo).sort((a,b)=>b.agregado-a.agregado).slice(0,10);
-  const ultimas=items.filter(p=>p.ultima).slice(0,10);
-  const cuenta={},foto={};
-  items.forEach(p=>{cuenta[p.categoria]=(cuenta[p.categoria]||0)+1;if(!foto[p.categoria])foto[p.categoria]=p.imagen;});
-  const cats=Object.keys(cuenta).sort((a,b)=>cuenta[b]-cuenta[a]);
-
-  vista.innerHTML=
-    (nuevos.length?`<div class="rotulo"><h2 class="display">Acaba de llegar</h2></div>
-      <div class="tira entra">${nuevos.map(tarjeta).join('')}</div>`:'')+
-    `<div class="rotulo"><h2 class="display">Busca por tipo</h2><p>${cats.length} categorías</p></div>
-     <div class="cuadros entra">${cats.map(c=>`<button class="cuadro" data-cat="${esc(c)}" style="--c:${color(c)}">
-        <b>${esc(c)}</b><i>${cuenta[c]}</i>
-        <img src="${esc(foto[c])}" alt="" loading="lazy" onload="this.classList.add('ok')"></button>`).join('')}</div>`+
-    (ultimas.length?`<div class="rotulo"><h2 class="display">Queda una sola</h2><p>Si te late, no lo dejes ir</p></div>
-      <div class="tira entra">${ultimas.map(tarjeta).join('')}</div>`:'');
-  cablea();
+  el.innerHTML=atras+'<div class="encabezado"><h2>'+esc(titulo)+'</h2><p>'+sub+'</p></div>'+
+    '<div class="rejilla">'+lista.map(tarjeta).join('')+'</div>';
+  const a=document.getElementById('atras');if(a)a.onclick=function(){ir(null);};
+  Array.prototype.forEach.call(document.querySelectorAll('.pieza'),function(b){
+    b.onclick=function(){abrir(b.dataset.p);};
+  });
 }
 
-function cablea(){
-  document.querySelectorAll('.pieza').forEach(b=>b.onclick=()=>abrir(b.dataset.s));
-  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>irCat(b.dataset.cat));
-  const r=document.getElementById('regreso');if(r)r.onclick=()=>irCat(null);
-}
-function irCat(c){
-  cat=c;history.replaceState(null,'',c?'#'+slug(c):BASE);
-  pinta();window.scrollTo({top:0,behavior:'smooth'});
-}
+/* --- ficha del producto --- */
+const WA_SVG='<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>';
 
-function abrir(s){
-  const p=items.filter(x=>slug(x.descripcion)===s)[0];if(!p)return;
-  abierta=p;
-  const fs=fotos(p),c=color(p.categoria);
-  const texto='Hola, me interesa este producto:\n\n'+p.descripcion+'\n$'+pesos(p.precio)+'\n\n'+BASE+'#p='+slug(p.descripcion);
-  const WASVG='<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2m0 18.02h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.22.25-.85.83-.85 2.03s.87 2.35.99 2.51c.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.47-.29"/></svg>';
-  const CAMION='<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>';
+function abrir(k){
+  const p=articulos.filter(function(x){return clave(x.descripcion)===k;})[0];
+  if(!p)return;
+  abierto=p;
+  const fs=tomas(p);
+  /* El mensaje lleva el enlace directo a este producto: al tocarlo se ve por cuál preguntan. */
+  const texto='Hola, me interesa este producto:\n\n'+p.descripcion+'\n$'+pesos(p.precio)+'\n\n'+RAIZ+'#p='+clave(p.descripcion);
   document.getElementById('ficha').innerHTML=
-    `<div class="telon" id="telon"><div class="ficha">
-      <div class="asa"></div>
-      <div class="galeria" style="--c:${c}22">
-        ${p.ultima?'<span class="sello">Última pieza</span>':''}
-        <div class="pista" id="pista">${fs.map(u=>`<img src="${esc(u)}" alt="${esc(p.descripcion)}" loading="lazy">`).join('')}</div>
-        ${fs.length>1?`<div class="puntos" id="puntos">${fs.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>`:''}
-      </div>
-      <div class="cuerpo">
-        <span class="cat-chip" style="--c:${c}">${esc(p.categoria)}</span>
-        <h3>${esc(p.descripcion)}</h3>
-        <div class="precio-gr">$${pesos(p.precio)}</div>
-        <div class="envio">${CAMION}<div><b>Te lo llevamos por $10</b>
-          <small>Centro de Ocosingo, de lunes a viernes entre 9:00 y 20:30. Si vives más lejos, pregúntanos.</small></div></div>
-        <a class="wa" target="_blank" rel="noopener" href="${esc(wa(p.wa,texto))}">${WASVG}Preguntar por este</a>
-        <button class="cierra" onclick="cerrar()">Cerrar</button>
-      </div>
-    </div></div>`;
+    '<div class="velo" id="velo"><div class="panel">'+
+      '<div class="agarre"></div>'+
+      '<div class="galeria">'+
+        '<div class="galeria-pista" id="galeria">'+
+          fs.map(function(u){return '<img src="'+esc(u)+'" alt="'+esc(p.descripcion)+'" loading="lazy">';}).join('')+
+        '</div>'+
+        (fs.length>1?'<div class="puntos" id="puntos">'+fs.map(function(_,i){return '<i class="'+(i?'':'viva')+'"></i>';}).join('')+'</div>':'')+
+      '</div>'+
+      '<div class="ficha">'+
+        '<p class="grupo">'+esc(p.categoria)+(p.ultima?' · última pieza':'')+'</p>'+
+        '<h3>'+esc(p.descripcion)+'</h3>'+
+        '<p class="valor">$'+pesos(p.precio)+'</p>'+
+        '<p class="entrega">Te lo llevamos a tu casa en el centro de Ocosingo por <b>$10</b>, de lunes a viernes de 9:00 a 20:30. Si vives más lejos, pregúntanos y vemos cómo.</p>'+
+        '<a class="pedir" target="_blank" rel="noopener" href="'+esc(wa(p.wa||WA_TIENDA,texto))+'">'+WA_SVG+'Preguntar por este</a>'+
+        '<button class="cerrar" onclick="cerrar()">Cerrar</button>'+
+      '</div>'+
+    '</div></div>';
   document.body.style.overflow='hidden';
-  history.replaceState(null,'','#p='+slug(p.descripcion));
-  document.getElementById('telon').onclick=e=>{if(e.target.id==='telon')cerrar();};
-  const g=document.getElementById('pista');
-  if(g&&fs.length>1)g.onscroll=()=>{
+  history.replaceState(null,'','#p='+clave(p.descripcion));
+  document.getElementById('velo').onclick=function(e){if(e.target.id==='velo')cerrar();};
+  const g=document.getElementById('galeria');
+  if(g&&fs.length>1)g.onscroll=function(){
     const i=Math.round(g.scrollLeft/g.clientWidth);
-    document.querySelectorAll('#puntos i').forEach((d,k)=>d.classList.toggle('on',k===i));
+    Array.prototype.forEach.call(document.querySelectorAll('#puntos i'),function(d,k){d.classList.toggle('viva',k===i);});
   };
 }
 function cerrar(){
-  abierta=null;document.getElementById('ficha').innerHTML='';document.body.style.overflow='';
-  history.replaceState(null,'',cat?'#'+slug(cat):BASE);
+  abierto=null;document.getElementById('ficha').innerHTML='';document.body.style.overflow='';
+  history.replaceState(null,'',grupo?'#'+clave(grupo):RAIZ);
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&abierta)cerrar();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&abierto)cerrar();});
 
+/* Arrastrar las categorías con el mouse; con el dedo ya se deslizan */
+(function(){
+  const el=document.getElementById('cats');var x0=0,s0=0,activo=false,movio=false;
+  el.addEventListener('pointerdown',function(e){if(e.pointerType==='touch')return;activo=true;movio=false;x0=e.clientX;s0=el.scrollLeft;});
+  el.addEventListener('pointermove',function(e){
+    if(!activo)return;const d=e.clientX-x0;
+    if(!movio&&Math.abs(d)<4)return;
+    movio=true;el.classList.add('jalando');e.preventDefault();el.scrollLeft=s0-d;
+  });
+  const fin=function(){activo=false;setTimeout(function(){el.classList.remove('jalando');},0);};
+  el.addEventListener('pointerup',fin);el.addEventListener('pointerleave',fin);el.addEventListener('pointercancel',fin);
+})();
+
+/* --- carga --- */
 function entrar(l){
-  items=l;cinta();
+  articulos=l;
   const h=decodeURIComponent(location.hash.replace('#',''));
-  if(h.indexOf('p=')===0){pinta();abrir(h.slice(2));return;}
-  if(h){const m=l.map(p=>p.categoria).filter(c=>slug(c)===h)[0];if(m)cat=m;}
-  pinta();
+  if(h.indexOf('p=')===0){cinta();cats();pintar();abrir(h.slice(2));return;}
+  if(h){
+    const m=l.map(function(p){return p.categoria;}).filter(function(c){return clave(c)===h;})[0];
+    if(m)grupo=m;
+  }
+  cinta();cats();pintar();
 }
 function cargar(){
-  document.getElementById('vista').innerHTML=
-    '<div class="rotulo"><h2 class="display">Cargando</h2></div><div class="cuadros">'+
-    Array.from({length:6},()=>'<div class="hueco"></div>').join('')+'</div>';
-  cinta();
-  let previo=null;
-  try{const c=localStorage.getItem(CACHE);if(c)previo=JSON.parse(c);}catch(e){}
+  document.getElementById('lista').innerHTML='<div class="rejilla">'+
+    Array.apply(null,{length:8}).map(function(){return '<div class="hueso"></div>';}).join('')+'</div>';
+  var previo=null;
+  try{var c=localStorage.getItem(GUARDADO);if(c)previo=JSON.parse(c);}catch(e){}
   if(previo&&previo.length)entrar(previo);
-  if(!API){document.getElementById('vista').innerHTML='<div class="aviso"><b>Falta la configuración</b><p>Avísale a Alex.</p></div>';return;}
+  if(!API){document.getElementById('lista').innerHTML='<div class="aviso"><b>Falta configurar la tienda</b>Avísale a Alex para que la conecte.</div>';return;}
   fetch(API+'?accion=catalogoPublico',{redirect:'follow'})
-    .then(r=>r.json())
-    .then(j=>{
+    .then(function(r){return r.json();})
+    .then(function(j){
       if(!j.ok||!Array.isArray(j.data))throw new Error(j.error||'respuesta inesperada');
-      try{localStorage.setItem(CACHE,JSON.stringify(j.data));}catch(e){}
-      if(abierta)items=j.data;else entrar(j.data);
+      try{localStorage.setItem(GUARDADO,JSON.stringify(j.data));}catch(e){}
+      if(abierto)articulos=j.data;else entrar(j.data);
     })
-    .catch(()=>{
+    .catch(function(){
       if(previo&&previo.length)return;
-      document.getElementById('vista').innerHTML='<div class="aviso"><b>No se pudo cargar</b>'+
-        '<p>Revisa tu conexión, o <a href="'+wa(WA,'Hola, no me carga el catálogo')+'" style="color:var(--fucsia);font-weight:800">escríbenos</a> y te decimos qué hay.</p></div>';
+      document.getElementById('lista').innerHTML='<div class="aviso"><b>No se pudo abrir el catálogo</b>'+
+        'Revisa tu conexión e inténtalo otra vez, o <a href="'+wa(WA_TIENDA,'Hola, no me abre el catálogo.')+'" style="color:var(--jade);font-weight:700">escríbenos</a>.</div>';
     });
 }
 cargar();
