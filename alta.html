@@ -154,7 +154,7 @@ function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/
 function uuid(){return "ap-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);}
 var MAX_FOTOS=4;
 
-var filas=[],seq=0,catalogo=[],CATS=[],pedidoID=uuid(),enviando=false;
+var filas=[],seq=0,catalogo=[],IMGS=[],CATS=[],pedidoID=uuid(),enviando=false;
 var MOTO=35,EXTRA=10,MULT=2,PISO=80;
 
 /* Distancia de edición, para sugerir categorías parecidas */
@@ -171,6 +171,72 @@ function ajustarCat(t0){
     if(dd<md){md=dd;mejor=CATS[k];}}
   if(mejor&&md<=Math.max(1,Math.floor(t.length/4)))return{tipo:"parecida",valor:mejor};
   return{tipo:"nueva",valor:t0.trim()};
+}
+/* Palabras clave → categoría. Solo se aplica si esa categoría ya existe en tu hoja. */
+var REGLAS=[
+  [/audifon|auricular|earbud|\btws\b|headset|diadema/,"Audífonos"],
+  [/bocina|altavoz|altavoces|speaker|parlante|barra de sonido/,"Bocinas y altavoces"],
+  [/reloj|smartwatch|\bwatch\b|pulsera intelig/,"Smartwatch y relojes"],
+  [/cortadora|cortapelo|corta pelo|afeitadora|rasuradora|barber|depilad|secadora de (pelo|cabello)|masajead|cepillo dental/,"Cuidado personal"],
+  [/funda|mica|protector de pantalla|cargador|cable|power ?bank|bateria externa|soporte para (celular|telefono)|selfie/,"Accesorios de celular"],
+  [/incubadora/,"Incubadoras"],
+  [/\bmesa\b|\bsilla\b|plegable/,"Mesas y sillas plegables"],
+  [/desarmador|destornillador|herramienta|taladro|pinza|llave inglesa|multiherramienta|kit de/,"Herramientas"],
+  [/\btv\b|pantalla|televis|tv ?stick|proyector|roku|chromecast/,"TV y electrónica"],
+  [/licuadora|olla|sarten|termo|taza|cocina|lampara|foco|ventilador|organizador|bascula/,"Hogar"]
+];
+function catPorNombre(desc){
+  var t=norm(desc);if(!t)return null;
+  for(var i=0;i<REGLAS.length;i++){
+    if(REGLAS[i][0].test(t)){
+      for(var k=0;k<CATS.length;k++)if(norm(CATS[k])===norm(REGLAS[i][1]))return CATS[k];
+    }
+  }
+  return null;
+}
+/* Número de modelo: la parte del nombre que NO cambia aunque el orden de las
+   palabras sí. "Kemei KM-1419 Cortadora 3 en 1" → ["km1419"]. Se ignoran los
+   trozos sin letras ("3 en 1", "2026") para no emparejar productos distintos. */
+function modelos(desc){
+  var t=norm(desc).replace(/[-_/]/g,"");
+  var out=[];
+  t.split(/[^a-z0-9]+/).forEach(function(tk){
+    if(/^[a-z]{1,6}\d{1,5}[a-z]{0,6}$/.test(tk)&&/\d/.test(tk))out.push(tk);
+  });
+  return out;
+}
+function compartenModelo(a,b){
+  var ma=modelos(a),mb=modelos(b);
+  if(!ma.length||!mb.length)return false;
+  for(var i=0;i<ma.length;i++)if(mb.indexOf(ma[i])>-1)return true;
+  return false;
+}
+/* Producto del catálogo con el nombre más parecido (para heredar categoría y fotos) */
+function parecido(desc){
+  var t=norm(desc);if(t.length<4)return null;
+  var i;
+  /* 1º por número de modelo: es lo único que no cambia de orden ni de redacción */
+  for(i=0;i<catalogo.length;i++)if(compartenModelo(desc,catalogo[i].descripcion))return catalogo[i];
+  /* 2º por nombre casi idéntico */
+  var mejor=null,md=99;
+  for(i=0;i<catalogo.length;i++){
+    var c=norm(catalogo[i].descripcion);
+    if(c===t)return catalogo[i];
+    var d=lev(t,c);
+    if(c.indexOf(t)===0||t.indexOf(c)===0)d=Math.min(d,2);
+    if(d<md){md=d;mejor=catalogo[i];}
+  }
+  return (mejor&&md<=Math.max(2,Math.floor(t.length/6)))?mejor:null;
+}
+/* Fotos en Drive de un producto, aunque ya no tenga existencia */
+function fotosDe(desc){
+  var t=norm(desc);
+  for(var i=0;i<IMGS.length;i++){
+    var d=IMGS[i].descripcion;
+    if(norm(d)===t||compartenModelo(desc,d))
+      return [IMGS[i].url].concat(IMGS[i].extras||[]).filter(Boolean);
+  }
+  return [];
 }
 function existente(desc,cat){
   var k=norm(desc)+"|"+norm(cat);
@@ -208,6 +274,9 @@ pi.addEventListener("input",function(){
 });
 
 function cargarCatalogo(){
+  /* Si todavía no publicas Imagenes.gs, esto falla en silencio y la pantalla
+     sigue funcionando con las fotos de los productos que tienen existencia. */
+  api("imagenes",null,null,25000).then(function(l){IMGS=l||[];filas.forEach(function(f){if(f.detectar)f.detectar();});}).catch(function(){});
   api("catalogo").then(function(items){
     catalogo=(items||[]).filter(function(x){return x.origen==="Alex";});
     var cs={},ds={};
@@ -245,13 +314,23 @@ function nuevaFila(){
     "</div>"+
     '<div class="calculo vacio" data-k="calculo">Cuando captures el precio y el cargo de tu tarjeta, aquí verás tu costo real y el precio sugerido.</div>';
 
-  var f={id:id,el:el,fotos:[],tocado:false,precioVal:0};
+  var f={id:id,el:el,fotos:[],fotosDrive:[],gemelo:null,catManual:false,tocado:false,precioVal:0};
   ["galeria","file","desc","chips","cat","catNueva","catTxt","catEstado","menos","q","mas","costo","lista","calculo","x"]
     .forEach(function(k){f[k]=el.querySelector('[data-k="'+k+'"]');});
 
   /* galería de hasta 4 fotos */
   f.pintarGaleria=function(){
     var h="";
+    if(f.fotosDrive&&f.fotosDrive.length){
+      h+='<div class="gal-slot llena principal"><img src="'+esc(f.fotosDrive[0])+'" alt=""><span class="et">Ya en Drive</span></div>';
+      for(var j=1;j<Math.min(f.fotosDrive.length,3)+1&&j<4;j++){
+        if(f.fotosDrive[j])h+='<div class="gal-slot llena"><img src="'+esc(f.fotosDrive[j])+'" alt=""></div>';
+        else if(j===f.fotosDrive.length)h+='<div class="gal-slot" data-k="pick"><div style="text-align:center;font-size:.7rem;font-weight:700">+</div></div>';
+        else h+='<div class="gal-slot" style="opacity:.45"></div>';
+      }
+      f.galeria.innerHTML=h;
+      return;
+    }
     for(var i=0;i<MAX_FOTOS;i++){
       var ft=f.fotos[i];
       if(ft) h+='<div class="gal-slot llena'+(i===0?" principal":"")+'" data-slot="'+i+'"><img src="'+ft.url+'" alt="">'+
@@ -290,8 +369,8 @@ function nuevaFila(){
   f.chips.addEventListener("click",function(e){
     var b=e.target.closest(".chip");if(!b)return;
     var c=b.getAttribute("data-c");
-    if(c==="__otra"){f.catNueva.classList.remove("oculto");f.cat.value=f.catTxt.value.trim();f.pintarChips();revisarCat();f.catTxt.focus();calcular();return;}
-    f.cat.value=c;f.catTxt.value="";f.catNueva.classList.add("oculto");f.catEstado.textContent="";f.pintarChips();calcular();
+    if(c==="__otra"){f.catManual=true;f.catNueva.classList.remove("oculto");f.cat.value=f.catTxt.value.trim();f.pintarChips();revisarCat();f.catTxt.focus();calcular();return;}
+    f.cat.value=c;f.catManual=true;f.catTxt.value="";f.catNueva.classList.add("oculto");f.catEstado.textContent="";f.pintarChips();calcular();
   });
   function revisarCat(){
     var r=ajustarCat(f.catTxt.value),e=f.catEstado;
@@ -307,6 +386,27 @@ function nuevaFila(){
   f.catTxt.addEventListener("input",function(){revisarCat();calcular();});
   f.pintarChips();
 
+  /* Al escribir el nombre: hereda categoría y fotos de un producto que ya tengas,
+     o adivina la categoría por palabras clave. Siempre lo puedes cambiar. */
+  f.detectar=function(){
+    var d=f.desc.value.trim();
+    f.gemelo=null;f.fotosDrive=[];
+    if(!d){f.pintarGaleria();f.pintarChips();return;}
+    var g=parecido(d);
+    f.fotosDrive=fotosDe(d);
+    if(g){
+      f.gemelo=g;
+      if(!f.fotosDrive.length)f.fotosDrive=[g.imagen].concat(g.extras||[]).filter(Boolean);
+      if(!f.catManual&&g.categoria){f.cat.value=g.categoria;f.catNueva.classList.add("oculto");f.catTxt.value="";}
+    } else if(!f.catManual){
+      var c=catPorNombre(d);
+      if(c)f.cat.value=c;
+    }
+    f.pintarChips();f.pintarGaleria();
+  };
+  var _t;
+  f.desc.addEventListener("input",function(){clearTimeout(_t);_t=setTimeout(function(){f.detectar();calcular();},350);});
+  f.desc.addEventListener("change",function(){f.detectar();calcular();});
   [f.desc,f.q,f.costo,f.lista].forEach(function(c){c.addEventListener("input",calcular);c.addEventListener("change",calcular);});
   f.menos.addEventListener("click",function(){f.q.value=Math.max(1,Math.round(num(f.q.value))-1);calcular();});
   f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
@@ -341,7 +441,10 @@ function calcular(){
       '<div class="precio-row"><span class="cal-k" style="margin:0">Véndelo en</span>'+
       '<span class="precio-pill">$<input data-k="precio" type="number" step="10" min="0" value="'+precio+'"></span>'+
       '<span class="queda'+(flojo?" flojo":"")+'">te quedan '+mx(gana)+(flojo?" · poco":"")+"</span></div>"+
-      (ex?'<div class="tags"><span class="tg info">Ya lo tienes: '+esc(ex.pid||"")+" · se le suman piezas</span></div>":"");
+      ((ex||f.gemelo)?'<div class="tags">'+
+        (ex?'<span class="tg info">Ya lo tienes: '+esc(ex.pid||"")+" · se le suman piezas</span>":"")+
+        ((f.fotosDrive&&f.fotosDrive.length)?'<span class="tg cong">'+f.fotosDrive.length+(f.fotosDrive.length===1?" foto":" fotos")+" ya en Drive · no hace falta resubir</span>":"")+
+        "</div>":"");
     var inp=f.calculo.querySelector("[data-k=precio]");
     inp.addEventListener("input",function(){f.tocado=true;f.precioVal=num(inp.value);
       var g=r2(num(inp.value)+EXTRA-cf-MOTO),q2=f.calculo.querySelector(".queda");
