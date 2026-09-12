@@ -5,7 +5,7 @@
 // - Fotos de producto (Drive): caché primero para siempre (cada subida crea URL nueva) · máx. 120.
 // - Al cambiar de versión, actualizar CACHE y los ?v= de SHELL junto con index.html.
 // UNICO lugar que hay que tocar al subir version, junto con los ?v= de index.html y APP_VERSION de app.js.
-const V = '11.5';
+const V = '11.6';
 const CACHE = 'kiosko-shell-' + V;
 const IMG_CACHE = 'ocosingo-img-v2';
 const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
@@ -79,7 +79,11 @@ self.addEventListener('fetch', e => {
         caches.match(e.request, { ignoreSearch: true }).then(r => {
           if (r) return r;
           // El catálogo público tiene su propio HTML de respaldo
-          if (e.request.mode === 'navigate') return caches.match(url.pathname.indexOf('catalogo') > -1 ? './catalogo.html' : './index.html');
+          if (e.request.mode === 'navigate') {
+            // alta.html necesita red siempre; no la disfrazamos de index.html
+            if (url.pathname.indexOf('alta') > -1) return new Response('<!doctype html><meta charset=utf-8><title>Sin conexion</title><body style="font-family:system-ui;display:grid;place-items:center;min-height:100vh;margin:0;background:#F2F4F1;color:#141F19;text-align:center;padding:2rem"><div><h1 style="font-size:1.25rem">Sin conexion</h1><p style="color:#5C6A63">El alta de pedidos necesita internet para escribir en tu hoja. Intenta de nuevo cuando tengas senal.</p></div>', { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+            return caches.match(url.pathname.indexOf('catalogo') > -1 ? './catalogo.html' : './index.html');
+          }
           return new Response('', { status: 504 });
         })
       )
