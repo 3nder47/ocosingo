@@ -256,6 +256,7 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
         ") concentran <b>"+mx(V.slice(0,4).reduce(function(s,x){return s+x.capital;},0))+"</b> de los "+mx(capViejo)+
         " parados. Mover esos cuatro vale más que mover los otros "+(V.length-4)+" juntos.</div>":"")+
       '<button class="que" data-exp="remate">¿Vender al costo es perder? ›</button>'+
+      '<button class="que" data-exp="pildoras">¿De dónde salen los 3 precios? ›</button>'+
       '<button class="que" data-exp="envio">¿Por qué descuento el envío? ›</button>'+
       '<div class="orden"><span>Ordenar por</span><button class="opt'+(orden==="dinero"?" on":"")+'" data-ord="dinero">Dinero congelado</button>'+
       '<button class="opt'+(orden==="dias"?" on":"")+'" data-ord="dias">Tiempo parado</button></div>'+
@@ -305,9 +306,9 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
       '<div class="rem-t"><b>'+esc(x.descripcion)+"</b><small>"+esc(x.categoria)+" · "+x.piezas+" pza"+(x.piezas===1?"":"s")+" · te costó "+mx(cu)+" c/u · hoy lo tienes en "+mx(x.precio)+'</small></div>'+
       '<span class="dias">'+dias(x.dias)+"</span></div>"+
       '<div class="opts">'+
-        '<button class="opt" data-act="p" data-v="'+a10(cu)+'">Recupera tu costo '+mx(a10(cu))+"</button>"+
-        '<button class="opt" data-act="p" data-v="'+a10(cu*1.2)+'">Costo +20% '+mx(a10(cu*1.2))+"</button>"+
-        '<button class="opt" data-act="p" data-v="'+a10(x.precio*.7)+'">−30% '+mx(a10(x.precio*.7))+"</button>"+
+        '<button class="opt" data-act="p" data-v="'+a10(cu+MOTO)+'" title="Tu costo más el envío: ni ganas ni pierdes">Sin perder '+mx(a10(cu+MOTO))+"</button>"+
+        '<button class="opt" data-act="p" data-v="'+a10(cu+MOTO+50)+'" title="Te deja 50 pesos limpios por pieza">Ganas $50 '+mx(a10(cu+MOTO+50))+"</button>"+
+        '<button class="opt" data-act="p" data-v="'+a10(x.precio/2)+'" title="La mitad del precio que tiene hoy: es el descuento que más jala">Mitad de precio '+mx(a10(x.precio/2))+"</button>"+
         '<span class="precio-in">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu*1.2)+'"></span>'+
       "</div>"+
       '<div class="rem-f" data-f="1"></div></div>';
@@ -340,9 +341,11 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
     var on=sel[i]!=null&&sel[i]>0;card.classList.toggle("on",on);
     var p=num(card.querySelector("[data-act=in]").value),cu=costoUnit(x);
     card.querySelectorAll(".opt").forEach(function(o){o.classList.toggle("on",num(o.getAttribute("data-v"))===p);});
-    var neto=(p-MOTO)*x.piezas,dif=neto-x.capital;
+    var neto=(p-MOTO)*x.piezas,dif=neto-x.capital,porPza=p-MOTO-cu;
     card.querySelector("[data-f]").innerHTML=on
-      ? "Entra "+mx(p*x.piezas)+" · envío −"+mx(MOTO*x.piezas)+" · recuperas <b>"+mx(neto)+"</b> de los "+mx(x.capital)+" que pagaste · "+
+      ? "<b>Si vendes una sola:</b> entra "+mx(p)+", envío −"+mx(MOTO)+", te costó "+mx(cu)+" → "+
+        (porPza>=0?"<b>+"+mx(porPza)+"</b>":'<b class="mal">'+mx(porPza)+"</b>")+" por pieza.<br>"+
+        "<b>Si salen las "+x.piezas+":</b> recuperas <b>"+mx(neto)+"</b> de los "+mx(x.capital)+" que pagaste · "+
         (dif>=0?"<b>+"+mx(dif)+"</b> de ganancia":'te faltan <b class="mal">'+mx(-dif)+"</b>")
       : "Toca la palomita para incluirlo en el plan";
   }
@@ -373,6 +376,7 @@ textarea{width:100%;min-height:180px;background:var(--bg);border:1px solid var(-
   });
 
   var EXP={
+    pildoras:["Los tres precios que te propongo","<b>Sin perder</b> = lo que te costó el producto más el envío. Es tu piso real: por debajo de ahí estás pagando por regalar mercancía. Para casi todo lo que lleva un año parado, este precio ya es suficiente, porque lo que ganas es recuperar el dinero, no la utilidad.<br><br><b>Ganas $50</b> = ese piso más cincuenta pesos limpios por pieza. Úsalo cuando el producto todavía tiene demanda y solo necesita un empujón.<br><br><b>Mitad de precio</b> = la mitad de lo que pides hoy. Este no sale de tus costos, sale de la cabeza del comprador: \"50% de descuento\" se entiende sin pensar y es el que más gente atrae. Úsalo cuando lo que te urge es que salga ya."],
     capital:["Capital detenido","Es el dinero que ya pagaste y sigue en cajas. No lo perdiste, pero tampoco lo tienes: no puede comprar nada nuevo hasta que se venda.<br><br>La medida que usan los negocios es cuántos <b>meses de ganancia</b> tienes congelados. Uno o dos es normal. Cinco o más significa que compraste más rápido de lo que vendes, o compraste cosas que no salen."],
     remate:["¿Vender al costo es perder?","No. Perder es que el dinero siga parado un año más.<br><br>Una pieza que compraste en $150 y no sale a $300 no vale $300: vale lo que alguien pague hoy. Si la rematas en $170 recuperas tu dinero, compras algo que sí rota y esos $170 dan la vuelta tres veces al año.<br><br>El error clásico del que empieza es aferrarse al precio que <b>quería</b> ganar. El que lleva años mira el calendario, no el precio."],
     envio:["El envío te está costando más de lo que crees","Revisé tus 461 ventas. <b>225 se entregaron a domicilio</b> —la mitad— y en ellas pagaste <b>$10,485</b> de motomandado.<br><br>Cobraste el extra al cliente en <b>30 de esas 225 entregas</b>: el 13%. En total recuperaste $330 de los $10,485. <b>Absorbiste $10,155.</b><br><br>Además el moto no siempre cuesta $35: hay 16 entregas de $100 y 10 de $80. Tu promedio real por entrega es de <b>$47</b>, no $35.<br><br>Por eso aquí el envío se descuenta completo. Si empiezas a cobrarlo siempre, este número mejora solo y sin invertir un peso."],
