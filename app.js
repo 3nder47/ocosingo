@@ -313,7 +313,7 @@ function cambiarVista(v){
   ({catalogo:cargarCatalogo,ventas:cargarDinero})[v]();
   enviarPendientes();
   const fab=document.getElementById('fab-add');if(fab){const enCat=(v==='catalogo'),esAlex=(state.usuario==='Alex');fab.style.display=enCat?'':'none';if(enCat){fab.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+(esAlex?'Dar de alta un pedido':'Agregar producto');fab.onclick=esAlex?function(){location.href='alta.html';}:abrirAlta;}}
-
+}
 /* ---------- PULL TO REFRESH ---------- */
 function sheetAbierta(){return[...document.querySelectorAll('.overlay')].some(o=>!o.classList.contains('hidden'))||!document.getElementById('login').classList.contains('hidden');}
 function setupPullToRefresh(){
