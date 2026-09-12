@@ -84,21 +84,26 @@ input,button{font:inherit;color:inherit}button{cursor:pointer;border:none;backgr
 .tit{font-size:1.0625rem;font-weight:800;letter-spacing:-.02em}
 .sub{font-size:.8125rem;color:var(--gris);line-height:1.55;margin-top:.2rem}
 .sub b{color:var(--ink)}
-@media(min-width:900px){.c.w4{grid-column:span 4}.c.w5{grid-column:span 5}.c.w6{grid-column:span 6}.c.w7{grid-column:span 7}.c.w8{grid-column:span 8}}
+@media(min-width:900px){.c.w4{grid-column:span 4}.c.w5{grid-column:span 5}.c.w6{grid-column:span 6}.c.w7{grid-column:span 7}.c.w8{grid-column:span 8}
+.rej{align-items:start}
+.c.w5,.c.w7{align-self:stretch}
+.c.w7 .rotwrap{max-height:560px;overflow-y:auto;padding-right:.35rem}}
 
 /* hero con degradado */
 .hero{grid-column:1/-1;border-radius:var(--r);padding:1.625rem;color:#fff;background:var(--gVerde);position:relative;overflow:hidden;box-shadow:0 16px 36px -20px rgba(14,122,85,.9)}
-@media(min-width:900px){.hero{grid-column:span 5}}
+@media(min-width:900px){.hero{grid-column:1/-1}}
 .hero::after{content:"";position:absolute;right:-70px;top:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 66%)}
 .hero .lb{font-size:.75rem;font-weight:700;opacity:.8}
 .hero .big{font-size:clamp(2.5rem,7vw,3.25rem);font-weight:800;letter-spacing:-.045em;line-height:1;margin:.35rem 0 .5rem}
-.hero .pillas{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.125rem;position:relative}
+.hero{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1.25rem}
+.hero>div{position:relative}
+.hero .pillas{display:flex;gap:.5rem;flex-wrap:wrap;position:relative}
 .hp{background:rgba(255,255,255,.16);border-radius:var(--pill);padding:.4rem .75rem;font-size:.75rem;font-weight:700;backdrop-filter:blur(6px)}
 .hp.lima{background:var(--lima);color:#12341F}
 
 /* indicadores */
 .kpi{background:var(--card);border-radius:var(--r);padding:1.125rem;box-shadow:var(--s2);grid-column:span 6;transition:transform .22s var(--ease),box-shadow .22s var(--ease)}
-@media(min-width:900px){.kpi{grid-column:span 3}}
+@media(min-width:900px){.kpi{grid-column:span 4}}
 .kpi:hover{transform:translateY(-3px);box-shadow:var(--s3)}
 .kpi .ico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:.625rem}
 .kpi .ico svg{width:17px;height:17px}
@@ -142,7 +147,8 @@ input,button{font:inherit;color:inherit}button{cursor:pointer;border:none;backgr
 .rb{display:flex;align-items:center;gap:.75rem;margin-bottom:.4rem}
 .rb .et{width:52px;font-size:.6875rem;font-weight:700;color:var(--gris);flex:none}
 .rb .tr{flex:1;height:9px;border-radius:var(--pill);background:var(--linea);overflow:hidden}
-.rb .fi{height:100%;width:0;border-radius:var(--pill);transition:width 1.1s var(--ease)}
+.rb .fi{height:100%;border-radius:var(--pill);transform-origin:left;animation:crece 1s var(--ease) both}
+@keyframes crece{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .rb .vl{width:62px;text-align:right;font-size:.6875rem;font-weight:800;font-variant-numeric:tabular-nums;flex:none}
 
 /* avisos */
@@ -378,20 +384,22 @@ function pintar(){
   $("nav-n").textContent=V.length?V.length:"";
 
   /* hero + indicadores */
-  h+='<section class="hero ani" id="s-resumen"><div class="lb">Dinero detenido en mercancía</div>'+
+  h+='<section class="hero ani" id="s-resumen"><div><div class="lb">Dinero detenido en mercancía</div>'+
     '<div class="big n" id="hero-v">$0</div>'+
-    '<div class="lb">'+D.piezasTotal+' piezas que ya pagaste y siguen en cajas</div>'+
+    '<div class="lb">'+D.piezasTotal+' piezas que ya pagaste y siguen en cajas</div></div>'+
     '<div class="pillas"><span class="hp lima">'+(cong?cong.toFixed(1):"—")+" meses de tu ganancia</span>"+
     '<span class="hp">Ganas '+mx(porMes)+" al mes</span></div></section>";
 
   var ks=[
     ["Lleva +6 meses parado",mx(capV),pzV+" piezas · "+V.length+" productos","var(--naranja)","#FFF4E5",'<path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/>'],
-    ["Margen general",Math.round(R.margen)+"%","de cada $100 que entran","var(--verde)","#E4F6EE",'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
+    ["Margen general",Math.round(R.margen)+"%","de cada $100 que entran","var(--verde)","#E4F6EE",'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',R.margen],
     ["Ganancia del periodo",mx(R.utilidad),R.ventas+" ventas · "+mx(R.porVenta)+" c/u","var(--azul)","#E8EFFE",'<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>']
   ];
   h+=ks.map(function(k,i){return '<div class="kpi ani" style="animation-delay:'+(.08*(i+1))+'s">'+
     '<div class="ico" style="background:'+k[4]+';color:'+k[3]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+k[5]+"</svg></div>"+
-    '<div class="lb">'+k[0]+'</div><b class="n">'+k[1]+"</b><small>"+k[2]+"</small></div>";}).join("");
+    '<div class="lb">'+k[0]+'</div><b class="n">'+k[1]+"</b><small>"+k[2]+"</small>"+
+    (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,k[6]).toFixed(0)+'%;background:linear-gradient(90deg,#0E7A55,#A9E317)"></i></div></div>':"")+
+    "</div>";}).join("");
 
   /* ventas por mes */
   if(MESES.length){
@@ -416,11 +424,11 @@ function pintar(){
   var ator=rot.filter(function(x){return x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2;});
   h+='<section class="c w7 ani" id="s-rotacion"><h2 class="tit">Qué tan rápido sale cada cosa</h2>'+
     '<p class="sub">Verde: lo que <b>tarda en venderse</b>. Naranja: lo que <b>lleva parado hoy</b>. Si la naranja pasa del doble, se pone roja.</p>'+
-    '<div style="margin-top:1rem">'+rot.map(function(x){
+    '<div class="rotwrap" style="margin-top:1rem">'+rot.map(function(x){
       var mal=x.piezas&&x.ventas>=3&&x.diasStock>x.diasVenta*2;
       return '<div class="rot"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" venta"+(x.ventas===1?"":"s")+(x.piezas?" · "+x.piezas+" en stock":"")+"</small></div></div>"+
-        '<div class="rb"><span class="et">Venta</span><div class="tr"><i class="fi" data-w="'+(x.diasVenta/maxD*100).toFixed(1)+'%" style="background:linear-gradient(90deg,#0E7A55,#A9E317)"></i></div><span class="vl">'+dias(x.diasVenta)+"</span></div>"+
-        '<div class="rb"><span class="et">Parado</span><div class="tr"><i class="fi" data-w="'+(x.diasStock/maxD*100).toFixed(1)+'%" style="background:'+(mal?"linear-gradient(90deg,#E0453F,#F97316)":"var(--gNaranja)")+'"></i></div><span class="vl">'+dias(x.diasStock)+"</span></div></div>";
+        '<div class="rb"><span class="et">Venta</span><div class="tr"><i class="fi" style="width:'+Math.max(3,x.diasVenta/maxD*100).toFixed(1)+'%;background:linear-gradient(90deg,#0E7A55,#A9E317)"></i></div><span class="vl">'+dias(x.diasVenta)+"</span></div>"+
+        '<div class="rb"><span class="et">Parado</span><div class="tr"><i class="fi" style="width:'+Math.max(3,x.diasStock/maxD*100).toFixed(1)+'%;background:'+(mal?"linear-gradient(90deg,#E0453F,#F97316)":"var(--gNaranja)")+'"></i></div><span class="vl">'+dias(x.diasStock)+"</span></div></div>";
     }).join("")+"</div>"+
     (ator.length?'<div class="aviso warn"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span><div>En <b>'+ator.map(function(x){return esc(x.categoria);}).join("</b>, <b>")+"</b> lo que te queda lleva parado más del doble de lo que tarda en venderse. La categoría no es lenta: son <b>esas piezas</b> las que no salen.</div></div>":'<div class="aviso ok"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span><div>Nada se está atorando: tu stock está dentro de sus tiempos normales.</div></div>')+
     '<button class="que" data-exp="rotacion">¿Cómo se lee? ›</button></section>';
@@ -440,16 +448,14 @@ function pintar(){
 
   /* margen */
   h+='<section class="c ani" id="s-margen"><h2 class="tit">De dónde sale tu ganancia</h2>'+
-    '<p class="sub">La barra es el margen: de cada $100 que entran por esa categoría, cuántos se quedan contigo.</p>'+
-    '<div style="margin-top:1rem">'+mar.map(function(x,i){
+    '<p class="sub">La barra compara el margen entre tus categorías: la más larga es la que mejor te paga. El porcentaje dice, de cada $100 que entran, cuántos se quedan contigo.</p>'+
+    '<div style="margin-top:1rem">'+(function(){var mm=Math.max.apply(null,mar.map(function(y){return y.margen;}).concat([1]));return mar.map(function(x,i){
       return '<div class="rot"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" venta"+(x.ventas===1?"":"s")+" · "+mx(x.porVenta)+' c/u</small></div><div style="text-align:right"><b style="color:var(--verde)">'+mx(x.utilidad)+'</b><small>'+Math.round(x.margen)+"% margen</small></div></div>"+
-        '<div class="rb"><div class="tr"><i class="fi" data-w="'+Math.min(100,x.margen).toFixed(1)+'%" style="background:'+PAL[i%PAL.length]+'"></i></div></div></div>';}).join("")+"</div>"+
+        '<div class="rb"><div class="tr"><i class="fi" style="width:'+Math.max(6,x.margen/mm*100).toFixed(1)+'%;background:'+PAL[i%PAL.length]+'"></i></div></div></div>';}).join("");})()+"</div>"+
     '<button class="que" data-exp="margen">¿Qué es el margen? ›</button></section>';
 
   $("rej").innerHTML=h;
   cuenta($("hero-v"),D.capitalTotal,mx);
-  requestAnimationFrame(function(){document.querySelectorAll(".fi").forEach(function(e){e.style.width=e.dataset.w;});});
-  if(V.length)$("bot").classList.add("on");
   cablearChart();espiar();total();
 }
 
@@ -462,11 +468,10 @@ function pcHTML(x,i){
       '<button class="chk" data-act="tog"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></button>'+
     "</div>"+
     '<div class="tags"><span class="tg cong">'+mx(x.capital)+' congelados</span><span class="tg dias">'+dias(x.dias)+"</span></div>"+
-    '<div class="precios">'+
-      '<button class="po" data-act="p" data-v="'+a10(cu+MOTO)+'"><span>Sin perder</span><b class="n">'+mx(a10(cu+MOTO))+"</b></button>"+
-      '<button class="po" data-act="p" data-v="'+a10(cu+MOTO+50)+'"><span>Ganas $50</span><b class="n">'+mx(a10(cu+MOTO+50))+"</b></button>"+
-      '<button class="po" data-act="p" data-v="'+a10(x.precio/2)+'"><span>Mitad</span><b class="n">'+mx(a10(x.precio/2))+"</b></button>"+
-    "</div>"+
+    (function(){var op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
+      op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
+      return '<div class="precios" style="grid-template-columns:repeat('+u.length+',1fr)">'+u.map(function(o){
+        return '<button class="po" data-act="p" data-v="'+o[1]+'"><span>'+o[0]+'</span><b class="n">'+mx(o[1])+"</b></button>";}).join("")+"</div>";})()+
     '<div class="libre">o pon tu precio <span class="inp">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu+MOTO)+'"></span></div>'+
     '<div class="cuenta" data-f="1">Toca la palomita para incluirlo en el plan</div></article>';
 }
@@ -485,12 +490,18 @@ function render(card,i,x){
     : "Toca la palomita para incluirlo en el plan";
 }
 
+/* La barra de acción solo estorba fuera del remate: aparece ahí, o si ya elegiste algo. */
+function verBarra(){
+  var hay=Object.keys(sel).some(function(i){return sel[i]>0;});
+  $("bot").classList.toggle("on",hay||seccion==="remate");
+}
 function total(){
   var V=viejos(),lib=0,cost=0,pz=0,n=0;
   Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;lib+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;n++;});
   $("bot-v").textContent=mx(lib);
   $("bot-s").textContent=n?(pz+" pieza"+(pz===1?"":"s")+" de "+n+" producto"+(n===1?"":"s")+" · pagaste "+mx(cost)+" · envío descontado"):"Elige qué rematar";
   $("b-plan").disabled=!n;
+  verBarra();
 }
 
 /* tooltip de la gráfica */
@@ -519,6 +530,7 @@ function espiar(){
       var id=en.target.id.replace("s-","");
       if(id===seccion)return;seccion=id;
       document.querySelectorAll("[data-ir]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-ir")===id);});
+      verBarra();
     });
   },{rootMargin:"-45% 0px -50% 0px"});
   ids.forEach(function(id){var el=$(id);if(el)obs.observe(el);});
