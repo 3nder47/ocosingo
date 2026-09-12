@@ -27,7 +27,7 @@
     <button class="nav on" data-ir="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Resumen</button>
     <button class="nav" data-ir="rotacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>1. Qué comprar</button>
     <button class="nav" data-ir="remate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg>2. Plan de remate <span class="pin-n" id="nav-n"></span></button>
-    <button class="nav" data-ir="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>3. A cuánto vender</button>
+    <button class="nav" data-ir="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>3. Qué te deja más dinero</button>
     <div class="nav-t">HISTÓRICO</div>
     <button class="nav" data-ir="ventas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>Ventas por mes</button>
     <button class="nav" data-ir="parado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 12V7M12 12l4 2"/></svg>Dinero detenido</button>
@@ -152,6 +152,24 @@ function textoVentas(){
       (ant?" ("+(dif>=0?"<b style='color:var(--verde-deep)'>+"+mx(dif)+"</b>":"<b style='color:var(--rojo)'>−"+mx(-dif)+"</b>")+" contra "+esc(ant.label)+")":"")+".":"")+
     " <b>"+esc(curso.label)+"</b> va a la mitad, por eso no se compara todavía.</p>";
 }
+/* Desglose visual: filas con barra proporcional. Sirve para explicar CUALQUIER
+   cuenta con peras y manzanas, en vez de soltar una fórmula. */
+function desglose(titulo,filas,resultado,nota){
+  var max=Math.max.apply(null,filas.concat([resultado]).map(function(f){return Math.abs(f.v);}).concat([1]));
+  var h='<div class="desglose"><div class="dg-t">'+esc(titulo)+"</div>";
+  filas.forEach(function(f){
+    h+='<div class="dg-fila '+(f.signo==="-"?"dg-menos":"dg-mas")+'">'+
+       '<div class="et">'+esc(f.et)+(f.sub?"<small>"+esc(f.sub)+"</small>":"")+"</div>"+
+       '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(f.v)/max*100).toFixed(1)+'%"></div></div>'+
+       '<div class="val">'+(f.signo==="-"?"−":"+")+mx(Math.abs(f.v))+"</div></div>";
+  });
+  h+='<div class="dg-fila dg-res">'+
+     '<div class="et">'+esc(resultado.et)+(resultado.sub?"<small>"+esc(resultado.sub)+"</small>":"")+"</div>"+
+     '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(resultado.v)/max*100).toFixed(1)+'%"></div></div>'+
+     '<div class="val">'+mx(resultado.v)+"</div></div>";
+  if(nota)h+='<div class="dg-nota">'+nota+"</div>";
+  return h+"</div>";
+}
 function dona(segs,total){
   var C=2*Math.PI*78,off=0;
   var arcos=segs.filter(function(s){return s.v>0;}).map(function(s){
@@ -162,7 +180,7 @@ function dona(segs,total){
     '</svg><div class="ctr"><b class="mono">'+mx(total)+"</b><span>en cajas</span></div></div>";
 }
 
-var SECS=[["resumen","Resumen"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Precios"],["ventas","Ventas"],["parado","Parado"]];
+var SECS=[["resumen","Resumen"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Qué deja más"],["ventas","Ventas"],["parado","Parado"]];
 
 function pintar(){
   var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
@@ -227,12 +245,12 @@ function pintar(){
     '<button class="btn-help" data-exp="envio">¿Por qué descuento el envío?</button></div></section>';
 
   h+='<section class="b-card ani" id="s-margen">'+
-    '<span class="decision-tag d3">Decisión 3: A cuánto vender</span>'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Rendimiento por categoría</h2>'+
-    '<p class="sub">La barra compara el margen entre categorías: la más larga es la que mejor te paga. Ojo: la que más margen deja no siempre es la que más dinero te da.</p>'+
+    '<span class="decision-tag d3">Decisión 3: En qué enfocarte</span>'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Qué te deja más dinero</h2>'+
+    '<p class="sub">Esto es <b>historia, no recomendación</b>: lo que ya ganaste con cada categoría. La barra compara el margen; la más larga es la que mejor te paga por peso vendido. Ojo: la de mayor margen casi nunca es la que más dinero total te ha dejado.</p>'+
     '<div style="margin-top:1.25rem">'+(function(){var mm=Math.max.apply(null,mar.map(function(y){return y.margen;}).concat([1]));
       return mar.map(function(x,i){
-        return '<div class="rot-item"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" ventas · "+mx(x.porVenta)+' c/u</small></div><div style="text-align:right"><b style="color:var(--verde-deep)" class="mono">'+mx(x.utilidad)+'</b><small>'+Math.round(x.margen)+"% margen</small></div></div>"+
+        return '<div class="rot-item"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" ventas · te dejó "+mx(x.porVenta)+' de ganancia en cada una</small></div><div style="text-align:right"><b style="color:var(--verde-deep)" class="mono">'+mx(x.utilidad)+'</b><small>ganancia acumulada · '+Math.round(x.margen)+"% margen</small></div></div>"+
           '<div class="rb"><div class="tr"><i class="fi" style="width:'+Math.max(6,x.margen/mm*100).toFixed(1)+'%;background:'+PAL[i%PAL.length]+'"></i></div></div></div>';}).join("");})()+"</div>"+
     '<button class="btn-help" data-exp="margen">¿Qué es el margen?</button></section>';
 
@@ -386,7 +404,34 @@ var EXP={
   rotacion:["Rotación","Cuántos días pasan, en promedio, desde que compras una pieza hasta que se vende.<br><br>Lo importante es compararlo contra <b>cuánto lleva parado lo que tienes hoy</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, esas piezas concretas son las que no salen. Esas son las que rematas."],
   margen:["Margen","De cada $100 que entran, cuántos te quedas después de pagar el producto y el envío.<br><br>El margen no es la ganancia. Puedes tener margen alto y ganar poco si vendes pocas piezas: fíjate siempre en las dos columnas juntas."]
 };
-function abrir(k){var e=EXP[k];if(!e)return;abrirHTML("<h3>"+e[0]+"</h3><p>"+e[1]+'</p><button class="btn-action pri" data-cerrar="1">Entendido</button>');}
+function abrir(k){
+  var e=EXP[k];if(!e)return;
+  var extra="";
+  if(k==="margen"){
+    var mar=(D.margen||[]),mejor=mar.slice().sort(function(a,b){return b.utilidad-a.utilidad;})[0];
+    extra=desglose("Así se calcula una venta tuya",
+      [{et:"Precio de venta",sub:"lo que te paga el cliente",v:280,signo:"+"},
+       {et:"Cobro a domicilio",sub:"lo que le cobras por el envío",v:10,signo:"+"},
+       {et:"Costo del producto",sub:"lo que te costó puesto aquí",v:136.77,signo:"-"},
+       {et:"Motomandado",sub:"lo que le pagas al repartidor",v:35,signo:"-"}],
+      {et:"Tu ganancia",sub:"esto sí es tuyo",v:118.23},
+      "Ejemplo real: tu Kemei KM-1419. Entraron <b>$290</b> y salieron <b>$171.77</b>, así que te quedan <b>$118.23</b>.<br>"+
+      '<span class="dg-pct">Margen = 118.23 ÷ 290 = 41%</span><br>'+
+      "El <b>margen</b> es ese porcentaje. La <b>ganancia acumulada</b> es esta misma cuenta sumada en todas tus ventas de la categoría"+
+      (mejor?": en <b>"+esc(mejor.categoria)+"</b> llevas <b>"+mx(mejor.utilidad)+"</b> juntando "+mejor.ventas+" ventas.":"."));
+  }
+  if(k==="capital"){
+    var pm=(D.resumen||{}).utilidad/meses();
+    extra=desglose("Cuánto de tu ganancia está congelada",
+      [{et:"Dinero en cajas",sub:"ya lo pagaste, no lo tienes",v:D.capitalTotal,signo:"+"},
+       {et:"Ganas al mes",sub:"promedio de "+meses()+" meses",v:pm,signo:"-"}],
+      {et:"Meses congelados",sub:"lo primero entre lo segundo",v:0},
+      "Se divide uno entre otro: <b>"+mx(D.capitalTotal)+" ÷ "+mx(pm)+" = "+
+      (pm>0?(D.capitalTotal/pm).toFixed(1):"—")+" meses</b>.<br>Es cuánto tiempo tendrías que trabajar para volver a juntar el dinero que hoy está dormido en cajas.");
+    extra=extra.replace(/<div class="val">\$0<\/div>/,'<div class="val">'+(pm>0?(D.capitalTotal/pm).toFixed(1):"—")+" meses</div>");
+  }
+  abrirHTML("<h3>"+e[0]+"</h3><p>"+e[1]+"</p>"+extra+'<button class="btn-action pri" data-cerrar="1">Entendido</button>');
+}
 function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 })();
