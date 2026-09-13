@@ -26,6 +26,7 @@
     <div class="nav-t">DECISIONES CLAVE</div>
     <button class="nav on" data-ir="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Resumen</button>
     <button class="nav" data-ir="simular"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 7h6M9 11h6M9 15h3"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>0. ¿Me conviene?</button>
+    <button class="nav" data-ir="recientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="M12 12v9M4 7l8 5 8-5"/></svg>Recién llegados</button>
     <button class="nav" data-ir="rotacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>1. Qué comprar</button>
     <button class="nav" data-ir="remate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg>2. Plan de remate <span class="pin-n" id="nav-n"></span></button>
     <button class="nav" data-ir="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>3. Qué te deja más dinero</button>
@@ -104,7 +105,7 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){retur
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
 function dias(d){if(d==null||!isFinite(d))return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
 var PAL=["#10B981","#84CC16","#3B82F6","#F97316","#8B5CF6","#14B8A6","#EF4444","#F59E0B","#EC4899","#64748B"];
-var D=null,MESES=[],rango="todo",sel={},FOTOS={},MOTO=25,orden="dinero",verTodo=false,seccion="resumen";
+var D=null,CAT=[],MOTO_REAL=35,COBRO=10,MESES=[],rango="todo",sel={},FOTOS={},MOTO=25,orden="dinero",verTodo=false,seccion="resumen";
 
 function cuenta(el,hasta,fmt){
   if(!el)return;var t0=performance.now(),dur=1000;
@@ -142,7 +143,7 @@ function cargar(){
     api("catalogo",null,null,30000).catch(function(){return[];}),
     api("inicio",{usuario:"Alex"},null,35000).catch(function(){return{};})
   ]).then(function(r){
-    D=r[0];sel={};FOTOS={};
+    D=r[0];sel={};FOTOS={};CAT=r[1]||[];
     (r[1]||[]).forEach(function(x){if(x&&x.descripcion&&x.imagen)FOTOS[norm(x.descripcion)]=x.imagen;});
     MESES=(r[2]&&r[2].ventasMes)||[];
     pintar();
@@ -221,7 +222,7 @@ function dona(segs,total){
     '</svg><div class="ctr"><b class="mono">'+mx(total)+"</b><span>en cajas</span></div></div>";
 }
 
-var SECS=[["resumen","Resumen"],["simular","¿Me conviene?"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Qué deja más"],["ventas","Ventas"],["parado","Parado"]];
+var SECS=[["resumen","Resumen"],["simular","¿Me conviene?"],["recientes","Recién llegados"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Qué deja más"],["ventas","Ventas"],["parado","Parado"]];
 
 function pintar(){
   var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
@@ -271,6 +272,8 @@ function pintar(){
       '<small>Lo que viene de China paga 33.5% de impuesto de paquetería: por eso el factor 1.33. Lo que ya está en México no paga nada, así que su factor es 1.00 — <b>a veces el que se ve más caro sale más barato</b>. Tus dos últimos pedidos de Temu dieron 1.30 y 1.32.</small>'+
     "</div>"+
     '<div id="sim-out"></div></section>';
+
+  h+=recientesHTML();
 
   var maxD=Math.max.apply(null,rot.map(function(x){return Math.max(x.diasVenta,x.diasStock);}).concat([1]));
   var ator=rot.filter(function(x){return x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2;});
@@ -330,10 +333,55 @@ function pintar(){
   cablearChart();espiar();total();
   ["sim-precio","sim-piezas","sim-factor","sim-mercado"].forEach(function(id){var e=$(id);if(e)e.addEventListener("input",simular);});
   var sc=$("sim-cat");if(sc)sc.addEventListener("change",simular);
+  var mr=$("rec-moto");if(mr)mr.addEventListener("input",function(){MOTO_REAL=num(mr.value);var w=$("rec-wrap");if(w)w.innerHTML=recientesLista();});
   var st=$("sim-tienda");if(st)st.addEventListener("change",function(){
     if(st.value)$("sim-factor").value=st.value;
     simular();});
   simular();
+}
+
+/* ---------- Recien llegados: la cuenta de cada producto nuevo, con y sin envio ----------
+   Sirve para ver (y mostrarle a Irene) cuanto queda por pieza si se cobra el envio
+   aparte o si va incluido en el precio. Usa lo que ya devuelve `catalogo`. */
+function recientes(){
+  var lim=Date.now()-30*864e5;
+  return CAT.filter(function(x){return x&&x.origen==="Alex"&&Number(x.agregado)>=lim&&Number(x.stock)>0;})
+    .sort(function(a,b){return Number(b.agregado)-Number(a.agregado);});
+}
+function ganancia(precio,costo,conCobro){
+  var entra=precio+(conCobro?COBRO:0),g=entra-costo-MOTO_REAL;
+  return {g:g,m:entra>0?Math.round(g/entra*100):0};
+}
+function recientesLista(){
+  var L=recientes();
+  if(!L.length)return '<div class="aviso ok"><span class="ic"></span><div>No hay productos dados de alta en los últimos 30 días.</div></div>';
+  var pz=0,inv=0,gC=0,gI=0;
+  L.forEach(function(x){var n=Number(x.stock)||0,c=Number(x.costoFinal)||0,p=Number(x.precio)||0;
+    pz+=n;inv+=c*n;gC+=ganancia(p,c,true).g*n;gI+=ganancia(p,c,false).g*n;});
+  var celda=function(t,r,verde){return '<div class="rot-item" style="margin:0'+(verde?';background:#ECFDF5;border-color:#A7F3D0':'')+'">'+
+    '<div class="lb" style="font-size:.7rem;font-weight:800;color:'+(verde?"var(--verde-deep)":"var(--gris)")+';text-transform:uppercase">'+t+'</div>'+
+    '<div class="mono" style="font-size:1.35rem;font-weight:800;color:'+(r.g>=0?(verde?"var(--verde-deep)":"var(--ink)"):"var(--rojo)")+'">'+(r.g>=0?"+":"")+mx(r.g)+'</div>'+
+    '<small style="color:var(--gris);font-weight:600">por pieza · '+r.m+'% de margen</small></div>';};
+  return '<div class="aviso ok" style="background:#EFF6FF;border-color:#DBEAFE;color:#1E40AF"><span class="ic" style="background:var(--azul)"></span>'+
+    '<div><b>'+L.length+' producto'+(L.length===1?"":"s")+' · '+pz+' pieza'+(pz===1?"":"s")+' · invertiste '+mx(inv)+'.</b> Si se vende todo: cobrando envío ganas <b>'+mx(gC)+'</b>; con envío incluido ganas <b>'+mx(gI)+'</b>. La diferencia son los <b>'+mx(gC-gI)+'</b> de los $'+COBRO+' que dejas de cobrar.</div></div>'+
+    L.map(function(x){
+      var c=Number(x.costoFinal)||0,p=Number(x.precio)||0,n=Number(x.stock)||0,img=x.imagen;
+      var rc=ganancia(p,c,true),ri=ganancia(p,c,false);
+      return '<article class="prod-card" style="cursor:default"><div class="top">'+
+        (img?'<img class="im" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="im sin"></span>')+
+        '<div class="tx"><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+' · '+n+' pza · te costó '+mx(c)+' · lo vendes en '+mx(p)+'</small></div></div>'+
+        '<div style="display:grid;gap:.6rem;grid-template-columns:1fr 1fr;margin-top:.75rem">'+celda("Cobrando $"+COBRO+" de envío",rc,false)+celda("Envío incluido",ri,true)+'</div>'+
+        '<div class="cuenta-box" style="margin-top:.6rem">Entra '+mx(p)+(rc.g!==ri.g?' (+'+mx(COBRO)+' si cobras envío)':'')+' − costo '+mx(c)+' − moto '+mx(MOTO_REAL)+'.</div>'+
+        '</article>';}).join("");
+}
+function recientesHTML(){
+  return '<section class="b-card ani" id="s-recientes">'+
+    '<span class="decision-tag d1">Lo último que entró</span>'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="M12 12v9M4 7l8 5 8-5"/></svg> Recién llegados</h2>'+
+    '<p class="sub">Lo que diste de alta en los últimos 30 días, con la cuenta de cada pieza en los dos modelos: <b>cobrando el envío aparte</b> o <b>con el envío incluido en el precio</b>. Así se ve cuánto cuesta de verdad anunciar "envío gratis".</p>'+
+    '<div class="ctrl-bar"><span>Lo que cobra el moto:</span><span class="inp-pill">$<input id="rec-moto" type="number" step="5" min="0" value="'+MOTO_REAL+'"></span>'+
+    '<small>$35 en el centro, $40–45 si llueve o está lejos. Cámbialo para ver el peor caso.</small></div>'+
+    '<div class="product-grid" id="rec-wrap">'+recientesLista()+'</div></section>';
 }
 
 /* Las tres pildoras dependen del motomandado. Se generan aqui, en su propia
