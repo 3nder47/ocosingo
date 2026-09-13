@@ -340,6 +340,9 @@ function cargarCatalogo(){
 }
 
 /* ---------- renglón ---------- */
+/* La X de quitar producto solo tiene sentido con 2+ renglones. Con uno solo se
+   esconde: antes se quedaba visible y no hacia nada, encimada sobre las fotos. */
+function mostrarX(){filas.forEach(function(o){if(o.x)o.x.style.display=filas.length>1?"":"none";});}
 function nuevaFila(){
   var id=seq++;
   var el=document.createElement("article");
@@ -375,7 +378,8 @@ function nuevaFila(){
     var h="";
     if(f.fotosDrive&&f.fotosDrive.length){
       h+='<div class="gal-slot llena principal"><img src="'+esc(f.fotosDrive[0])+'" alt=""><span class="et">'+
-        (f.parcial?"Ya en Drive · puede tener más":"Ya en Drive")+"</span></div>";
+        (f.parcial?"Ya en Drive · puede tener más":"Ya en Drive")+"</span>"+
+        '<button type="button" data-k="quitadrive" title="No es este producto: quitar estas fotos" style="position:absolute;top:.5rem;right:.5rem;width:30px;height:30px;border-radius:50%;background:#fff;border:1px solid var(--linea);display:grid;place-items:center;cursor:pointer;color:var(--ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
       for(var j=1;j<Math.min(f.fotosDrive.length,3)+1&&j<4;j++){
         if(f.fotosDrive[j])h+='<div class="gal-slot llena"><img src="'+esc(f.fotosDrive[j])+'" alt=""></div>';
         else if(j===f.fotosDrive.length)h+='<div class="gal-slot" data-k="pick"><div style="text-align:center;font-size:.7rem;font-weight:700">+</div></div>';
@@ -399,6 +403,7 @@ function nuevaFila(){
   f.galeria.addEventListener("click",function(e){
     var q=e.target.closest("[data-k=quitafoto]");
     if(q){f.fotos.splice(Number(q.getAttribute("data-i")),1);f.pintarGaleria();return;}
+    if(e.target.closest("[data-k=quitadrive]")){f.fotosDrive=[];f.parcial=false;f.noHeredar=true;f.pintarGaleria();return;}
     if(e.target.closest("[data-k=pick]"))f.file.click();
   });
   f.file.addEventListener("change",function(){
@@ -444,10 +449,12 @@ function nuevaFila(){
   f.detectar=function(){
     var d=f.desc.value.trim();
     f.gemelo=null;f.fotosDrive=[];
-    if(!d){f.pintarGaleria();f.pintarChips();return;}
+    if(!d){f.noHeredar=false;f.pintarGaleria();f.pintarChips();return;}
     var g=parecido(d);
     f.parcial=false;
-    if(g&&(g.imagen||(g.extras&&g.extras.length))){
+    if(f.noHeredar){
+      /* El usuario ya dijo que las fotos heredadas no son de este producto. */
+    } else if(g&&(g.imagen||(g.extras&&g.extras.length))){
       /* Con existencia: el catálogo trae la principal Y las tomas extra. */
       f.fotosDrive=[g.imagen].concat(g.extras||[]).filter(Boolean);
     } else {
@@ -472,9 +479,9 @@ function nuevaFila(){
   f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
   f.x.addEventListener("click",function(){
     if(filas.length===1)return;
-    filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();});
+    filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();mostrarX();});
 
-  filas.push(f);$("renglones").appendChild(el);
+  filas.push(f);$("renglones").appendChild(el);mostrarX();
   return f;
 }
 
