@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="kiosko.css?v=2">
+<link rel="stylesheet" href="kiosko.css?v=3">
 </head>
 <body>
 
@@ -235,15 +235,16 @@ function pintar(){
   h+='<section class="hero-bento ani" id="s-resumen"><div><div class="lb">Capital congelado en mercancía</div>'+
     '<div class="big mono" id="hero-v">$0</div>'+
     '<div class="lb">'+D.piezasTotal+' piezas pagadas que siguen en cajas</div></div>'+
-    '<div class="pillas"><span class="hp lima">'+(cong?cong.toFixed(1):"—")+" meses de ganancia</span>'+
-    '<span class="hp">Ganas '+mx(porMes)+" al mes</span></div></section>' ;
+    '<div class="pillas"><span class="hp lima">'+(cong?cong.toFixed(1):"—")+" meses de ganancia</span>"+
+    '<span class="hp">Ganas '+mx(porMes)+" al mes</span></div></section>";
 
   var ks=[
     ["En riesgo (+6 meses)",mx(capV),pzV+" pzas · "+V.length+" productos","var(--naranja)","#FFF7ED",'<path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/>'],
     ["Margen general",Math.round(R.margen)+"%","de cada $100 que entran","var(--verde-deep)","#ECFDF5",'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',R.margen],
     ["Ganancia del periodo",mx(R.utilidad),R.ventas+" ventas · "+mx(R.porVenta)+" c/u","var(--azul)","#EFF6FF",'<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>']
   ];
-  h+=ks.map(function(k,i){return '<div class="kpi-card ani" style="animation-delay:'+(.08*(i+1))+'s">'+
+  var kpiIr=["remate","margen","ventas"];
+  h+=ks.map(function(k,i){return '<div class="kpi-card ani" data-ir="'+kpiIr[i]+'" style="animation-delay:'+(.08*(i+1))+'s;cursor:pointer" title="Ver detalle">'+
     '<div class="ico" style="background:'+k[4]+';color:'+k[3]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+k[5]+"</svg></div>"+
     '<div><div class="lb">'+k[0]+'</div><b class="mono">'+k[1]+"</b><small>"+k[2]+"</small></div>"+
     (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,Number(k[6])||0).toFixed(0)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div></div>':"")+
@@ -330,7 +331,7 @@ function pintar(){
 
   $("rej").innerHTML=h;
   cuenta($("hero-v"),D.capitalTotal,mx);
-  cablearChart();espiar();total();
+  cablearChart();total();irA(seccion);
   ["sim-precio","sim-piezas","sim-factor","sim-mercado"].forEach(function(id){var e=$(id);if(e)e.addEventListener("input",simular);});
   var sc=$("sim-cat");if(sc)sc.addEventListener("change",simular);
   var mr=$("rec-moto");if(mr)mr.addEventListener("input",function(){MOTO_REAL=num(mr.value);var w=$("rec-wrap");if(w)w.innerHTML=recientesLista();});
@@ -340,7 +341,9 @@ function pintar(){
   simular();
 }
 
-/* ---------- Recien llegados: la cuenta de cada producto nuevo, con y sin envio ---------- */
+/* ---------- Recien llegados: la cuenta de cada producto nuevo, con y sin envio ----------
+   Sirve para ver (y mostrarle a Irene) cuanto queda por pieza si se cobra el envio
+   aparte o si va incluido en el precio. Usa lo que ya devuelve `catalogo`. */
 function recientes(){
   var lim=Date.now()-30*864e5;
   return CAT.filter(function(x){return x&&x.origen==="Alex"&&Number(x.agregado)>=lim&&Number(x.stock)>0;})
@@ -352,31 +355,38 @@ function ganancia(precio,costo,conCobro){
 }
 function recientesLista(){
   var L=recientes();
-  if(!L.length)return '<div class="aviso ok"><span class="ic"></span><div>No hay productos dados de alta en los últimos 30 días.</div></div>';
-  var pz=0,inv=0,gC=0,gI=0;
+  if(!L.length)return '<div class="aviso ok" style="grid-column:1/-1"><span class="ic"></span><div>No hay productos dados de alta en los últimos 30 días.</div></div>';
+  var pz=0,inv=0,gI=0,entra=0;
   L.forEach(function(x){var n=Number(x.stock)||0,c=Number(x.costoFinal)||0,p=Number(x.precio)||0;
-    pz+=n;inv+=c*n;gC+=ganancia(p,c,true).g*n;gI+=ganancia(p,c,false).g*n;});
-  var celda=function(t,r,verde){return '<div class="rot-item" style="margin:0'+(verde?';background:#ECFDF5;border-color:#A7F3D0':'')+'">'+
-    '<div class="lb" style="font-size:.7rem;font-weight:800;color:'+(verde?"var(--verde-deep)":"var(--gris)")+';text-transform:uppercase">'+t+'</div>'+
-    '<div class="mono" style="font-size:1.35rem;font-weight:800;color:'+(r.g>=0?(verde?"var(--verde-deep)":"var(--ink)"):"var(--rojo)")+'">'+(r.g>=0?"+":"")+mx(r.g)+'</div>'+
-    '<small style="color:var(--gris);font-weight:600">por pieza · '+r.m+'% de margen</small></div>';};
-  return '<div class="aviso ok" style="background:#EFF6FF;border-color:#DBEAFE;color:#1E40AF"><span class="ic" style="background:var(--azul)"></span>'+
-    '<div><b>'+L.length+' producto'+(L.length===1?"":"s")+' · '+pz+' pieza'+(pz===1?"":"s")+' · invertiste '+mx(inv)+'.</b> Si se vende todo: cobrando envío ganas <b>'+mx(gC)+'</b>; con envío incluido ganas <b>'+mx(gI)+'</b>. La diferencia son los <b>'+mx(gC-gI)+'</b> de los $'+COBRO+' que dejas de cobrar.</div></div>'+
+    pz+=n;inv+=c*n;entra+=p*n;gI+=ganancia(p,c,false).g*n;});
+  var mI=entra>0?Math.round(gI/entra*100):0;
+  return '<div style="grid-column:1/-1">'+
+    desglose("Si se venden estas "+pz+" piezas con envío incluido",
+      [{et:"Entra por las ventas",sub:pz+" piezas a su precio",v:entra,signo:"+"},
+       {et:"Lo que ya pagaste",sub:"tu inversión en este pedido",v:inv,signo:"-"},
+       {et:"Motomandados",sub:pz+" entregas × "+mx(MOTO_REAL)+", los pagas tú",v:MOTO_REAL*pz,signo:"-"}],
+      {et:gI>=0?"Te queda":"Pierdes",sub:mI+"% de margen",v:gI},
+      "Regalar el envío te cuesta <b>"+mx(COBRO)+" por pieza</b>: en estas "+pz+" son <b>"+mx(COBRO*pz)+"</b> que dejas de cobrar. A cambio, el precio se anuncia redondo y sin letra chica.")+
+    "</div>"+
     L.map(function(x){
       var c=Number(x.costoFinal)||0,p=Number(x.precio)||0,n=Number(x.stock)||0,img=x.imagen;
-      var rc=ganancia(p,c,true),ri=ganancia(p,c,false);
+      var g=ganancia(p,c,false),gc=ganancia(p,c,true);
       return '<article class="prod-card" style="cursor:default"><div class="top">'+
         (img?'<img class="im" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="im sin"></span>')+
-        '<div class="tx"><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+' · '+n+' pza · te costó '+mx(c)+' · lo vendes en '+mx(p)+'</small></div></div>'+
-        '<div style="display:grid;gap:.6rem;grid-template-columns:1fr 1fr;margin-top:.75rem">'+celda("Cobrando $"+COBRO+" de envío",rc,false)+celda("Envío incluido",ri,true)+'</div>'+
-        '<div class="cuenta-box" style="margin-top:.6rem">Entra '+mx(p)+(rc.g!==ri.g?' (+'+mx(COBRO)+' si cobras envío)':'')+' − costo '+mx(c)+' − moto '+mx(MOTO_REAL)+'.</div>'+
+        '<div class="tx"><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+' · '+n+' pieza'+(n===1?"":"s")+'</small></div></div>'+
+        desglose("Una pieza, con envío incluido",
+          [{et:"Precio de venta",sub:"lo que paga el cliente",v:p,signo:"+"},
+           {et:"Lo que te costó",sub:"ya puesto en Ocosingo",v:c,signo:"-"},
+           {et:"Motomandado",sub:"lo pagas tú",v:MOTO_REAL,signo:"-"}],
+          {et:g.g>=0?"Te queda":"Pierdes",sub:g.m+"% de margen",v:g.g},
+          "Cobrando los "+mx(COBRO)+" de envío aparte te quedarían <b>"+mx(gc.g)+"</b>.")+
         '</article>';}).join("");
 }
 function recientesHTML(){
   return '<section class="b-card ani" id="s-recientes">'+
     '<span class="decision-tag d1">Lo último que entró</span>'+
     '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="M12 12v9M4 7l8 5 8-5"/></svg> Recién llegados</h2>'+
-    '<p class="sub">Lo que diste de alta en los últimos 30 días, con la cuenta de cada pieza en los dos modelos: <b>cobrando el envío aparte</b> o <b>con el envío incluido en el precio</b>. Así se ve cuánto cuesta de verdad anunciar "envío gratis".</p>'+
+    '<p class="sub">Lo que diste de alta en los últimos 30 días. Cada tarjeta responde una sola pregunta: <b>si Irene lo vende con envío incluido, ¿cuánto te queda?</b> Abajo de cada cuenta dice cuánto más sería cobrando el envío aparte.</p>'+
     '<div class="ctrl-bar"><span>Lo que cobra el moto:</span><span class="inp-pill">$<input id="rec-moto" type="number" step="5" min="0" value="'+MOTO_REAL+'"></span>'+
     '<small>$35 en el centro, $40–45 si llueve o está lejos. Cámbialo para ver el peor caso.</small></div>'+
     '<div class="product-grid" id="rec-wrap">'+recientesLista()+'</div></section>';
@@ -420,7 +430,7 @@ function render(card,i,x){
     ? "<b>Si vendes una:</b> entra "+mx(p)+" − envío "+mx(MOTO)+" − costo "+mx(cu)+" = "+
       (porPza>=0?'<b class="bien">+'+mx(porPza)+"</b>":'<b class="mal">'+mx(porPza)+"</b>")+" libre.<br>"+
       "<b>Si salen las "+x.piezas+":</b> recuperas <b class='mono'>"+mx(neto)+"</b> de "+mx(x.capital)+" · "+
-      (dif>=0?'<b class="bien">+'+mx(dif)+"</b>":'te faltan <b class="mal">'+mx(-dif)+"</b>')
+      (dif>=0?'<b class="bien">+'+mx(dif)+"</b>":'te faltan <b class="mal">'+mx(-dif)+"</b>")
     : "Toca la palomita para incluirlo en el plan.";
 }
 
@@ -476,6 +486,7 @@ function simular(){
     '<small style="color:var(--gris);font-weight:600">te dejaría '+mx(gana)+" por pieza</small></div></div>"+
   veredicto(sug,piso,cf)+alerta;
 }
+/* Compara tu precio contra lo que cobra la competencia en Marketplace */
 function veredicto(sug,piso,cf){
   var mer=num($("sim-mercado").value);
   if(!(mer>0)){
@@ -520,6 +531,20 @@ function cablearChart(){
     $("tip").classList.remove("on");p.classList.remove("on");
   });
 }
+/* ---------- Pestañas: una sección a la vez, sin scroll kilométrico ----------
+   Cada botón del menú muestra SOLO su sección. "Resumen" muestra el hero y los
+   tres KPI. Al repintar (cambio de rango, orden, ver más) se conserva la pestaña. */
+function irA(id){
+  var rej=$("rej");if(!rej)return;
+  if(id!=="resumen"&&!$("s-"+id))id="resumen";
+  seccion=id;rej.classList.add("tabs");
+  Array.prototype.forEach.call(rej.children,function(el){
+    var ver=id==="resumen"?(el.id==="s-resumen"||el.classList.contains("kpi-card")):el.id==="s-"+id;
+    el.classList.toggle("vis",ver);
+  });
+  document.querySelectorAll(".lado [data-ir],.movil [data-ir]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-ir")===id);});
+  verBarra();window.scrollTo({top:0,behavior:"smooth"});
+}
 function espiar(){
   var obs=new IntersectionObserver(function(ents){
     ents.forEach(function(en){
@@ -535,7 +560,7 @@ function espiar(){
 
 document.addEventListener("click",function(e){
   var ir=e.target.closest("[data-ir]");
-  if(ir){var el=$("s-"+ir.getAttribute("data-ir"));if(el)el.scrollIntoView({behavior:"smooth",block:"start"});return;}
+  if(ir){irA(ir.getAttribute("data-ir"));return;}
   var ex=e.target.closest("[data-exp]");if(ex){abrir(ex.getAttribute("data-exp"));return;}
   var od=e.target.closest("[data-ord]");if(od){orden=od.getAttribute("data-ord");sel={};verTodo=false;pintar();return;}
   if(e.target.closest("#vermas")){verTodo=true;pintar();return;}
@@ -616,70 +641,25 @@ function abrir(k){
       '<span class="dg-pct">Margen = 118.23 ÷ 290 = 41%</span><br>'+
       "El <b>margen</b> es ese porcentaje. La <b>ganancia acumulada</b> es esta misma cuenta sumada en todas tus ventas de la categoría"+
       (mejor?": en <b>"+esc(mejor.categoria)+"</b> llevas <b>"+mx(mejor.utilidad)+"</b> juntando "+mejor.ventas+" ventas.":"."));
+  }
+  if(k==="capital"){
+    var pm=(D.resumen||{}).utilidad/meses();
+    extra=desglose("Cuánto de tu ganancia está congelada",
+      [{et:"Dinero en cajas",sub:"ya lo pagaste, no lo tienes",v:D.capitalTotal,signo:"+"},
+       {et:"Ganas al mes",sub:"promedio de "+meses()+" meses",v:pm,signo:"-"}],
+      {et:"Meses congelados",sub:"lo primero entre lo segundo",v:0},
+      "Se divide uno entre otro: <b>"+mx(D.capitalTotal)+" ÷ "+mx(pm)+" = "+
+      (pm>0?(D.capitalTotal/pm).toFixed(1):"—")+" meses</b>.<br>Es cuánto tiempo tendrías que trabajar para volver a juntar el dinero que hoy está dormido en cajas.");
+    extra=extra.replace(/<div class="val">\$0<\/div>/,'<div class="val">'+(pm>0?(D.capitalTotal/pm).toFixed(1):"—")+" meses</div>");
+  }
+  abrirHTML("<h3>"+e[0]+"</h3><p>"+e[1]+"</p>"+extra+'<button class="btn-action pri" data-cerrar="1">Entendido</button>');
+}
+function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
+$("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 
-/* Nota: el script de la página continúa — he dejado el resto del JS intacto en tu original para no romper nada. */
-</script>
-
-<!-- =========================
-     Mejoras UX no invasivas
-     (pegar al final, se ejecutan tras tu script)
-     ========================= -->
-<script>
-/* Pequeñas mejoras UX sin tocar lógica ni IDs.
-   - KPI clickeables: scrollean a secciones relevantes
-   - Animación extra para líneas de gráfica (stroke dash)
-   - Aumenta accesibilidad para tarjetas (role, tabindex)
-*/
-(function(){
-  document.addEventListener("DOMContentLoaded", function(){
-    try{
-      // Mapear los 3 KPI (en el mismo orden que generas los ks)
-      var destinos = ["remate","margen","ventas"];
-      document.querySelectorAll(".kpi-card").forEach(function(el,i){
-        el.style.cursor = "pointer";
-        el.setAttribute("role","button");
-        el.tabIndex = 0;
-        el.addEventListener("click", function(){
-          var id = destinos[i] || "resumen";
-          var target = document.getElementById("s-"+id);
-          if(target) target.scrollIntoView({behavior:"smooth"});
-        });
-        // acceso por teclado (Enter / Space)
-        el.addEventListener("keydown", function(e){
-          if(e.key==="Enter"||e.key===" "){ e.preventDefault(); el.click(); }
-        });
-      });
-    }catch(e){/* no crítico */console.warn(e);}
-
-    try{
-      // Animar la línea (si existe) con stroke-dashoffset; seguro si ya está animada tu CSS
-      document.querySelectorAll(".chart-container .linea").forEach(function(path){
-        try{
-          var len = path.getTotalLength();
-          path.style.strokeDasharray = len;
-          path.style.strokeDashoffset = len;
-          // forzar reflow antes de animar
-          void path.getBoundingClientRect();
-          path.style.transition = "stroke-dashoffset 1.2s ease";
-          path.style.strokeDashoffset = "0";
-        }catch(e){}
-      });
-    }catch(e){/* no crítico */console.warn(e);}
-
-    try{
-      // Hacer prod-cards accesibles y con foco claro
-      document.querySelectorAll(".prod-card").forEach(function(card){
-        card.tabIndex = 0;
-        card.setAttribute("role","button");
-        // permitir teclado para alternar selección (simula click en la palomita)
-        card.addEventListener("keydown", function(ev){
-          if(ev.key==="Enter"){ var tog = card.querySelector("[data-act='tog']"); if(tog) tog.click(); }
-        });
-      });
-    }catch(e){console.warn(e);}
-  });
+/* Ya validaste el PIN en esta sesion del navegador: pasa directo. */
+if(sesionViva())entrar();
 })();
 </script>
-
 </body>
 </html>
