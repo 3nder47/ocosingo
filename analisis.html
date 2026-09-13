@@ -280,7 +280,8 @@ function pcHTML(x,i){
       return '<div class="precios-opt" style="grid-template-columns:repeat('+u.length+',1fr)">'+u.map(function(o){
         return '<button class="po-btn" data-act="p" data-v="'+o[1]+'"><span>'+o[0]+'</span><b class="mono">'+mx(o[1])+"</b></button>";}).join("")+"</div>";})()+
     '<div class="libre-input">o pon tu precio: <span class="inp-pill">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu+MOTO)+'"></span></div>'+
-    '<div class="cuenta-box" data-f="1">Toca la palomita para incluirlo en el plan.</div></article>';
+    '<div class="cuenta-box" data-f="1">Toca la palomita para incluirlo en el plan.</div>'+
+    '<button class="btn-help" data-act="porque" style="margin-top:0">¿Como salio este precio?</button></article>';
 }
 
 function render(card,i,x){
@@ -297,6 +298,27 @@ function render(card,i,x){
     : "Toca la palomita para incluirlo en el plan.";
 }
 
+/* Explica el remate de ESTE producto con sus propios numeros */
+function explicarProducto(x,precio){
+  if(!x)return;
+  var cu=costoU(x),porPza=precio-MOTO-cu,neto=(precio-MOTO)*x.piezas,dif=neto-x.capital;
+  abrirHTML("<h3>"+esc(x.descripcion)+"</h3>"+
+    "<p>Lleva <b>"+dias(x.dias)+"</b> parado y tienes <b>"+x.piezas+" pieza"+(x.piezas===1?"":"s")+"</b>. Asi sale la cuenta del remate.</p>"+
+    desglose("Si vendes una pieza a "+mx(precio),
+      [{et:"Precio de remate",sub:"lo que te paga el cliente",v:precio,signo:"+"},
+       {et:"Motomandado",sub:"sale de tu bolsa en cada entrega",v:MOTO,signo:"-"},
+       {et:"Lo que te costo",sub:"ya puesto aqui",v:cu,signo:"-"}],
+      {et:porPza>=0?"Te queda":"Pierdes",sub:"por cada pieza",v:porPza},
+      "Tu <b>precio piso</b> es "+mx(cu+MOTO)+". Debajo de ahi pagas por regalar mercancia, salvo que el cliente recoja.")+
+    desglose("Si salen las "+x.piezas+" piezas",
+      [{et:"Entra en total",sub:x.piezas+" x "+mx(precio),v:precio*x.piezas,signo:"+"},
+       {et:"Envios",sub:x.piezas+" x "+mx(MOTO),v:MOTO*x.piezas,signo:"-"}],
+      {et:"Recuperas",sub:"de los "+mx(x.capital)+" que pagaste",v:neto},
+      (dif>=0?"Recuperas tu dinero y te sobran <b>"+mx(dif)+"</b>."
+             :"Recuperas <b>"+mx(-dif)+" menos</b> de lo que pagaste. <b>Eso esta bien</b> si lleva un año parado: un billete dormido no vale mas por esperar, y ese dinero libre puede comprar algo que si rota.")+
+      "<br>Si los vendes <b>en paquete</b>, un solo viaje cubre varias piezas y esa resta del envio casi desaparece.")+
+    '<button class="btn-action pri" data-cerrar="1">Entendido</button>');
+}
 function verBarra(){
   var hay=Object.keys(sel).some(function(i){return sel[i]>0;});
   $("bot").classList.toggle("on",hay||seccion==="remate");
@@ -348,6 +370,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");if(!b)return;
   var i=card.getAttribute("data-i"),x=viejos()[i],act=b.getAttribute("data-act");
   if(act==="tog"){if(sel[i])delete sel[i];else sel[i]=num(card.querySelector("[data-act=in]").value)||a10(costoU(x)+MOTO);}
+  if(act==="porque"){explicarProducto(x,num(card.querySelector("[data-act=in]").value));return;}
   if(act==="p"){var v=num(b.getAttribute("data-v"));card.querySelector("[data-act=in]").value=v;sel[i]=v;}
   render(card,i,x);total();
 });
