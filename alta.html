@@ -79,6 +79,7 @@
     <div class="nav-t">ESTE PEDIDO</div>
     <button class="nav on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
     <div class="nav-t">OTRAS PANTALLAS</div>
+    <button class="nav" onclick="location.href='comprar.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>¿Me conviene?</button>
     <button class="nav" onclick="location.href='glosario.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Glosario</button>
     <button class="nav" onclick="location.href='analisis.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Análisis</button>
     <button class="nav" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7.5 12 3l9 4.5-9 4.5z"/><path d="M3 7.5V17l9 4 9-4V7.5"/></svg>Tienda</button>
@@ -156,7 +157,7 @@ function uuid(){return "ap-"+Date.now().toString(36)+"-"+Math.random().toString(
 var MAX_FOTOS=4;
 
 var filas=[],seq=0,catalogo=[],IMGS=[],CATS=[],pedidoID=uuid(),enviando=false;
-var MOTO=35,EXTRA=10,MULT=2,PISO=80;
+var MOTO=35,EXTRA=10,MULT=2,PISO=80,INCLUIDO=false;
 
 /* Distancia de edición, para sugerir categorías parecidas */
 function lev(a,b){var m=a.length,n=b.length,i,j,d=[];
@@ -458,7 +459,7 @@ function calcular(){
       f.calculo.className="calculo vacio";
       f.calculo.textContent=costo>0?"Falta el cargo de tu tarjeta, arriba en la tarjeta oscura":"Falta el precio que te cobró la plataforma";
       return;}
-    var cf=r2(costo*factor),sug=a10(cf*MULT);
+    var cf=r2(costo*factor),sug=a10(cf*MULT+(INCLUIDO?MOTO:0));
     if(!f.tocado)f.precioVal=sug;
     var precio=f.tocado?num(f.precioVal):sug;
     var gana=r2(precio+EXTRA-cf-MOTO),flojo=gana<PISO;
@@ -532,17 +533,36 @@ $("b-alta").addEventListener("click",function(){
     abrirHTML("<h3>No se pudo dar de alta</h3><p>"+esc(e.message)+"</p><p>Nada se escribió en tu hoja. Revisa la conexión y vuelve a intentar; el pedido sigue capturado aquí.</p>"+
       '<button class="btn-action pri" data-cerrar="1">Entendido</button>');});
 });
+var PENDIENTES=[];   // fotos que no subieron, para poder reintentarlas
+function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
+/* Sube una foto con un reintento. Google corta si le llegan muchas seguidas,
+   así que entre cada una va una pausa y, si falla, se espera más y se repite. */
+function subirUna(p,intento){
+  return comprimir(p.archivo)
+    .then(function(b64){return api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
+    .then(function(rf){
+      if(rf&&rf.success)return true;
+      throw new Error((rf&&rf.error)||"el servidor no la aceptó");
+    })
+    .catch(function(e){
+      if(intento<2)return espera(2500).then(function(){return subirUna(p,intento+1);});
+      p.error=e.message||"error desconocido";
+      return false;
+    });
+}
 function subirFotos(){
   var pend=[];
   filas.forEach(function(f){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo});});});
+  PENDIENTES=[];
   var ok=0,mal=[],cad=Promise.resolve(),i=0;
   pend.forEach(function(p){
     cad=cad.then(function(){
       i++;$("bot-s").textContent="Subiendo foto "+i+" de "+pend.length+"…";
-      return comprimir(p.archivo)
-        .then(function(b64){return api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
-        .then(function(rf){if(rf&&rf.success)ok++;else mal.push(p.desc);})
-        .catch(function(){mal.push(p.desc);});});
+      return subirUna(p,1).then(function(bien){
+        if(bien)ok++; else {mal.push(p);PENDIENTES.push(p);}
+        return espera(700);   // pausa para no disparar el límite de Google
+      });
+    });
   });
   return cad.then(function(){return {total:pend.length,ok:ok,mal:mal};});
 }
@@ -551,12 +571,17 @@ function resultado(r,fot){
   var sub="Filas "+r.desde+" a "+r.hasta+" de ALEX_NUEVO · reparto ×"+r.factor;
   if(fot.total)sub+=" · "+fot.ok+" de "+fot.total+(fot.total===1?" foto subida":" fotos subidas");
   if(!r.verificado)sub+=" · "+(r.aviso||"revisa la hoja");
-  if(fot.mal.length)sub+=" · sin foto: "+fot.mal.join(", ");
   document.querySelector(".main").innerHTML=
     '<div class="b-card ani" style="text-align:center;padding:2.5rem 1.75rem">'+
       '<div class="check-ok"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>'+
       "<h2 class='tit' style='justify-content:center'>"+r.filas+(r.filas===1?" pieza":" piezas")+" en tu inventario</h2>"+
       '<p class="sub">'+esc(sub)+"</p>"+
+      (fot.mal.length?'<div class="aviso warn" style="max-width:660px;margin:0 auto 1rem;text-align:left"><span class="ic">'+
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>'+
+        "<div><b>"+fot.mal.length+(fot.mal.length===1?" foto no subió":" fotos no subieron")+".</b> Los productos ya quedaron en tu hoja; solo faltan estas imágenes.<br>"+
+        fot.mal.map(function(p){return "· "+esc(p.desc)+" — <b>"+esc(p.error||"motivo desconocido")+"</b>";}).join("<br>")+
+        '<br><button class="btn-action pri" id="reintentar" style="margin-top:.75rem;background:var(--ink);color:#fff">Reintentar estas fotos</button>'+
+        '<span id="reintento-msg" style="margin-left:.6rem;font-weight:700"></span></div></div>':"")+
       '<ul class="resumen-lista" style="text-align:left;max-width:660px;margin-left:auto;margin-right:auto">'+
       r.productos.map(function(p){
         return "<li><span>"+esc(p.descripcion)+"<small>× "+p.cantidad+" · te cuesta "+mx(p.costoFinal)+" · lo vendes en "+mx(p.precio)+'</small></span><span class="pid'+(p.nuevo?" nuevo":"")+'">'+esc(p.pid)+(p.nuevo?" · nuevo":"")+"</span></li>";}).join("")+
@@ -565,6 +590,24 @@ function resultado(r,fot){
       '<button class="btn-action pri" style="background:var(--ink);color:#fff" onclick="location.reload()">Registrar otro pedido</button>'+
       '<button class="btn-action gh" style="border-color:var(--linea);color:var(--ink)" onclick="location.href=\'analisis.html\'">Ir al análisis</button></div>'+
     "</div>";
+  var br=$("reintentar");
+  if(br)br.addEventListener("click",function(){
+    var b=this;b.disabled=true;b.textContent="Reintentando…";
+    var lista=PENDIENTES.slice(),ok=0,fall=[],cad=Promise.resolve(),i=0;
+    lista.forEach(function(p){
+      cad=cad.then(function(){
+        i++;$("reintento-msg").textContent="foto "+i+" de "+lista.length+"…";
+        return subirUna(p,1).then(function(bien){if(bien)ok++;else fall.push(p);return espera(1500);});
+      });
+    });
+    cad.then(function(){
+      PENDIENTES=fall;
+      $("reintento-msg").innerHTML=fall.length
+        ? "<b>Subieron "+ok+", faltan "+fall.length+".</b>"
+        : "<b>Listo, ya subieron todas.</b>";
+      b.disabled=fall.length===0;b.textContent=fall.length?"Reintentar otra vez":"Completo";
+    });
+  });
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -575,12 +618,16 @@ $("b-ajustes").addEventListener("click",function(){
     '<div class="campos" style="grid-template-columns:1fr 1fr">'+
     '<label class="campo"><span>Motomandado</span><span class="money"><i>$</i><input id="a-moto" type="number" value="'+MOTO+'" min="0" step="5"></span></label>'+
     '<label class="campo"><span>Cobro a domicilio</span><span class="money"><i>$</i><input id="a-extra" type="number" value="'+EXTRA+'" min="0" step="5"></span></label>'+
+    '<label class="campo ancho" style="flex-direction:row;align-items:center;gap:.6rem;background:var(--card-inner);padding:.8rem 1rem;border-radius:var(--r2)">'+
+      '<input id="a-incluido" type="checkbox" style="width:20px;height:20px;box-shadow:none"'+(INCLUIDO?" checked":"")+">"+
+      '<span style="font-size:.8rem;font-weight:700;color:var(--ink)">Envío incluido en el precio<small style="display:block;font-weight:600;color:var(--gris)">El precio sugerido ya cubre el motomandado y el cobro a domicilio se pone en cero. Así puedes anunciar “envío gratis”.</small></span></label>'+
     '<label class="campo"><span>Multiplicar el costo por</span><span class="money"><input id="a-mult" type="number" value="'+MULT+'" min="1" step=".1"></span></label>'+
     '<label class="campo"><span>Ganancia mínima</span><span class="money"><i>$</i><input id="a-piso" type="number" value="'+PISO+'" min="0" step="10"></span></label>'+
     "</div>"+
     '<div style="display:flex;gap:.75rem;margin-top:1.25rem"><button class="btn-action pri" id="a-ok">Aplicar</button><button class="btn-action gh" data-cerrar="1">Cancelar</button></div>');
   $("a-ok").addEventListener("click",function(){
-    MOTO=num($("a-moto").value);EXTRA=num($("a-extra").value);
+    INCLUIDO=$("a-incluido").checked;
+    MOTO=num($("a-moto").value);EXTRA=INCLUIDO?0:num($("a-extra").value);
     MULT=num($("a-mult").value)||2;PISO=num($("a-piso").value);
     filas.forEach(function(f){f.tocado=false;});
     $("mo").classList.remove("on");calcular();});
