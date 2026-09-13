@@ -566,13 +566,22 @@ $("b-alta").addEventListener("click",function(){
   if(enviando)return;enviando=true;estado();
   $("bot-s").textContent="Escribiendo en tu hoja…";
   var pedido=armar();
+  altaOK=false;
   api("altaPedido",null,{pedido:pedido},45000).then(function(r){
     if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
+    altaOK=true;
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("bot-s").textContent=e.message;
-    abrirHTML("<h3>No se pudo dar de alta</h3><p>"+esc(e.message)+"</p><p>Nada se escribió en tu hoja. Revisa la conexión y vuelve a intentar; el pedido sigue capturado aquí.</p>"+
-      '<button class="btn-action pri" data-cerrar="1">Entendido</button>');});
+    /* altaOK se prende en cuanto el servidor confirma la escritura. Si el fallo
+       vino despues, el mensaje ya NO puede decir que no se escribio nada. */
+    abrirHTML(altaOK
+      ? "<h3>El pedido si entro</h3><p>Tus filas ya estan en la hoja. Lo que fallo fue despues: <b>"+esc(e.message)+"</b></p>"+
+        "<p><b>No vuelvas a dar de alta este pedido.</b> Si faltaron fotos, subelas a Drive con el nombre exacto del producto y corre <i>sincronizarImagenes</i>.</p>"+
+        '<button class="btn-action pri" data-cerrar="1">Entendido</button>'
+      : "<h3>No se pudo dar de alta</h3><p>"+esc(e.message)+"</p><p>Nada se escribió en tu hoja. Revisa la conexión y vuelve a intentar; el pedido sigue capturado aquí.</p>"+
+        '<button class="btn-action pri" data-cerrar="1">Entendido</button>');});
 });
+var altaOK=false;    // true en cuanto el servidor confirma que escribio las filas
 var PENDIENTES=[];   // fotos que no subieron, para poder reintentarlas
 function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
 /* Sube una foto con un reintento. Google corta si le llegan muchas seguidas,
