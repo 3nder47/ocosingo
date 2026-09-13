@@ -469,11 +469,14 @@ function calcular(){
       '<div class="precio-row"><span class="cal-k" style="margin:0">Véndelo en</span>'+
       '<span class="precio-pill">$<input data-k="precio" type="number" step="10" min="0" value="'+precio+'"></span>'+
       '<span class="queda'+(flojo?" flojo":"")+'">te quedan '+mx(gana)+(flojo?" · poco":"")+"</span></div>"+
+      '<button class="btn-help" data-k="porque" style="margin-top:.35rem">¿Como salieron estos numeros?</button>'+
       ((ex||f.gemelo)?'<div class="tags">'+
         (ex?'<span class="tg info">Ya lo tienes: '+esc(ex.pid||"")+" · se le suman piezas</span>":"")+
         ((f.fotosDrive&&f.fotosDrive.length)?'<span class="tg cong">'+
           (f.parcial?"Ya tiene fotos en Drive · no hace falta resubir":f.fotosDrive.length+(f.fotosDrive.length===1?" foto":" fotos")+" en Drive · no hace falta resubir")+"</span>":"")+
         "</div>":"");
+    var bq=f.calculo.querySelector("[data-k=porque]");
+    if(bq)bq.addEventListener("click",function(){explicarFila(f);});
     var inp=f.calculo.querySelector("[data-k=precio]");
     inp.addEventListener("input",function(){f.tocado=true;f.precioVal=num(inp.value);
       var g=r2(num(inp.value)+EXTRA-cf-MOTO),q2=f.calculo.querySelector(".queda");
@@ -586,6 +589,46 @@ $("b-ajustes").addEventListener("click",function(){
 $("agregar").addEventListener("click",function(){var f=nuevaFila();calcular();f.desc.focus();
   f.el.scrollIntoView({behavior:"smooth",block:"center"});});
 $("pagado").addEventListener("input",calcular);
+function desglose(titulo,filas,resultado,nota){
+  var max=Math.max.apply(null,filas.map(function(f){return Math.abs(f.v);}).concat([Math.abs(resultado.v),1]));
+  var h='<div class="desglose"><div class="dg-t">'+esc(titulo)+"</div>";
+  filas.forEach(function(f){
+    h+='<div class="dg-fila '+(f.signo==="-"?"dg-menos":"dg-mas")+'">'+
+       '<div class="et">'+esc(f.et)+(f.sub?"<small>"+esc(f.sub)+"</small>":"")+"</div>"+
+       '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(f.v)/max*100).toFixed(1)+'%"></div></div>'+
+       '<div class="val">'+(f.signo==="-"?"−":"+")+mx(Math.abs(f.v))+"</div></div>";
+  });
+  h+='<div class="dg-fila dg-res"><div class="et">'+esc(resultado.et)+(resultado.sub?"<small>"+esc(resultado.sub)+"</small>":"")+"</div>"+
+     '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(resultado.v)/max*100).toFixed(1)+'%"></div></div>'+
+     '<div class="val">'+(resultado.texto||mx(resultado.v))+"</div></div>";
+  if(nota)h+='<div class="dg-nota">'+nota+"</div>";
+  return h+"</div>";
+}
+/* Explica ESTE producto, con sus propios numeros */
+function explicarFila(f){
+  var costo=num(f.costo.value),pagado=num($("pagado").value),suma=0;
+  filas.forEach(function(g){suma+=num(g.costo.value)*Math.max(0,Math.round(num(g.q.value)));});
+  var factor=(suma>0&&pagado>0)?pagado/suma:1;
+  var cf=r2(costo*factor),precio=f.tocado?num(f.precioVal):a10(cf*MULT);
+  var gana=r2(precio+EXTRA-cf-MOTO),entra=precio+EXTRA;
+  var nom=f.desc.value.trim()||"este producto";
+  abrirHTML("<h3>"+esc(nom)+"</h3>"+
+    "<p>Asi salen los dos numeros de esta tarjeta, con tus cifras de este pedido.</p>"+
+    desglose("1 · Cuanto te cuesta de verdad",
+      [{et:"Precio en la plataforma",sub:"ya con promociones",v:costo,signo:"+"},
+       {et:"Su parte de impuestos y envio",sub:"repartida entre las piezas",v:r2(cf-costo),signo:"+"}],
+      {et:"Costo real",sub:"puesto aqui en Ocosingo",v:cf},
+      "Cada peso de mercancia de este pedido te costo <b>"+factor.toFixed(4)+"</b> puesto aqui. Por eso el precio que ves en la plataforma <b>nunca</b> es tu costo.")+
+    desglose("2 · Cuanto te queda si lo vendes",
+      [{et:"Precio de venta",sub:"lo que te paga el cliente",v:precio,signo:"+"},
+       {et:"Cobro a domicilio",sub:"lo que le cobras por el envio",v:EXTRA,signo:"+"},
+       {et:"Costo del producto",sub:"el de arriba",v:cf,signo:"-"},
+       {et:"Motomandado",sub:"lo que le pagas al repartidor",v:MOTO,signo:"-"}],
+      {et:"Tu ganancia",sub:"esto si es tuyo",v:gana},
+      "Tu <b>precio piso</b> es "+mx(cf+MOTO)+": debajo de ahi pagas por regalar mercancia."+
+      (entra>0?'<br><span class="dg-pct">Margen = '+mx(gana)+" entre "+mx(entra)+" = "+Math.round(gana/entra*100)+"%</span>":""))+
+    '<button class="btn-action pri" data-cerrar="1">Entendido</button>');
+}
 function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 
