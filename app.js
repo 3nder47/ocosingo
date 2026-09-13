@@ -1,4 +1,4 @@
-const APP_VERSION='11.8';const APP_BUILD='12 Sep 2026 22:00';
+const APP_VERSION='11.9';const APP_BUILD='13 Sep 2026 00:30';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -299,7 +299,7 @@ function setUsuario(u){
   state.usuario=u;setupInstall();
   document.getElementById('greeting').textContent=`${saludo()}, ${u}`;
   const a=document.getElementById('avatar');a.textContent=u[0];a.className='avatar '+claseUsuario(u);
-  document.getElementById('header-date').innerHTML=formatDate(new Date())+' · <b style="color:var(--selva);font-weight:800;letter-spacing:.02em">ENV\u00cdO GRATIS en el centro</b>';
+  document.getElementById('header-date').textContent=formatDate(new Date());
 }
 
 /* ---------- NAV ---------- */
@@ -751,13 +751,19 @@ function renderStrips(q){
   const bajos=baseD.filter(p=>p.stock<=2).sort((a,b)=>a.stock-b.stock||b.precio-a.precio);
   // "Sale rápido": lo que más se ha vendido en 60 días y sigue en stock (viene del backend)
   const rapidos=(state.ofrecer||[]).filter(p=>p.vendidos60>0).map(p=>baseD.find(x=>mismoProd(x,p))&&Object.assign({},baseD.find(x=>mismoProd(x,p)),{vendidos60:p.vendidos60})).filter(Boolean).slice(0,8);
-  const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),rapidos.map(p=>p.descripcion+p.stock)]);
+  // "Recién llegados": lo comprado en los últimos 45 días, lo más nuevo primero
+  const LIM=45*864e5, ahora=Date.now();
+  const nuevos=baseD.filter(p=>p.agregado&&(ahora-p.agregado)<LIM).sort((a,b)=>b.agregado-a.agregado).slice(0,10);
+  const diasDe=t=>{const d=Math.max(0,Math.round((ahora-t)/864e5));return d<=1?'Hoy':d<7?d+' días':d<14?'1 semana':Math.round(d/7)+' semanas';};
+  const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),rapidos.map(p=>p.descripcion+p.stock),nuevos.map(p=>p.descripcion+p.stock)]);
   if(w.dataset.firma===firma)return;w.dataset.firma=firma;
-  w.innerHTML=(rapidos.length?`<div class="section-title">Lo que más sale <span class="hint">Toca para vender o compartir</span></div>
+  w.innerHTML=(nuevos.length?`<div class="section-title">Recién llegados <span class="hint">${nuevos.length} producto${nuevos.length===1?'':'s'} nuevo${nuevos.length===1?'':'s'}</span></div>
+    <div class="strip-h stagger">${nuevos.map(p=>miniCard(p,`<span class="tag n">${diasDe(p.agregado)}</span>`)).join('')}</div>`:'')+
+    (rapidos.length?`<div class="section-title">Lo que más sale <span class="hint">Toca para vender o compartir</span></div>
     <div class="strip-h stagger">${rapidos.map(p=>miniCard(p,`<span class="tag n">${p.vendidos60} en 60 días</span>`)).join('')}</div>`:'')+
     (bajos.length?`<div class="section-title">Por agotarse <span class="hint">${bajos.length} producto${bajos.length===1?'':'s'}</span></div>
     <div class="strip-h stagger">${bajos.map(p=>miniCard(p,p.stock===1?'<span class="tag">Última</span>':'<span class="tag two">Quedan 2</span>')).join('')}</div>`:'')+
-    ((rapidos.length||bajos.length)?`<div class="section-title" style="padding-top:14px">Todo el catálogo</div>`:'');
+    ((nuevos.length||rapidos.length||bajos.length)?`<div class="section-title" style="padding-top:14px">Todo el catálogo</div>`:'');
 }
 function venderProducto(desc){
   const p=state.catalogo.find(x=>x.descripcion===desc);if(!p){toast('Sin stock','err');return;}
