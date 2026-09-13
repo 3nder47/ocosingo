@@ -9,7 +9,7 @@ const API_URL=(window.OC_CONFIG||{}).API_URL||'';
 const API_TOKEN=(window.OC_CONFIG||{}).API_TOKEN||'';
 if(!API_URL||!API_TOKEN)console.error('Falta config.js con OC_CONFIG.API_URL y API_TOKEN');
 
-async function api(accion,params={},body=null,ms=20000){
+async function apiUnaVez(accion,params={},body=null,ms=20000){
   if(!API_URL||!API_TOKEN){const e=new Error('Falta config.js en el repo (URL y token)');e.api=true;e.tipo='config';throw e;}
   const url=new URL(API_URL);
   const ctrl=new AbortController(),reloj=setTimeout(()=>ctrl.abort(),ms);
@@ -29,7 +29,7 @@ async function api(accion,params={},body=null,ms=20000){
     e.tipo=lento?'lento':'red';throw e;
   }
   finally{clearTimeout(reloj);}
-  if(!r.ok){const e=new Error('El servidor respondió '+r.status);e.api=true;e.tipo='http';throw e;}
+  if(!r.ok){const e=new Error('El servidor respondió '+r.status);e.api=true;e.tipo='http';e.status=r.status;throw e;}
   const txt=await r.text();
   let j;
   try{j=JSON.parse(txt);}
@@ -41,6 +41,43 @@ async function api(accion,params={},body=null,ms=20000){
   }
   if(!j.ok){const e=new Error(j.error||'Error del servidor');e.api=true;e.tipo='api';throw e;}
   return j.data;
+}
+
+/* ---------- Reintentos ante los hipos de Google -----------------------------
+   Apps Script a veces ejecuta el código perfecto y falla al ENTREGAR la
+   respuesta (404 o 5xx desde googleusercontent). Antes, ese parpadeo le pintaba
+   a Irene un error rojo a media venta. Ahora se reintenta 2 veces más, con
+   0.4 s y 1.2 s de espera. Si los tres intentos fallan sale el MISMO error de
+   siempre y la venta se va a la bandeja de salida como hasta hoy: no se oculta
+   nada y no se pierde nada.
+
+   Solo se reintenta lo que NO puede duplicarse:
+     - lecturas (catalogo, inicio, ventas, analisis…): siempre seguras.
+     - registrarVenta: manda ventaID único y el backend rechaza duplicados
+       dentro del LockService.
+     - verificarPin y guardarMeta: escriben el mismo valor, no acumulan.
+   NO se reintentan agregarProducto, subirFoto, registrarPago, cerrarCorte,
+   anularVenta ni eliminarProducto: repetirlas crearía filas, fotos, pagos o
+   cortes de más. Esas se comportan exactamente igual que antes.
+
+   Tampoco se reintenta un timeout (haría esperar a Irene el triple) ni una
+   caída de red sin internet: para eso ya existe la bandeja de salida. */
+const REINTENTABLES=new Set(['catalogo','inicio','ventas','analisis','dashboard','imagenes','fotoProducto','cortes','metas','registrarVenta','verificarPin','guardarMeta']);
+const TRANSITORIOS=new Set([404,429,500,502,503,504]);
+const pausa=ms=>new Promise(ok=>setTimeout(ok,ms));
+
+async function api(accion,params={},body=null,ms=20000){
+  const puede=!body||REINTENTABLES.has(accion);
+  const esperas=[400,1200];
+  for(let i=0;;i++){
+    try{return await apiUnaVez(accion,params,body,ms);}
+    catch(e){
+      const transitorio=(e.tipo==='http'&&TRANSITORIOS.has(e.status))
+                      ||(e.tipo==='red'&&navigator.onLine!==false);
+      if(!puede||!transitorio||i>=esperas.length)throw e;
+      await pausa(esperas[i]);
+    }
+  }
 }
 
 const apiPost=(accion,body)=>api(accion,{},body);
