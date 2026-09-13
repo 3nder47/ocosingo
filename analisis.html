@@ -60,14 +60,44 @@
 (function(){
 "use strict";
 var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
-function api(a,p,b,ms){ms=ms||30000;
+function apiUnaVez(a,p,b,ms){ms=ms||30000;
   if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
   var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
   if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
   else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
-  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok)throw new Error("Respuesta del servidor: "+r.status);return r.text();})
+  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
    .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
-   .catch(function(e){clearTimeout(t);if(e&&e.name==="AbortError")throw new Error("El servidor tardó demasiado");throw e;});}
+   .catch(function(e){clearTimeout(t);
+     if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
+     if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
+     throw e;});}
+
+/* ---------- Reintentos ante los hipos de Google ----------------------------
+   Apps Script a veces ejecuta tu código perfecto y falla al ENTREGAR la
+   respuesta (404 o 5xx desde googleusercontent). Antes eso era un error rojo.
+   Ahora se reintenta 2 veces mas, con 0.4 s y 1.2 s de espera. Si los tres
+   intentos fallan, sale exactamente el mismo error de siempre: no oculta nada.
+
+   Solo se reintenta lo que NO puede duplicar nada:
+     - lecturas (GET): siempre seguras.
+     - escrituras con llave anti-duplicado: altaPedido manda pedidoID y el
+       backend devuelve el resultado anterior si le llega dos veces.
+   NO se reintentan subirFoto (duplicaria la foto en Drive) ni aplicarRemate
+   (guardaria el precio ya rematado como "precio antes" y romperia el deshacer). */
+var REINTENTABLES={verificarPin:1,altaPedido:1};
+var TRANSITORIOS=[404,429,500,502,503,504];
+function api(a,p,b,ms){
+  var esperas=[400,1200],puede=!b||REINTENTABLES[a]===1;
+  function intento(i){
+    return apiUnaVez(a,p,b,ms).catch(function(e){
+      var transitorio=(e.tipo==="http"&&TRANSITORIOS.indexOf(e.status)>-1)
+                    ||(e.tipo==="red"&&navigator.onLine!==false);
+      if(!puede||!transitorio||i>=esperas.length)throw e;
+      return new Promise(function(ok){setTimeout(ok,esperas[i]);}).then(function(){return intento(i+1);});
+    });
+  }
+  return intento(0);
+}
 
 var $=function(i){return document.getElementById(i);};
 function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
@@ -84,6 +114,18 @@ function cuenta(el,hasta,fmt){
   (function paso(t){var k=Math.min(1,(t-t0)/dur);k=1-Math.pow(1-k,3);el.textContent=fmt(hasta*k);if(k<1)requestAnimationFrame(paso);})(t0);
 }
 
+/* ---------- Sesión de Alex, compartida entre alta / análisis / glosario ----------
+   Vive en sessionStorage: aguanta recargas y saltos entre pantallas dentro de la
+   misma pestaña, y se borra sola al cerrar el navegador. No guarda el PIN: solo
+   la marca de que ya lo validaste. Si abres una pestaña NUEVA, pide PIN otra vez. */
+var SES_KEY="kiosko:sesion:alex";
+function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
+function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
+function entrar(){
+  $("pin").classList.add("oculto");$("app").classList.remove("oculto");
+  cargar();
+}
+
 var pi=$("pin-in");
 pi.addEventListener("input",function(){
   if(pi.value.length<4)return;
@@ -91,7 +133,7 @@ pi.addEventListener("input",function(){
   api("verificarPin",null,{pin:v}).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
     if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
-    $("pin").classList.add("oculto");$("app").classList.remove("oculto");cargar();
+    abrirSesion();entrar();
   }).catch(function(e){$("pin-e").textContent=e.message;pi.value="";pi.disabled=false;pi.focus();});
 });
 
@@ -458,6 +500,9 @@ function abrir(k){
 }
 function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
+
+/* Ya validaste el PIN en esta sesión del navegador: pasa directo. */
+if(sesionViva())entrar();
 })();
 </script>
 </body>
