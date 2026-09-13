@@ -1,4 +1,4 @@
-const APP_VERSION='11.6';const APP_BUILD='12 Sep 2026 02:00';
+const APP_VERSION='11.7';const APP_BUILD='12 Sep 2026 02:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -861,7 +861,7 @@ function pintarVenta(){
         <button class="opt ${state.precioTipo!=='costo'?'on':''}" id="pt-n" onclick="setPrecioTipo('normal')">Normal · $${precio(p.precio)}</button>
         <button class="opt ${state.precioTipo==='costo'?'on':''}" id="pt-c" onclick="setPrecioTipo('costo')">Al costo · $${precio(p.costoFinal)}<br><small style="font-weight:600">para la familia</small></button>
       </div></div>`:''}
-      <div class="field"><label>Cobro extra</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
+      <div class="field"><label>Cobro extra (el envío YA va en el precio · deja esto en 0)</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="field"><label>Motomandado / gastos</label><div class="money"><span>$</span><input id="gastos" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.gastos||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="calc" id="calc"></div>`;
     pintarCalc();if(fotos.length)tintDesde(fotos[0],document.getElementById('gal-wrap'));
