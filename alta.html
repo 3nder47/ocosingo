@@ -142,7 +142,7 @@ function apiUnaVez(a,p,b,ms){ms=ms||30000;
   if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
   else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
   return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
-   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok){var se=new Error(j.error||"Error del servidor");se.raw=String(x).slice(0,200);throw se;}return j.data;})
    .catch(function(e){clearTimeout(t);
      if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
      if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
@@ -569,19 +569,28 @@ $("b-alta").addEventListener("click",function(){
   altaOK=false;
   api("altaPedido",null,{pedido:pedido},45000).then(function(r){
     if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
-    altaOK=true;
+    altaOK=true;ultimoR=r;
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("bot-s").textContent=e.message;
     /* altaOK se prende en cuanto el servidor confirma la escritura. Si el fallo
        vino despues, el mensaje ya NO puede decir que no se escribio nada. */
     abrirHTML(altaOK
-      ? "<h3>El pedido si entro</h3><p>Tus filas ya estan en la hoja. Lo que fallo fue despues: <b>"+esc(e.message)+"</b></p>"+
-        "<p><b>No vuelvas a dar de alta este pedido.</b> Si faltaron fotos, subelas a Drive con el nombre exacto del producto y corre <i>sincronizarImagenes</i>.</p>"+
-        '<button class="btn-action pri" data-cerrar="1">Entendido</button>'
-      : "<h3>No se pudo dar de alta</h3><p>"+esc(e.message)+"</p><p>Nada se escribió en tu hoja. Revisa la conexión y vuelve a intentar; el pedido sigue capturado aquí.</p>"+
-        '<button class="btn-action pri" data-cerrar="1">Entendido</button>');});
+      ? "<h3>El pedido si entro</h3><p>Tus filas ya estan en la hoja. Fallo lo de despues: <b>"+esc(e.message)+"</b></p>"+
+        '<button class="btn-action pri" id="solo-fotos" data-cerrar="1">Subir las fotos ahora</button> '+
+        '<button class="btn-action gh" data-cerrar="1">Cerrar</button>'
+      : "<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p>"+
+        "<p>Puede que si haya entrado y solo se perdio la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un numero unico y si ya esta en la hoja, el servidor no lo duplica; solo devuelve el resultado y sube las fotos.</p>"+
+        (e.raw?'<p class="sub" style="font-size:.75rem;opacity:.7">Respuesta del servidor: '+esc(e.raw)+"</p>":"")+
+        '<button class="btn-action pri" id="reintentar-alta" data-cerrar="1">Volver a intentar</button> '+
+        '<button class="btn-action gh" data-cerrar="1">Cerrar</button>');
+    var ba=$("reintentar-alta");if(ba)ba.addEventListener("click",function(){setTimeout(function(){$("b-alta").disabled=false;$("b-alta").click();},50);});
+    var bf=$("solo-fotos");if(bf)bf.addEventListener("click",function(){
+      enviando=true;estado();
+      subirFotos().then(function(fot){resultado(ultimoR,fot);})
+        .catch(function(e2){enviando=false;estado();$("bot-s").textContent=e2.message;});
+    });});
 });
-var altaOK=false;    // true en cuanto el servidor confirma que escribio las filas
+var altaOK=false,ultimoR=null;   // true / resultado en cuanto el servidor confirma las filas
 var PENDIENTES=[];   // fotos que no subieron, para poder reintentarlas
 function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
 /* Sube una foto con un reintento. Google corta si le llegan muchas seguidas,
