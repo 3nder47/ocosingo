@@ -25,6 +25,7 @@
     <div class="marca"><div class="logo-icon">Ki</div><div><b>Kiosko</b><small>Ocosingo</small></div></div>
     <div class="nav-t">DECISIONES CLAVE</div>
     <button class="nav on" data-ir="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Resumen</button>
+    <button class="nav" data-ir="simular"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 7h6M9 11h6M9 15h3"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>0. ¿Me conviene?</button>
     <button class="nav" data-ir="rotacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>1. Qué comprar</button>
     <button class="nav" data-ir="remate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg>2. Plan de remate <span class="pin-n" id="nav-n"></span></button>
     <button class="nav" data-ir="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>3. Qué te deja más dinero</button>
@@ -60,44 +61,14 @@
 (function(){
 "use strict";
 var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
-function apiUnaVez(a,p,b,ms){ms=ms||30000;
+function api(a,p,b,ms){ms=ms||30000;
   if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
   var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
   if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
   else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
-  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
+  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok)throw new Error("Respuesta del servidor: "+r.status);return r.text();})
    .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
-   .catch(function(e){clearTimeout(t);
-     if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
-     if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
-     throw e;});}
-
-/* ---------- Reintentos ante los hipos de Google ----------------------------
-   Apps Script a veces ejecuta tu código perfecto y falla al ENTREGAR la
-   respuesta (404 o 5xx desde googleusercontent). Antes eso era un error rojo.
-   Ahora se reintenta 2 veces mas, con 0.4 s y 1.2 s de espera. Si los tres
-   intentos fallan, sale exactamente el mismo error de siempre: no oculta nada.
-
-   Solo se reintenta lo que NO puede duplicar nada:
-     - lecturas (GET): siempre seguras.
-     - escrituras con llave anti-duplicado: altaPedido manda pedidoID y el
-       backend devuelve el resultado anterior si le llega dos veces.
-   NO se reintentan subirFoto (duplicaria la foto en Drive) ni aplicarRemate
-   (guardaria el precio ya rematado como "precio antes" y romperia el deshacer). */
-var REINTENTABLES={verificarPin:1,altaPedido:1};
-var TRANSITORIOS=[404,429,500,502,503,504];
-function api(a,p,b,ms){
-  var esperas=[400,1200],puede=!b||REINTENTABLES[a]===1;
-  function intento(i){
-    return apiUnaVez(a,p,b,ms).catch(function(e){
-      var transitorio=(e.tipo==="http"&&TRANSITORIOS.indexOf(e.status)>-1)
-                    ||(e.tipo==="red"&&navigator.onLine!==false);
-      if(!puede||!transitorio||i>=esperas.length)throw e;
-      return new Promise(function(ok){setTimeout(ok,esperas[i]);}).then(function(){return intento(i+1);});
-    });
-  }
-  return intento(0);
-}
+   .catch(function(e){clearTimeout(t);if(e&&e.name==="AbortError")throw new Error("El servidor tardó demasiado");throw e;});}
 
 var $=function(i){return document.getElementById(i);};
 function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
@@ -114,27 +85,15 @@ function cuenta(el,hasta,fmt){
   (function paso(t){var k=Math.min(1,(t-t0)/dur);k=1-Math.pow(1-k,3);el.textContent=fmt(hasta*k);if(k<1)requestAnimationFrame(paso);})(t0);
 }
 
-/* ---------- Sesión de Alex, compartida entre alta / análisis / glosario ----------
-   Vive en sessionStorage: aguanta recargas y saltos entre pantallas dentro de la
-   misma pestaña, y se borra sola al cerrar el navegador. No guarda el PIN: solo
-   la marca de que ya lo validaste. Si abres una pestaña NUEVA, pide PIN otra vez. */
-var SES_KEY="kiosko:sesion:alex";
-function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
-function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
-function entrar(){
-  $("pin").classList.add("oculto");$("app").classList.remove("oculto");
-  cargar();
-}
-
 var pi=$("pin-in");
 pi.addEventListener("input",function(){
   if(pi.value.length<4)return;
-  var v=pi.value;pi.disabled=true;$("pin-e").textContent="";
-  api("verificarPin",null,{pin:v}).then(function(d){
+  var v=pi.value;pi.disabled=true;$("pin-e").style.color="";$("pin-e").textContent="Conectando… la primera vez puede tardar unos segundos";
+  api("verificarPin",null,{pin:v},60000).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
     if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
-    abrirSesion();entrar();
-  }).catch(function(e){$("pin-e").textContent=e.message;pi.value="";pi.disabled=false;pi.focus();});
+    $("pin").classList.add("oculto");$("app").classList.remove("oculto");cargar();
+  }).catch(function(e){$("pin-e").style.color="var(--rojo)";$("pin-e").textContent=e.message+" · vuelve a escribirlo";pi.value="";pi.disabled=false;pi.focus();});
 });
 
 function cargar(){
@@ -223,7 +182,7 @@ function dona(segs,total){
     '</svg><div class="ctr"><b class="mono">'+mx(total)+"</b><span>en cajas</span></div></div>";
 }
 
-var SECS=[["resumen","Resumen"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Qué deja más"],["ventas","Ventas"],["parado","Parado"]];
+var SECS=[["resumen","Resumen"],["simular","¿Me conviene?"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Qué deja más"],["ventas","Ventas"],["parado","Parado"]];
 
 function pintar(){
   var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
@@ -249,6 +208,30 @@ function pintar(){
     '<div><div class="lb">'+k[0]+'</div><b class="mono">'+k[1]+"</b><small>"+k[2]+"</small></div>"+
     (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,k[6]).toFixed(0)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div></div>':"")+
     "</div>";}).join("");
+
+  /* ---- Antes de comprar: qué te va a costar puesto aquí ---- */
+  var cats={};
+  (D.rotacion||[]).forEach(function(x){cats[x.categoria]=x;});
+  h+='<section class="b-card ani" id="s-simular">'+
+    '<span class="decision-tag d1">Antes de comprar</span>'+
+    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg> ¿Me conviene comprarlo?</h2>'+
+    '<p class="sub">Escribe lo que ves en la plataforma <b>antes</b> de pagar. Te digo cuánto te costará puesto en Ocosingo, a cuánto tendrías que venderlo y si esa categoría se está moviendo.</p>'+
+    '<div class="ctrl-bar" style="align-items:flex-end">'+
+      '<label class="campo" style="flex:1;min-width:140px"><span>Precio en la plataforma, por pieza</span><span class="money"><i>$</i><input id="sim-precio" type="number" min="0" step="1" placeholder="200" inputmode="decimal"></span></label>'+
+      '<label class="campo" style="width:100px"><span>Piezas</span><input id="sim-piezas" type="number" min="1" step="1" value="2"></label>'+
+      '<label class="campo" style="flex:1;min-width:190px"><span>¿Dónde lo compras?</span><select id="sim-tienda" class="chip" style="padding:.7rem .9rem;border-radius:var(--r2);width:100%">'+
+        '<option value="1.33">Temu / AliExpress / TikTok / Shopee — viene de China</option>'+
+        '<option value="1.00">Temu con etiqueta "Local" — ya está en México</option>'+
+        '<option value="1.00">Mercado Libre — compra nacional</option>'+
+        '<option value="">Otro · pongo el factor a mano</option>'+
+      "</select></label>"+
+      '<label class="campo" style="width:120px"><span>Factor</span><span class="money"><i>×</i><input id="sim-factor" type="number" min="1" step=".01" value="1.33"></span></label>'+
+      '<label class="campo" style="flex:1;min-width:160px"><span>Precio en Marketplace <small style="font-weight:600">(opcional)</small></span><span class="money"><i>$</i><input id="sim-mercado" type="number" min="0" step="10" placeholder="360" inputmode="decimal"></span></label>'+
+      '<label class="campo" style="flex:1;min-width:150px"><span>Categoría</span><select id="sim-cat" class="chip" style="padding:.7rem .9rem;border-radius:var(--r2);width:100%">'+
+        '<option value="">— elige —</option>'+Object.keys(cats).sort().map(function(c){return '<option>'+esc(c)+"</option>";}).join("")+"</select></label>"+
+      '<small>Lo que viene de China paga 33.5% de impuesto de paquetería: por eso el factor 1.33. Lo que ya está en México no paga nada, así que su factor es 1.00 — <b>a veces el que se ve más caro sale más barato</b>. Tus dos últimos pedidos de Temu dieron 1.30 y 1.32.</small>'+
+    "</div>"+
+    '<div id="sim-out"></div></section>';
 
   var maxD=Math.max.apply(null,rot.map(function(x){return Math.max(x.diasVenta,x.diasStock);}).concat([1]));
   var ator=rot.filter(function(x){return x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2;});
@@ -306,6 +289,12 @@ function pintar(){
   $("rej").innerHTML=h;
   cuenta($("hero-v"),D.capitalTotal,mx);
   cablearChart();espiar();total();
+  ["sim-precio","sim-piezas","sim-factor","sim-mercado"].forEach(function(id){var e=$(id);if(e)e.addEventListener("input",simular);});
+  var sc=$("sim-cat");if(sc)sc.addEventListener("change",simular);
+  var st=$("sim-tienda");if(st)st.addEventListener("change",function(){
+    if(st.value)$("sim-factor").value=st.value;
+    simular();});
+  simular();
 }
 
 function pcHTML(x,i){
@@ -360,6 +349,54 @@ function explicarProducto(x,precio){
              :"Recuperas <b>"+mx(-dif)+" menos</b> de lo que pagaste. <b>Eso esta bien</b> si lleva un año parado: un billete dormido no vale mas por esperar, y ese dinero libre puede comprar algo que si rota.")+
       "<br>Si los vendes <b>en paquete</b>, un solo viaje cubre varias piezas y esa resta del envio casi desaparece.")+
     '<button class="btn-action pri" data-cerrar="1">Entendido</button>');
+}
+function simular(){
+  var out=$("sim-out");if(!out)return;
+  var pr=num($("sim-precio").value),pz=Math.max(1,Math.round(num($("sim-piezas").value))||1);
+  var fa=num($("sim-factor").value)||1.33,cat=$("sim-cat").value;
+  if(!(pr>0)){out.innerHTML='<p class="sub" style="margin-top:1rem">Escribe el precio que ves en la plataforma y te hago la cuenta.</p>';return;}
+  var cf=r2(pr*fa),inv=r2(cf*pz),piso=r2(cf+MOTO),sug=a10(cf*2),gana=r2(sug+10-cf-MOTO);
+  var c=null;(D.rotacion||[]).forEach(function(x){if(x.categoria===cat)c=x;});
+  var alerta="";
+  if(c){
+    var mal=c.piezas>0&&c.ventas>=3&&c.diasStock>c.diasVenta*2;
+    alerta='<div class="aviso '+(mal?"warn":"ok")+'"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">'+
+      (mal?'<path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>':'<path d="m5 12 5 5L20 7"/>')+
+      "</svg></span><div><b>"+esc(cat)+"</b>: normalmente se vende en <b>"+dias(c.diasVenta)+"</b>"+
+      (c.piezas?", y hoy tienes <b>"+c.piezas+" piezas</b> que llevan <b>"+dias(c.diasStock)+"</b> paradas":", y hoy no tienes existencia")+". "+
+      (mal?"<b>Piénsalo dos veces:</b> lo que ya tienes de esta categoría no se está moviendo. Meter más dinero aquí lo congela.":"Esta categoría está sana: tu stock está dentro de sus tiempos normales.")+
+      "</div></div>";
+  }
+  out.innerHTML=desglose("Lo que de verdad te va a costar",
+    [{et:"Precio en la plataforma",sub:pz+" pieza"+(pz===1?"":"s")+" × "+mx(pr),v:pr*pz,signo:"+"},
+     {et:"Impuestos y envío",sub:"factor ×"+fa.toFixed(2),v:r2(inv-pr*pz),signo:"+"}],
+    {et:"Te costará",sub:mx(cf)+" cada pieza",v:inv},
+    "Ese es el dinero que sale de tu bolsa y se queda dormido hasta que vendas.")+
+  '<div class="compara" style="display:grid;gap:.75rem;grid-template-columns:1fr 1fr;margin-top:1rem">'+
+    '<div class="rot-item" style="margin:0"><div class="lb" style="font-size:.72rem;font-weight:800;color:var(--gris);text-transform:uppercase">Tu precio piso</div>'+
+    '<div class="mono" style="font-size:1.5rem;font-weight:800">'+mx(piso)+"</div>"+
+    '<small style="color:var(--gris);font-weight:600">costo + envío. Debajo de aquí pierdes dinero.</small></div>'+
+    '<div class="rot-item" style="margin:0;background:#ECFDF5;border-color:#A7F3D0"><div class="lb" style="font-size:.72rem;font-weight:800;color:var(--verde-deep);text-transform:uppercase">Véndelo en</div>'+
+    '<div class="mono" style="font-size:1.5rem;font-weight:800;color:var(--verde-deep)">'+mx(sug)+"</div>"+
+    '<small style="color:var(--gris);font-weight:600">te dejaría '+mx(gana)+" por pieza</small></div></div>"+
+  veredicto(sug,piso,cf)+alerta;
+}
+/* Compara tu precio contra lo que cobra la competencia en Marketplace */
+function veredicto(sug,piso,cf){
+  var mer=num($("sim-mercado").value);
+  if(!(mer>0)){
+    return '<div class="aviso ok" style="background:#EFF6FF;border-color:#DBEAFE;color:#1E40AF"><span class="ic" style="background:var(--azul)">'+
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>'+
+      '<div><b>Búscalo en Marketplace y anota el precio aquí arriba.</b> El mercado manda sobre cualquier regla: si allá está más barato que tu precio sugerido, el sugerido no sirve.</div></div>';
+  }
+  var gana=r2(mer+10-cf-MOTO),margen=mer+10>0?Math.round(gana/(mer+10)*100):0;
+  var tipo,txt;
+  if(mer<=piso){tipo="warn";txt="<b>No lo compres.</b> La competencia lo vende en "+mx(mer)+" y a ti te costaría "+mx(piso)+" puesto y entregado. Venderías con pérdida desde el primer día.";}
+  else if(mer<sug){tipo="warn";txt="<b>Se puede, pero con menos margen del que esperabas.</b> Tu sugerido era "+mx(sug)+" y el mercado está en "+mx(mer)+". Si te alineas al mercado te quedarían <b>"+mx(gana)+"</b> por pieza ("+margen+"% de margen). Decide si ese número te compensa el esfuerzo de la venta.";}
+  else {tipo="ok";txt="<b>Buena oportunidad.</b> El mercado está en "+mx(mer)+", arriba de tu precio sugerido de "+mx(sug)+". Puedes ponerte un poco abajo de la competencia y aun así ganar <b>"+mx(gana)+"</b> por pieza.";}
+  return '<div class="aviso '+tipo+'"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">'+
+    (tipo==="warn"?'<path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>':'<path d="m5 12 5 5L20 7"/>')+
+    "</svg></span><div>"+txt+"</div></div>";
 }
 function verBarra(){
   var hay=Object.keys(sel).some(function(i){return sel[i]>0;});
@@ -500,9 +537,6 @@ function abrir(k){
 }
 function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
-
-/* Ya validaste el PIN en esta sesión del navegador: pasa directo. */
-if(sesionViva())entrar();
 })();
 </script>
 </body>
