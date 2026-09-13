@@ -1,4 +1,4 @@
-const APP_VERSION='11.7';const APP_BUILD='12 Sep 2026 02:00';
+const APP_VERSION='11.8';const APP_BUILD='12 Sep 2026 22:00';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -299,7 +299,7 @@ function setUsuario(u){
   state.usuario=u;setupInstall();
   document.getElementById('greeting').textContent=`${saludo()}, ${u}`;
   const a=document.getElementById('avatar');a.textContent=u[0];a.className='avatar '+claseUsuario(u);
-  document.getElementById('header-date').textContent=formatDate(new Date());
+  document.getElementById('header-date').innerHTML=formatDate(new Date())+' · <b style="color:var(--selva);font-weight:800;letter-spacing:.02em">ENV\u00cdO GRATIS en el centro</b>';
 }
 
 /* ---------- NAV ---------- */
