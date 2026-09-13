@@ -61,29 +61,66 @@
 (function(){
 "use strict";
 var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
-function api(a,p,b,ms){ms=ms||30000;
+function apiUnaVez(a,p,b,ms){ms=ms||30000;
   if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
   var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
   if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
   else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
-  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok)throw new Error("Respuesta del servidor: "+r.status);return r.text();})
+  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
    .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
-   .catch(function(e){clearTimeout(t);if(e&&e.name==="AbortError")throw new Error("El servidor tardó demasiado");throw e;});}
+   .catch(function(e){clearTimeout(t);
+     if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
+     if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
+     throw e;});}
+
+/* ---------- Reintentos ante los hipos de Google ----------------------------
+   Apps Script a veces ejecuta el codigo bien y falla al ENTREGAR la respuesta
+   (404 o 5xx desde googleusercontent). Se reintenta 2 veces mas, con 0.4 s y
+   1.2 s de espera. Si los tres intentos fallan sale el mismo error de siempre.
+   Solo se reintenta lo que no puede duplicar nada: las lecturas y verificarPin.
+   aplicarRemate NO se reintenta: guardaria el precio ya rematado en la columna
+   T como "precio antes" y romperia el deshacer. */
+var REINTENTABLES={verificarPin:1};
+var TRANSITORIOS=[404,429,500,502,503,504];
+function api(a,p,b,ms){
+  var esperas=[400,1200],puede=!b||REINTENTABLES[a]===1;
+  function intento(i){
+    return apiUnaVez(a,p,b,ms).catch(function(e){
+      var transitorio=(e.tipo==="http"&&TRANSITORIOS.indexOf(e.status)>-1)
+                    ||(e.tipo==="red"&&navigator.onLine!==false);
+      if(!puede||!transitorio||i>=esperas.length)throw e;
+      return new Promise(function(ok){setTimeout(ok,esperas[i]);}).then(function(){return intento(i+1);});
+    });
+  }
+  return intento(0);
+}
 
 var $=function(i){return document.getElementById(i);};
 function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
 function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
 function r2(n){return Math.round((Number(n)||0)*100)/100;}
 function a10(n){return Math.ceil(n/10)*10;}
-function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
-function dias(d){if(!d)return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
+function dias(d){if(d==null||!isFinite(d))return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
 var PAL=["#10B981","#84CC16","#3B82F6","#F97316","#8B5CF6","#14B8A6","#EF4444","#F59E0B","#EC4899","#64748B"];
-var D=null,MESES=[],rango="todo",sel={},FOTOS={},MOTO=35,orden="dinero",verTodo=false,seccion="resumen";
+var D=null,MESES=[],rango="todo",sel={},FOTOS={},MOTO=25,orden="dinero",verTodo=false,seccion="resumen";
 
 function cuenta(el,hasta,fmt){
   if(!el)return;var t0=performance.now(),dur=1000;
   (function paso(t){var k=Math.min(1,(t-t0)/dur);k=1-Math.pow(1-k,3);el.textContent=fmt(hasta*k);if(k<1)requestAnimationFrame(paso);})(t0);
+}
+
+/* ---------- Sesion de Alex, compartida entre alta / analisis / glosario ----------
+   Vive en sessionStorage: aguanta recargas y saltos entre pantallas dentro de la
+   misma pestana, y se borra sola al cerrar el navegador. No guarda el PIN: solo
+   la marca de que ya lo validaste. */
+var SES_KEY="kiosko:sesion:alex";
+function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
+function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
+function entrar(){
+  $("pin").classList.add("oculto");$("app").classList.remove("oculto");
+  cargar();
 }
 
 var pi=$("pin-in");
@@ -93,7 +130,7 @@ pi.addEventListener("input",function(){
   api("verificarPin",null,{pin:v},60000).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
     if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
-    $("pin").classList.add("oculto");$("app").classList.remove("oculto");cargar();
+    abrirSesion();entrar();
   }).catch(function(e){$("pin-e").style.color="var(--rojo)";$("pin-e").textContent=e.message+" · vuelve a escribirlo";pi.value="";pi.disabled=false;pi.focus();});
 });
 
@@ -174,6 +211,7 @@ function desglose(titulo,filas,resultado,nota){
   return h+"</div>";
 }
 function dona(segs,total){
+  if(!(total>0))return '<div class="dona-wrapper"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" stroke="rgba(210,220,233,.4)"/></svg><div class="ctr"><b class="mono">$0</b><span>en cajas</span></div></div>';
   var C=2*Math.PI*78,off=0;
   var arcos=segs.filter(function(s){return s.v>0;}).map(function(s){
     var len=Math.max(0,s.v/total*C-3);
@@ -207,7 +245,7 @@ function pintar(){
   h+=ks.map(function(k,i){return '<div class="kpi-card ani" style="animation-delay:'+(.08*(i+1))+'s">'+
     '<div class="ico" style="background:'+k[4]+';color:'+k[3]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+k[5]+"</svg></div>"+
     '<div><div class="lb">'+k[0]+'</div><b class="mono">'+k[1]+"</b><small>"+k[2]+"</small></div>"+
-    (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,k[6]).toFixed(0)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div></div>':"")+
+    (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,Number(k[6])||0).toFixed(0)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div></div>':"")+
     "</div>";}).join("");
 
   /* ---- Antes de comprar: qué te va a costar puesto aquí ---- */
@@ -298,6 +336,18 @@ function pintar(){
   simular();
 }
 
+/* Las tres pildoras dependen del motomandado. Se generan aqui, en su propia
+   funcion, para poder REGENERARLAS cuando cambia el campo de envio. Antes se
+   calculaban una sola vez al dibujar la tarjeta: si cambiabas el envio, la
+   pildora "Sin perder" seguia mostrando el precio piso viejo mientras la
+   cuenta de abajo ya usaba el nuevo. Tocarla te dejaba por debajo del costo. */
+function pillasHTML(x,cu){
+  var op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
+  op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
+  return '<div class="precios-opt" style="grid-template-columns:repeat('+u.length+',1fr)">'+u.map(function(o){
+    return '<button class="po-btn" data-act="p" data-v="'+o[1]+'"><span>'+o[0]+'</span><b class="mono">'+mx(o[1])+"</b></button>";}).join("")+"</div>";
+}
+
 function pcHTML(x,i){
   var cu=costoU(x),img=FOTOS[norm(x.descripcion)];
   return '<article class="prod-card" data-i="'+i+'">'+
@@ -307,10 +357,7 @@ function pcHTML(x,i){
       '<button class="chk-box" data-act="tog"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg></button>'+
     "</div>"+
     '<div class="tags"><span class="tg cong">'+mx(x.capital)+' congelados</span><span class="tg dias">'+dias(x.dias)+"</span></div>"+
-    (function(){var op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
-      op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
-      return '<div class="precios-opt" style="grid-template-columns:repeat('+u.length+',1fr)">'+u.map(function(o){
-        return '<button class="po-btn" data-act="p" data-v="'+o[1]+'"><span>'+o[0]+'</span><b class="mono">'+mx(o[1])+"</b></button>";}).join("")+"</div>";})()+
+    pillasHTML(x,cu)+
     '<div class="libre-input">o pon tu precio: <span class="inp-pill">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu+MOTO)+'"></span></div>'+
     '<div class="cuenta-box" data-f="1">Toca la palomita para incluirlo en el plan.</div>'+
     '<button class="btn-help" data-act="porque" style="margin-top:0">¿Como salio este precio?</button></article>';
@@ -320,6 +367,7 @@ function render(card,i,x){
   if(!x)return;
   var on=sel[i]!=null&&sel[i]>0;card.classList.toggle("on",on);
   var p=num(card.querySelector("[data-act=in]").value),cu=costoU(x);
+  var po=card.querySelector(".precios-opt");if(po)po.outerHTML=pillasHTML(x,cu);
   card.querySelectorAll(".po-btn").forEach(function(o){o.classList.toggle("on",num(o.getAttribute("data-v"))===p);});
   var neto=(p-MOTO)*x.piezas,dif=neto-x.capital,porPza=p-MOTO-cu;
   card.querySelector("[data-f]").innerHTML=on
@@ -538,6 +586,9 @@ function abrir(k){
 }
 function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
+
+/* Ya validaste el PIN en esta sesion del navegador: pasa directo. */
+if(sesionViva())entrar();
 })();
 </script>
 </body>
