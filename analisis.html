@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ui.css?v=3">
+<link rel="stylesheet" href="ui.css?v=4">
 <script>(function(){try{var t=localStorage.getItem("kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -29,7 +29,7 @@
   <button class="nav" data-p="inventario"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>Inventario <span class="n" id="nav-n"></span></button>
   <div class="sep"></div>
   <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>¿Me conviene?</button>
-  <a class="nav" href="alta.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</a>
+  <button class="nav" data-p="alta"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
   <div class="fin"><span>Sesión de Alex</span><button class="tema" id="tema" title="Cambiar apariencia">Tema: auto</button></div>
 </aside>
 
@@ -92,6 +92,27 @@
     </div>
   </section>
 
+  <!-- ===== ALTA DE PEDIDO ===== -->
+  <section class="pant" id="p-alta">
+    <div class="top">
+      <div><h1>Alta de pedido</h1><p>Lo que pagaste afuera, traducido a lo que te cuesta aquí.</p></div>
+      <label class="chip fecha-chip">Comprado el <input id="fecha" type="date"></label>
+    </div>
+    <div id="alta-cuerpo">
+      <div class="hero" style="margin-bottom:16px">
+        <div><div class="lb">Lo que pagó tu tarjeta</div>
+          <div class="pagado"><i>$</i><input id="pagado" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+          <div class="sub" id="hero-lb">Escribe el total del cargo y reparto los costos</div></div>
+        <div class="pastillas"><span class="pill blanca">Suma de la plataforma <b class="mono" id="suma">$0</b></span><span class="pill blanca" id="dif-pill">Sin cargo todavía</span><span class="pill lima" id="factor-pill">×1.00</span></div>
+      </div>
+      <h2>Productos del pedido</h2>
+      <p class="tenue" style="margin:0 0 12px">Un renglón por modelo, no por pieza. La diferencia entre lo que dice la plataforma y lo que pagó tu tarjeta (impuestos, envío, cupones) se reparte sola entre las piezas.</p>
+      <div id="renglones" style="display:grid;gap:14px"></div>
+      <button class="mas-btn" id="agregar">+ Otro producto</button>
+    </div>
+    <div id="alta-fin" class="oculto"></div>
+  </section>
+
   <!-- ===== ¿ME CONVIENE? ===== -->
   <section class="pant" id="p-conviene">
     <div class="top"><div><h1>¿Me conviene comprarlo?</h1><p>Escribe lo que ves en la plataforma antes de pagar. Te digo cuánto te cuesta puesto en Ocosingo y a cuánto venderlo.</p></div></div>
@@ -121,6 +142,14 @@
   <button class="btn gh" id="b-limpiar">Limpiar</button>
   <button class="btn pri" id="b-plan">Armar plan de remate</button>
 </div>
+
+<div class="flot" id="aflot">
+  <div><small id="abot-s">Captura un producto con su costo</small><b id="abot-v">0 piezas</b></div>
+  <span class="esp"></span>
+  <button class="btn gh" id="b-ajustes">Ajustes</button>
+  <button class="btn pri" id="b-alta" disabled>Dar de alta</button>
+</div>
+<datalist id="dl-prods"></datalist>
 
 <div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
@@ -295,17 +324,21 @@ function llenarSelects(){
 
 /* ============ navegación ============ */
 var pantalla="resumen";
+var sucio=false;
 function ir(p,tab,est){
+  if(pantalla==="alta"&&p!=="alta"&&sucio){sucio=false;cargar();}
   pantalla=p;
+  if(p==="alta"&&window.KIOSKO.alta)window.KIOSKO.alta.iniciar();
+  $("aflot").classList.toggle("on",p==="alta"&&$("alta-fin").classList.contains("oculto"));
   if(est!=null){$("v-est").value=est;$("v-per").value="todo";vAbiertos={};pintarVentas();}
   document.querySelectorAll(".pant").forEach(function(s){s.classList.toggle("on",s.id==="p-"+p);});
   document.querySelectorAll(".nav[data-p]").forEach(function(b){b.classList.toggle("on",b.dataset.p===p);});
-  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?"}[p];
+  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido"}[p];
   if(tab){iTab=tab;pintarInventario();}
   barra();window.scrollTo(0,0);
 }
 document.addEventListener("click",function(e){
-  var b=e.target.closest("[data-p]");if(b&&b.classList.contains("nav")){ir(b.dataset.p);return;}
+  var b=e.target.closest("[data-p]");if(b&&b.classList.contains("nav")){if(pantalla==="alta"&&b.dataset.p!=="alta"&&window.KIOSKO.alta&&window.KIOSKO.alta.activa()&&!confirm("Tienes un pedido a medias. ¿Salir sin darlo de alta?"))return;ir(b.dataset.p);return;}
   var g=e.target.closest("[data-ir]");if(g){ir(g.dataset.ir,g.dataset.tab,g.dataset.est);return;}
 });
 
@@ -630,7 +663,346 @@ function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")$("mo").classList.remove("on");});
 
+window.KIOSKO={api:api,abrirHTML:abrirHTML,desglose:desglose,catalogo:function(){return CAT;},ventas:function(){return VEN;},recargarDespues:function(){sucio=true;}};
 if(sesionViva())entrar();
+})();
+</script>
+<script>
+/* =====================================================================
+   ALTA DE PEDIDO · portado de alta.html. Misma lógica, misma acción POST
+   `altaPedido` y `subirFoto`. Usa el catálogo y las ventas que ya cargó
+   la pantalla (puente window.KIOSKO), así no vuelve a pedirlos.
+   ===================================================================== */
+(function(){
+"use strict";
+var K=window.KIOSKO;
+var $=function(i){return document.getElementById(i);};
+function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
+function r2(n){return Math.round(n*100)/100;}
+function mx(n){var v=r2(n),e=Math.abs(v%1)<.005;return "$"+v.toLocaleString("es-MX",{minimumFractionDigits:e?0:2,maximumFractionDigits:e?0:2});}
+function a10(n){return Math.ceil(n/10)*10;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
+function uuid(){return "ap-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);}
+var MAX_FOTOS=4;
+
+var filas=[],seq=0,catalogo=[],IMGS=[],CATS=[],pedidoID=uuid(),enviando=false,iniciado=false;
+var MOTO=35,EXTRA=10,MULT=2,PISO=80,INCLUIDO=false;
+
+function lev(a,b){var m=a.length,n=b.length,i,j,d=[];
+  for(i=0;i<=m;i++)d[i]=[i];for(j=1;j<=n;j++)d[0][j]=j;
+  for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];}
+function ajustarCat(t0){
+  var t=norm(t0);if(!t)return{tipo:"vacia"};
+  for(var i=0;i<CATS.length;i++)if(norm(CATS[i])===t)return{tipo:"exacta",valor:CATS[i]};
+  var mejor=null,md=99;
+  for(var k=0;k<CATS.length;k++){var c=norm(CATS[k]),dd=lev(t,c);
+    if(c.indexOf(t)===0&&t.length>=3)dd=Math.min(dd,1);
+    if(dd<md){md=dd;mejor=CATS[k];}}
+  if(mejor&&md<=Math.max(1,Math.floor(t.length/4)))return{tipo:"parecida",valor:mejor};
+  return{tipo:"nueva",valor:t0.trim()};
+}
+var REGLAS=[
+  [/audifon|auricular|earbud|\btws\b|headset|diadema/,"Audífonos"],
+  [/bocina|altavoz|altavoces|speaker|parlante|barra de sonido/,"Bocinas y altavoces"],
+  [/reloj|smartwatch|\bwatch\b|pulsera intelig/,"Smartwatch y relojes"],
+  [/cortadora|cortapelo|corta pelo|afeitadora|rasuradora|barber|depilad|secadora de (pelo|cabello)|masajead|cepillo dental/,"Cuidado personal"],
+  [/funda|mica|protector de pantalla|cargador|cable|power ?bank|bateria externa|soporte para (celular|telefono)|selfie/,"Accesorios de celular"],
+  [/incubadora/,"Incubadoras"],
+  [/\bmesa\b|\bsilla\b|plegable/,"Mesas y sillas plegables"],
+  [/desarmador|destornillador|herramienta|taladro|pinza|llave inglesa|multiherramienta|kit de/,"Herramientas"],
+  [/\btv\b|pantalla|televis|tv ?stick|proyector|roku|chromecast/,"TV y electrónica"],
+  [/licuadora|olla|sarten|termo|taza|cocina|lampara|foco|ventilador|organizador|bascula/,"Hogar"]
+];
+function catPorNombre(desc){
+  var t=norm(desc);if(!t)return null;
+  for(var i=0;i<REGLAS.length;i++)if(REGLAS[i][0].test(t))for(var k=0;k<CATS.length;k++)if(norm(CATS[k])===norm(REGLAS[i][1]))return CATS[k];
+  return null;
+}
+function modelos(desc){
+  var t=norm(desc).replace(/[-_/]/g,""),out=[];
+  t.split(/[^a-z0-9]+/).forEach(function(tk){if(/^[a-z]{1,6}\d{1,5}[a-z]{0,6}$/.test(tk)&&/\d/.test(tk))out.push(tk);});
+  return out;
+}
+function compartenModelo(a,b){var ma=modelos(a),mb=modelos(b);if(!ma.length||!mb.length)return false;for(var i=0;i<ma.length;i++)if(mb.indexOf(ma[i])>-1)return true;return false;}
+function parecido(desc){
+  var t=norm(desc);if(t.length<4)return null;var i;
+  for(i=0;i<catalogo.length;i++)if(compartenModelo(desc,catalogo[i].descripcion))return catalogo[i];
+  var mejor=null,md=99;
+  for(i=0;i<catalogo.length;i++){var c=norm(catalogo[i].descripcion);if(c===t)return catalogo[i];var d=lev(t,c);
+    if(c.indexOf(t)===0||t.indexOf(c)===0)d=Math.min(d,2);if(d<md){md=d;mejor=catalogo[i];}}
+  return (mejor&&md<=Math.max(2,Math.floor(t.length/6)))?mejor:null;
+}
+function fotosDe(desc){var t=norm(desc);for(var i=0;i<IMGS.length;i++){var d=IMGS[i].descripcion;if(norm(d)===t||compartenModelo(desc,d))return [IMGS[i].url].concat(IMGS[i].extras||[]).filter(Boolean);}return [];}
+function existente(desc,cat){var k=norm(desc)+"|"+norm(cat);for(var i=0;i<catalogo.length;i++)if(norm(catalogo[i].descripcion)+"|"+norm(catalogo[i].categoria)===k)return catalogo[i];return null;}
+function comprimir(archivo){
+  return new Promise(function(res,rej){
+    var lec=new FileReader();
+    lec.onerror=function(){rej(new Error("No se pudo leer la foto"));};
+    lec.onload=function(e){var img=new Image();img.onerror=function(){rej(new Error("La imagen no es válida"));};
+      img.onload=function(){var max=1280,k=Math.min(1,max/Math.max(img.width,img.height));var c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.82).split(",")[1]);};img.src=e.target.result;};
+    lec.readAsDataURL(archivo);});
+}
+
+/* ---- datos: del puente, no del servidor ---- */
+function tomarDatos(){
+  catalogo=(K.catalogo()||[]).filter(function(x){return x.origen==="Alex";});
+  var visto={};IMGS=[];
+  (K.ventas()||[]).forEach(function(v){if(!v||!v.descripcion||!v.imagen)return;var k=norm(v.descripcion);if(visto[k])return;visto[k]=1;IMGS.push({descripcion:v.descripcion,url:v.imagen,extras:[]});});
+  var cs={},ds={};
+  catalogo.forEach(function(x){if(x.categoria)cs[x.categoria]=1;if(x.descripcion)ds[x.descripcion]=1;});
+  CATS=Object.keys(cs).sort(function(a,b){return a.localeCompare(b,"es");});
+  $("dl-prods").innerHTML=Object.keys(ds).sort().map(function(d){return '<option value="'+esc(d)+'">';}).join("");
+  filas.forEach(function(f){if(f.pintarChips)f.pintarChips();if(f.detectar)f.detectar();});
+}
+function iniciar(){
+  if(iniciado){tomarDatos();calcular();return;}
+  iniciado=true;
+  var hoy=new Date();$("fecha").value=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+  tomarDatos();nuevaFila();calcular();
+}
+function reiniciar(){
+  filas=[];seq=0;pedidoID=uuid();enviando=false;altaOK=false;ultimoR=null;PENDIENTES=[];
+  $("renglones").innerHTML="";$("pagado").value="";$("alta-cuerpo").classList.remove("oculto");$("alta-fin").classList.add("oculto");$("aflot").classList.add("on");
+  var hoy=new Date();$("fecha").value=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+  nuevaFila();calcular();
+}
+K.alta={iniciar:iniciar,activa:function(){return enviando||filas.some(function(f){return f.desc.value.trim()||num(f.costo.value)>0;});}};
+
+function mostrarX(){filas.forEach(function(o){if(o.x)o.x.style.display=filas.length>1?"":"none";});}
+function nuevaFila(){
+  var id=seq++,el=document.createElement("article");
+  el.className="card reng";
+  el.innerHTML=
+    '<button class="quitar" data-k="x" title="Quitar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>'+
+    '<div class="lado-foto"><div class="galeria" data-k="galeria"></div><input type="file" accept="image/*" data-k="file" multiple style="display:none"></div>'+
+    '<div class="cuerpo">'+
+    '<label class="campo"><span>Nombre del producto</span><input data-k="desc" list="dl-prods" placeholder="Ej. Kemei KM-1419 Cortadora de pelo" autocomplete="off"></label>'+
+    '<div class="campo"><span>Categoría</span><div class="chips" data-k="chips"></div><input type="hidden" data-k="cat">'+
+      '<div class="oculto" data-k="catNueva" style="margin-top:6px"><input data-k="catTxt" placeholder="Nombre de la categoría nueva" autocomplete="off"><small class="cat-estado" data-k="catEstado"></small></div></div>'+
+    '<div class="campos">'+
+      '<div class="campo"><span>Piezas que compraste</span><span class="step"><button type="button" data-k="menos">−</button><input data-k="q" type="number" min="1" step="1" value="1"><button type="button" data-k="mas">+</button></span></div>'+
+      '<label class="campo"><span>Precio después de promociones, por pieza</span><span class="money"><i>$</i><input data-k="costo" type="number" min="0" step="0.01" placeholder="105.00" inputmode="decimal"></span>'+
+        '<small>En Temu es el renglón chico "Después de aplicadas las promociones": el más bajo de los dos.</small></label>'+
+      '<details class="opc ancho"><summary>¿Tenía descuento? Anota el precio antes de la promoción</summary>'+
+        '<label class="campo" style="margin-top:6px"><span>Precio antes de promociones (el número grande)</span><span class="money"><i>$</i><input data-k="lista" type="number" min="0" step="0.01" placeholder="149.99" inputmode="decimal"></span>'+
+        '<small>Solo de referencia: no cambia tu costo.</small><small class="cat-estado" data-k="avisoPrecios"></small></label></details>'+
+    '</div>'+
+    '<div class="calculo vacio" data-k="calculo">Cuando captures el precio y el cargo de tu tarjeta, aquí verás tu costo real y el precio sugerido.</div>'+
+    '</div>';
+  var f={id:id,el:el,fotos:[],fotosDrive:[],parcial:false,gemelo:null,catManual:false,tocado:false,precioVal:0};
+  ["galeria","file","desc","chips","cat","catNueva","catTxt","catEstado","avisoPrecios","menos","q","mas","costo","lista","calculo","x"].forEach(function(k){f[k]=el.querySelector('[data-k="'+k+'"]');});
+
+  f.pintarGaleria=function(){
+    var h="";
+    if(f.fotosDrive&&f.fotosDrive.length){
+      h+='<div class="gal-slot llena principal"><img src="'+esc(f.fotosDrive[0])+'" alt=""><span class="et">'+(f.parcial?"Ya en Drive · puede tener más":"Ya en Drive")+'</span>'+
+        '<button type="button" class="quita-foto" data-k="quitadrive" title="No es este producto: quitar estas fotos">×</button></div>';
+      for(var j=1;j<Math.min(f.fotosDrive.length,3)+1&&j<4;j++){
+        if(f.fotosDrive[j])h+='<div class="gal-slot llena"><img src="'+esc(f.fotosDrive[j])+'" alt=""></div>';
+        else if(j===f.fotosDrive.length)h+='<div class="gal-slot" data-k="pick">+</div>';
+        else h+='<div class="gal-slot" style="opacity:.45"></div>';
+      }
+      f.galeria.innerHTML=h;return;
+    }
+    for(var i=0;i<MAX_FOTOS;i++){
+      var ft=f.fotos[i];
+      if(ft)h+='<div class="gal-slot llena'+(i===0?" principal":"")+'"><img src="'+ft.url+'" alt=""><button class="quita-foto" data-k="quitafoto" data-i="'+i+'">×</button>'+(i===0?'<span class="et">Principal</span>':"")+'</div>';
+      else if(i===f.fotos.length)h+='<div class="gal-slot'+(i===0?" principal":"")+'" data-k="pick"><div style="text-align:center">'+
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:block;margin:0 auto 4px"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'+(i===0?"Agregar foto":"+")+'</div></div>';
+      else h+='<div class="gal-slot" style="opacity:.45"></div>';
+    }
+    f.galeria.innerHTML=h;
+  };
+  f.galeria.addEventListener("click",function(e){
+    var q=e.target.closest("[data-k=quitafoto]");
+    if(q){f.fotos.splice(Number(q.getAttribute("data-i")),1);f.pintarGaleria();return;}
+    if(e.target.closest("[data-k=quitadrive]")){f.fotosDrive=[];f.parcial=false;f.noHeredar=true;f.pintarGaleria();return;}
+    if(e.target.closest("[data-k=pick]"))f.file.click();
+  });
+  f.file.addEventListener("change",function(){
+    Array.prototype.slice.call(f.file.files||[]).slice(0,MAX_FOTOS-f.fotos.length).forEach(function(a){
+      var lec=new FileReader();lec.onload=function(e){f.fotos.push({archivo:a,url:e.target.result});f.pintarGaleria();};lec.readAsDataURL(a);});
+    f.file.value="";
+  });
+  f.pintarGaleria();
+
+  f.pintarChips=function(){
+    var s=f.cat.value,esNueva=s&&CATS.indexOf(s)===-1;
+    f.chips.innerHTML=CATS.map(function(c){return '<button type="button" class="chip'+(c===s?" on":"")+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join("")+
+      '<button type="button" class="chip'+(esNueva||!f.catNueva.classList.contains("oculto")?" on":"")+'" data-c="__otra">+ Otra</button>';
+  };
+  f.chips.addEventListener("click",function(e){
+    var b=e.target.closest(".chip");if(!b)return;var c=b.getAttribute("data-c");
+    if(c==="__otra"){f.catManual=true;f.catNueva.classList.remove("oculto");f.cat.value=f.catTxt.value.trim();f.pintarChips();revisarCat();f.catTxt.focus();calcular();return;}
+    f.cat.value=c;f.catManual=true;f.catTxt.value="";f.catNueva.classList.add("oculto");f.catEstado.textContent="";f.pintarChips();calcular();
+  });
+  function revisarCat(){
+    var r=ajustarCat(f.catTxt.value),e=f.catEstado;
+    if(r.tipo==="vacia"){e.className="cat-estado";e.textContent="Escribe el nombre, o elige una de arriba";f.cat.value="";return;}
+    if(r.tipo==="exacta"){f.cat.value=r.valor;f.catTxt.value="";f.catNueva.classList.add("oculto");e.textContent="";f.pintarChips();return;}
+    if(r.tipo==="parecida"){f.cat.value="";e.className="cat-estado dudo";
+      e.innerHTML='¿Quisiste decir <button type="button" class="sug">'+esc(r.valor)+'</button>? Si no, sigue escribiendo.';
+      e.querySelector(".sug").addEventListener("click",function(){f.cat.value=r.valor;f.catTxt.value="";f.catNueva.classList.add("oculto");e.textContent="";f.pintarChips();calcular();});return;}
+    f.cat.value=r.valor;e.className="cat-estado nueva";e.textContent="Categoría nueva: se crea al dar de alta";
+  }
+  f.catTxt.addEventListener("input",function(){revisarCat();calcular();});
+  f.pintarChips();
+
+  f.detectar=function(){
+    var d=f.desc.value.trim();f.gemelo=null;f.fotosDrive=[];
+    if(!d){f.noHeredar=false;f.pintarGaleria();f.pintarChips();return;}
+    var g=parecido(d);f.parcial=false;
+    if(f.noHeredar){}
+    else if(g&&(g.imagen||(g.extras&&g.extras.length)))f.fotosDrive=[g.imagen].concat(g.extras||[]).filter(Boolean);
+    else{f.fotosDrive=fotosDe(d);f.parcial=f.fotosDrive.length>0;}
+    if(g){f.gemelo=g;if(!f.catManual&&g.categoria){f.cat.value=g.categoria;f.catNueva.classList.add("oculto");f.catTxt.value="";}}
+    else if(!f.catManual){var c=catPorNombre(d);if(c)f.cat.value=c;}
+    f.pintarChips();f.pintarGaleria();
+  };
+  var _t;
+  f.desc.addEventListener("input",function(){clearTimeout(_t);_t=setTimeout(function(){f.detectar();calcular();},350);});
+  f.desc.addEventListener("change",function(){f.detectar();calcular();});
+  [f.desc,f.q,f.costo,f.lista].forEach(function(c){c.addEventListener("input",calcular);c.addEventListener("change",calcular);});
+  f.menos.addEventListener("click",function(){f.q.value=Math.max(1,Math.round(num(f.q.value))-1);calcular();});
+  f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
+  f.x.addEventListener("click",function(){if(filas.length===1)return;filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();mostrarX();});
+  filas.push(f);$("renglones").appendChild(el);mostrarX();
+  return f;
+}
+
+function calcular(){
+  var pagado=num($("pagado").value),suma=0,piezas=0;
+  filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
+  var hay=suma>0&&pagado>0,factor=hay?pagado/suma:1;
+  filas.forEach(function(f){
+    var costo=num(f.costo.value),lst=num(f.lista.value);
+    if(lst>0&&costo>0&&lst<costo){f.avisoPrecios.className="cat-estado nueva";
+      f.avisoPrecios.innerHTML='Parece que están invertidos: el precio antes debería ser el más alto. <button type="button" class="sug" data-k="voltear">Intercambiar</button>';
+      f.avisoPrecios.querySelector("[data-k=voltear]").addEventListener("click",function(){var a=f.costo.value;f.costo.value=f.lista.value;f.lista.value=a;calcular();});
+    } else f.avisoPrecios.textContent="";
+    if(!(costo>0)||!hay){f.calculo.className="calculo vacio";f.calculo.textContent=costo>0?"Falta el cargo de tu tarjeta, arriba en la tarjeta oscura":"Falta el precio que te cobró la plataforma";return;}
+    var cf=r2(costo*factor),sug=a10(cf*MULT+(INCLUIDO?MOTO:0));
+    if(!f.tocado)f.precioVal=sug;
+    var precio=f.tocado?num(f.precioVal):sug,gana=r2(precio+EXTRA-cf-MOTO),flojo=gana<PISO;
+    var ex=(f.desc.value.trim()&&f.cat.value.trim())?existente(f.desc.value,f.cat.value):null;
+    f.calculo.className="calculo";
+    f.calculo.innerHTML=
+      '<div><div class="cal-k">Te cuesta, ya puesto aquí</div><div class="cal-v mono">'+mx(cf)+'</div></div>'+
+      '<div class="precio-row"><span class="cal-k">Véndelo en</span><span class="precio-pill">$<input data-k="precio" type="number" step="10" min="0" value="'+precio+'"></span>'+
+      '<span class="queda'+(flojo?" flojo":"")+'">te quedan '+mx(gana)+(flojo?" · poco":"")+'</span>'+
+      '<button type="button" class="liga" data-k="porque">¿Cómo salió?</button></div>'+
+      ((ex||(f.fotosDrive&&f.fotosDrive.length))?'<div class="tags">'+
+        (ex?'<span class="et azul">Ya lo tienes: '+esc(ex.pid||"")+' · se le suman piezas</span>':"")+
+        ((f.fotosDrive&&f.fotosDrive.length)?'<span class="et ok">'+(f.parcial?"Ya tiene fotos en Drive":f.fotosDrive.length+(f.fotosDrive.length===1?" foto":" fotos")+" en Drive")+' · no hace falta resubir</span>':"")+'</div>':"");
+    f.calculo.querySelector("[data-k=porque]").addEventListener("click",function(){explicarFila(f);});
+    var inp=f.calculo.querySelector("[data-k=precio]");
+    inp.addEventListener("input",function(){f.tocado=true;f.precioVal=num(inp.value);var g=r2(num(inp.value)+EXTRA-cf-MOTO),q2=f.calculo.querySelector(".queda");
+      q2.textContent="te quedan "+mx(g)+(g<PISO?" · poco":"");q2.className="queda"+(g<PISO?" flojo":"");});
+  });
+  $("suma").textContent=mx(suma);
+  var dif=r2(pagado-suma),dp=$("dif-pill"),fp=$("factor-pill");
+  if(!hay){dp.className="pill blanca";dp.textContent="Sin cargo todavía";fp.textContent="×1.00";$("hero-lb").textContent="Escribe el total del cargo y reparto los costos";}
+  else{dp.className="pill "+(dif>=0?"lima":"mango");dp.textContent=(dif>=0?"+":"−")+mx(Math.abs(dif))+(dif>=0?" de más":" de descuento");fp.textContent="×"+factor.toFixed(4);
+    $("hero-lb").textContent=(dif>=0?"Los "+mx(Math.abs(dif))+" de más":"Los "+mx(Math.abs(dif))+" de descuento")+" se reparten entre las "+piezas+" piezas, en proporción a lo que costó cada una"+((factor<.6||factor>2.2)?" — ese reparto se ve raro, revisa los datos":"");}
+  estado();
+}
+function completas(){return filas.filter(function(f){return f.desc.value.trim()&&f.cat.value.trim()&&num(f.costo.value)>0&&Math.round(num(f.q.value))>0;});}
+function estado(){
+  var pagado=num($("pagado").value),suma=0,piezas=0;
+  filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
+  var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0;
+  $("b-alta").disabled=!listo||enviando;
+  $("abot-v").textContent=piezas+(piezas===1?" pieza":" piezas");
+  $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":"Falta nombre o categoría en alguno");
+}
+function armar(){
+  var pagado=num($("pagado").value),suma=0;
+  filas.forEach(function(f){suma+=num(f.costo.value)*Math.max(0,Math.round(num(f.q.value)));});
+  var factor=suma>0?pagado/suma:1;
+  return {pedidoID:pedidoID,fecha:$("fecha").value||"",pagado:pagado,
+    productos:filas.map(function(f){var cf=r2(num(f.costo.value)*factor);
+      return {descripcion:f.desc.value.trim(),categoria:f.cat.value.trim(),cantidad:Math.round(num(f.q.value)),costo:num(f.costo.value),lista:num(f.lista.value),precio:f.tocado?num(f.precioVal):a10(cf*MULT)};})};
+}
+var altaOK=false,ultimoR=null,PENDIENTES=[];
+function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function subirUna(p,intento){
+  return comprimir(p.archivo).then(function(b64){return K.api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
+    .then(function(rf){if(rf&&rf.success)return true;throw new Error((rf&&rf.error)||"el servidor no la aceptó");})
+    .catch(function(e){if(intento<2)return espera(2500).then(function(){return subirUna(p,intento+1);});p.error=e.message||"error desconocido";return false;});
+}
+function subirFotos(){
+  var pend=[];filas.forEach(function(f){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo});});});
+  PENDIENTES=[];var ok=0,mal=[],cad=Promise.resolve(),i=0;
+  pend.forEach(function(p){cad=cad.then(function(){i++;$("abot-s").textContent="Subiendo foto "+i+" de "+pend.length+"…";
+    return subirUna(p,1).then(function(bien){if(bien)ok++;else{mal.push(p);PENDIENTES.push(p);}return espera(700);});});});
+  return cad.then(function(){return {total:pend.length,ok:ok,mal:mal};});
+}
+$("b-alta").addEventListener("click",function(){
+  if(enviando)return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
+  var pedido=armar();altaOK=false;
+  K.api("altaPedido",null,{pedido:pedido},45000).then(function(r){
+    if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
+    altaOK=true;ultimoR=r;K.recargarDespues();
+    return subirFotos().then(function(fot){resultado(r,fot);});
+  }).catch(function(e){enviando=false;estado();$("abot-s").textContent=e.message;
+    K.abrirHTML(altaOK
+      ?"<h3>El pedido sí entró</h3><p>Tus filas ya están en la hoja. Falló lo de después: <b>"+esc(e.message)+"</b></p><div class=\"acciones\"><button class=\"btn pri\" id=\"solo-fotos\" data-cerrar=\"1\">Subir las fotos ahora</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>"
+      :"<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p><p>Puede que sí haya entrado y solo se perdió la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un número único y si ya está en la hoja el servidor no lo duplica.</p><div class=\"acciones\"><button class=\"btn pri\" id=\"reintentar-alta\" data-cerrar=\"1\">Volver a intentar</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>");
+    var ba=$("reintentar-alta");if(ba)ba.addEventListener("click",function(){setTimeout(function(){$("b-alta").disabled=false;$("b-alta").click();},50);});
+    var bf=$("solo-fotos");if(bf)bf.addEventListener("click",function(){enviando=true;estado();subirFotos().then(function(fot){resultado(ultimoR,fot);}).catch(function(e2){enviando=false;estado();$("abot-s").textContent=e2.message;});});
+  });
+});
+function resultado(r,fot){
+  enviando=false;
+  var sub="Filas "+r.desde+" a "+r.hasta+" de ALEX_NUEVO · reparto ×"+r.factor;
+  if(fot.total)sub+=" · "+fot.ok+" de "+fot.total+(fot.total===1?" foto subida":" fotos subidas");
+  if(!r.verificado)sub+=" · "+(r.aviso||"revisa la hoja");
+  $("alta-cuerpo").classList.add("oculto");$("aflot").classList.remove("on");
+  var fin=$("alta-fin");fin.classList.remove("oculto");
+  fin.innerHTML='<div class="card" style="text-align:center;padding:36px 28px">'+
+    '<div class="check-ok"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>'+
+    '<h2 style="font-size:20px">'+r.filas+(r.filas===1?" pieza":" piezas")+' en tu inventario</h2><p class="tenue">'+esc(sub)+'</p>'+
+    (fot.mal.length?'<div class="nota warn" style="max-width:660px;margin:12px auto;text-align:left"><b>'+fot.mal.length+(fot.mal.length===1?" foto no subió":" fotos no subieron")+'.</b> Los productos ya quedaron en tu hoja; solo faltan estas imágenes.<br>'+
+      fot.mal.map(function(p){return "· "+esc(p.desc)+" — <b>"+esc(p.error||"motivo desconocido")+"</b>";}).join("<br>")+
+      '<br><button class="btn pri chico" id="reintentar" style="margin-top:8px">Reintentar estas fotos</button> <span id="reintento-msg"></span></div>':"")+
+    '<ul class="resumen-lista">'+r.productos.map(function(p){return "<li><span>"+esc(p.descripcion)+"<small>× "+p.cantidad+" · te cuesta "+mx(p.costoFinal)+" · lo vendes en "+mx(p.precio)+'</small></span><span class="pid'+(p.nuevo?" nuevo":"")+'">'+esc(p.pid)+(p.nuevo?" · nuevo":"")+"</span></li>";}).join("")+'</ul>'+
+    '<div class="acciones" style="justify-content:center"><button class="btn pri" id="otro-pedido">Registrar otro pedido</button><button class="btn claro" data-ir="inventario" data-tab="reciente">Ver en inventario</button></div></div>';
+  $("otro-pedido").addEventListener("click",reiniciar);
+  var br=$("reintentar");
+  if(br)br.addEventListener("click",function(){var b=this;b.disabled=true;b.textContent="Reintentando…";
+    var lista=PENDIENTES.slice(),ok=0,fall=[],cad=Promise.resolve(),i=0;
+    lista.forEach(function(p){cad=cad.then(function(){i++;$("reintento-msg").textContent="foto "+i+" de "+lista.length+"…";return subirUna(p,1).then(function(bien){if(bien)ok++;else fall.push(p);return espera(1500);});});});
+    cad.then(function(){PENDIENTES=fall;$("reintento-msg").innerHTML=fall.length?"<b>Subieron "+ok+", faltan "+fall.length+".</b>":"<b>Listo, ya subieron todas.</b>";b.disabled=fall.length===0;b.textContent=fall.length?"Reintentar otra vez":"Completo";});});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("b-ajustes").addEventListener("click",function(){
+  K.abrirHTML("<h3>Cómo calculo tu ganancia</h3><p>Estos valores solo afectan el precio sugerido y la ganancia estimada. No se guardan en tu hoja.</p>"+
+    '<div class="campos">'+
+    '<label class="campo"><span>Motomandado</span><span class="money"><i>$</i><input id="a-moto" type="number" value="'+MOTO+'" min="0" step="5"></span></label>'+
+    '<label class="campo"><span>Cobro a domicilio</span><span class="money"><i>$</i><input id="a-extra" type="number" value="'+EXTRA+'" min="0" step="5"></span></label>'+
+    '<label class="campo ancho" style="flex-direction:row;align-items:center;gap:10px;background:var(--bg);padding:10px 14px;border-radius:var(--r-sm)"><input id="a-incluido" type="checkbox" class="chk"'+(INCLUIDO?" checked":"")+'><span style="font-weight:600">Envío incluido en el precio<small style="display:block">El precio sugerido ya cubre el moto y el cobro a domicilio se pone en cero. Así puedes anunciar "envío gratis".</small></span></label>'+
+    '<label class="campo"><span>Multiplicar el costo por</span><input id="a-mult" type="number" value="'+MULT+'" min="1" step=".1"></label>'+
+    '<label class="campo"><span>Ganancia mínima</span><span class="money"><i>$</i><input id="a-piso" type="number" value="'+PISO+'" min="0" step="10"></span></label></div>'+
+    '<div class="acciones"><button class="btn pri" id="a-ok">Aplicar</button><button class="btn claro" data-cerrar="1">Cancelar</button></div>');
+  $("a-ok").addEventListener("click",function(){INCLUIDO=$("a-incluido").checked;MOTO=num($("a-moto").value);EXTRA=INCLUIDO?0:num($("a-extra").value);MULT=num($("a-mult").value)||2;PISO=num($("a-piso").value);
+    filas.forEach(function(f){f.tocado=false;});$("mo").classList.remove("on");calcular();});
+});
+$("agregar").addEventListener("click",function(){var f=nuevaFila();calcular();f.desc.focus();f.el.scrollIntoView({behavior:"smooth",block:"center"});});
+$("pagado").addEventListener("input",calcular);
+function explicarFila(f){
+  var costo=num(f.costo.value),pagado=num($("pagado").value),suma=0;
+  filas.forEach(function(g){suma+=num(g.costo.value)*Math.max(0,Math.round(num(g.q.value)));});
+  var factor=(suma>0&&pagado>0)?pagado/suma:1,cf=r2(costo*factor),precio=f.tocado?num(f.precioVal):a10(cf*MULT),gana=r2(precio+EXTRA-cf-MOTO),entra=precio+EXTRA;
+  K.abrirHTML("<h3>"+esc(f.desc.value.trim()||"Este producto")+"</h3><p>Así salen los dos números, con tus cifras de este pedido.</p>"+
+    K.desglose("1 · Cuánto te cuesta de verdad",[{et:"Precio en la plataforma",sub:"ya con promociones",v:costo,signo:"+"},{et:"Su parte de impuestos y envío",sub:"repartida entre las piezas",v:r2(cf-costo),signo:"+"}],{et:"Costo real",sub:"puesto aquí en Ocosingo",v:cf},
+      "Cada peso de mercancía de este pedido te costó <b>"+factor.toFixed(4)+"</b> puesto aquí. Por eso el precio de la plataforma nunca es tu costo.")+
+    K.desglose("2 · Cuánto te queda si lo vendes",[{et:"Precio de venta",sub:"lo que te paga el cliente",v:precio,signo:"+"},{et:"Cobro a domicilio",sub:"lo que le cobras por el envío",v:EXTRA,signo:"+"},{et:"Costo del producto",sub:"el de arriba",v:cf,signo:"-"},{et:"Motomandado",sub:"lo que le pagas al repartidor",v:MOTO,signo:"-"}],{et:"Tu ganancia",sub:"esto sí es tuyo",v:gana},
+      "Tu <b>precio piso</b> es "+mx(cf+MOTO)+": debajo de ahí pagas por regalar mercancía."+(entra>0?"<br>Margen = "+mx(gana)+" entre "+mx(entra)+" = "+Math.round(gana/entra*100)+"%":""))+
+    '<div class="acciones"><button class="btn pri" data-cerrar="1">Entendido</button></div>');
+}
 })();
 </script>
 </body>
