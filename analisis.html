@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ui.css?v=4">
+<link rel="stylesheet" href="ui.css?v=5">
 <script>(function(){try{var t=localStorage.getItem("kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -52,6 +52,7 @@
       <div><h1>Ventas</h1><p id="v-sub"></p></div>
       <div class="seg"><button class="on" data-vista="mes">Por mes</button><button data-vista="producto">Por producto</button></div>
     </div>
+    <div id="v-score" class="score"></div>
     <div class="card">
       <div class="filtros">
         <div class="buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="v-q" placeholder="Buscar producto"></div>
@@ -462,6 +463,7 @@ function pintarVentas(){
   var L=ventasFiltradas(),tot=L.reduce(function(s,v){return s+entra(v);},0),gan=L.reduce(function(s,v){return s+(Number(v.ganancia)||0);},0);
   var deb=L.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0);
   $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · entraron "+mx(tot)+" · ganancia "+mx(gan)+" ("+pct(gan,tot)+"%)"+(deb.length?" · por transferir "+mx(debe)+" de "+deb.length+(deb.length===1?" venta":" ventas"):"");
+  pintarScore(L);
   if(!L.length){$("v-tabla").innerHTML='<div class="vacio">No hay ventas con estos filtros.</div>';return;}
   if(vVista==="producto"){pintarVentasProducto(L);return;}
   var m={};
@@ -484,6 +486,27 @@ function pintarVentas(){
       '</tbody></table></td></tr>';
   });
   $("v-tabla").innerHTML=h+'</tbody></table>';
+}
+/* Tarjetas que responden a los filtros: en qué se convirtió cada peso que entró */
+function pintarScore(L){
+  var S=function(f){return L.reduce(function(a,v){return a+(f(v)||0);},0);};
+  var entro=S(entra),costo=S(function(v){return Number(v.costoFinal);}),moto=S(function(v){return Number(v.gastoExt);});
+  var mia=S(function(v){return v.vendedor==="Alex"?Number(v.ganancia):0;}),ellas=S(function(v){return v.vendedor!=="Alex"?Number(v.ganancia):0;});
+  var porV={};L.forEach(function(v){if(v.vendedor&&v.vendedor!=="Alex")porV[v.vendedor]=(porV[v.vendedor]||0)+(Number(v.ganancia)||0);});
+  var deb=L.filter(pendiente),debe=deb.reduce(function(a,v){return a+(Number(v.aporte)||0);},0);
+  var extra=Math.max(0,entro-costo-moto-mia-ellas);
+  var seg=[["Costo de la mercancía",costo,"var(--tenue)"],["Motomandado",moto,"var(--naranja)"],["Tu ganancia",mia,"var(--verde)"],["Ganancia de "+(Object.keys(porV).join(" y ")||"ellas"),ellas,"var(--azul)"]];
+  var barra=entro>0?'<div class="reparto"><div class="rep-bar">'+seg.map(function(x){return x[1]>0?'<i style="width:'+(x[1]/entro*100).toFixed(1)+'%;background:'+x[2]+'" title="'+esc(x[0])+' '+mx(x[1])+'"></i>':"";}).join("")+'</div>'+
+    '<div class="rep-leg">'+seg.map(function(x){return x[1]>0?'<span><i style="background:'+x[2]+'"></i>'+esc(x[0])+' <b class="mono">'+pct(x[1],entro)+'%</b></span>':"";}).join("")+'</div></div>':"";
+  var c=function(lb,v,cls,sub,t){return '<div class="card sc"><div class="lb">'+lb+(t?' '+ayuda(t):'')+'</div><div class="v '+(cls||"")+'">'+mx(v)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';};
+  $("v-score").innerHTML=
+    c("Entró",entro,"",L.length+(L.length===1?" venta":" ventas"),"Precio más lo que se cobró de envío, de las ventas que ves con estos filtros.")+
+    c("Tu ganancia",mia,"mas","de tus propias ventas","Precio + envío cobrado − costo − moto, solo de lo que vendiste tú. Es tuya.")+
+    c("Ganancia de "+(Object.keys(porV).join(" y ")||"Irene"),ellas,"azul",Object.keys(porV).length>1?Object.keys(porV).map(function(k){return k+" "+mx(porV[k]);}).join(" · "):"se la quedan ellas; a ti te regresan el costo","Cuando venden Irene o Mamá, la ganancia es de ellas. A ti te transfieren el costo del producto, que fue lo que invertiste.")+
+    c("Costo de lo vendido",costo,"","lo que habías pagado por esa mercancía","Lo que te costó, puesto aquí, la mercancía de estas ventas. Es dinero tuyo que regresa, no ganancia.")+
+    c("Motomandado",moto,"menos","gasto, ya se le pagó al repartidor","Todo lo pagado de envíos en estas ventas. Es un gasto, no dinero por transferir.")+
+    (deb.length?c("Por transferir",debe,"alto",deb.length+(deb.length===1?" venta pendiente":" ventas pendientes"),"Lo que aún está en Ocosingo y te toca: el costo si vendió Irene o Mamá; la venta completa menos el moto si vendiste tú y cobraron en efectivo."):"")+
+    barra;
 }
 function pintarVentasProducto(L){
   var m={};
