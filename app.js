@@ -1,4 +1,4 @@
-const APP_VERSION='12.2';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='12.3';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -360,48 +360,100 @@ function coma(v){return String(v==null?'':v).replace(/,/g,'.').replace(/[^0-9.\-
    Vive aqui y no en su propia pantalla para que Irene la tenga a un toque. */
 const cMx=n=>'$'+Math.round(Number(n)||0).toLocaleString('es-MX');
 const cNum=v=>{const n=parseFloat(coma(v));return isFinite(n)?n:0;};
+let cFilas=[{p:'',n:1,c:''}];
+
+/* Un renglon por producto. Las plataformas piden un minimo de compra para el
+   envio gratis, pero ese minimo varia por vendedor y no es fiable calcularlo:
+   por eso solo se avisa, no se estima. */
+function cFila(f,i){
+  return `<div class="calc-fila" data-i="${i}">
+    <div class="calc-duo">
+      <label><span>Precio que ves</span><span class="money"><i>$</i><input data-c="p" type="text" inputmode="decimal" placeholder="120" value="${esc(f.p)}"></span></label>
+      <label><span>Piezas</span><input data-c="n" type="number" inputmode="numeric" min="1" step="1" value="${f.n}"></label>
+    </div>
+    <label><span>Precio de la competencia</span><span class="money"><i>$</i><input data-c="c" type="text" inputmode="decimal" placeholder="opcional" value="${esc(f.c)}"></span></label>
+    ${cFilas.length>1?`<button class="calc-quita" data-q="${i}">Quitar</button>`:''}
+    <div class="calc-res"></div>
+  </div>`;
+}
+function cPintaFilas(){
+  const w=document.getElementById('c-lista');if(!w)return;
+  w.innerHTML=cFilas.map(cFila).join('');
+}
 function calcPinta(){
   const $$=i=>document.getElementById(i),out=$$('c-out');if(!out)return;
-  const p=cNum($$('c-precio').value),f=cNum($$('c-origen').value)||1,
-        pz=Math.max(1,Math.round(cNum($$('c-piezas').value))||1),
-        moto=cNum($$('c-moto').value),cobro=cNum($$('c-cobro').value),
-        comp=cNum($$('c-comp').value);
-  if(!(p>0)){out.innerHTML='<p class="calc-vacio">Escribe el precio y te digo si conviene.</p>';return;}
-  const imp=Math.round(p*(f-1)),cuesta=Math.round(p*f),piso=cuesta+moto-cobro,
-        vende=Math.ceil(cuesta*2/10)*10,gana=vende+cobro-cuesta-moto;
-  let h='';
-  if(comp>0){
-    const gc=comp+cobro-cuesta-moto;let cl='',t='';
-    if(comp<=piso){cl=' no';t='<b>No lo compres.</b> A ti te sale en '+cMx(piso)+'. Perderías dinero.';}
-    else if(comp<vende){t='<b>Se puede, pero ganas menos.</b> A ese precio te quedan '+cMx(gc)+' por pieza.';}
-    else{cl=' si';t='<b>Buena compra.</b> Está arriba de tu precio. Ganas '+cMx(gc)+' por pieza.';}
-    h+='<div class="calc-nota'+cl+'">Si otros lo venden en '+cMx(comp)+': '+t+'</div>';
-  }else{
-    h+='<div class="calc-nota">Busca el mismo producto en Marketplace y anota su precio arriba. El precio de otros manda.</div>';
-  }
-  h+='<div class="calc-cifra"><div class="et">Te cuesta <em>(estimado)</em></div><div class="n">'+cMx(cuesta)+'</div>'+
-     '<div class="ay">'+(imp>0?'Precio '+cMx(p)+' + impuestos '+cMx(imp):'Sin impuestos de importación')+
-     (pz>1?' · '+pz+' piezas: '+cMx(cuesta*pz):'')+'</div></div>';
-  h+='<div class="calc-cifra tap" data-ctap="1"><div class="et">Véndelo en <em>(sugerido)</em></div>'+
-     '<div class="n verde">'+cMx(vende)+'</div><div class="ay">Ganas '+cMx(gana)+' por pieza · toca para ver</div></div>'+
-     '<div class="calc-det">'+
-       '<div class="l"><span>Te paga el cliente</span><b>'+cMx(vende)+'</b></div>'+
-       '<div class="l"><span>Te paga por el envío</span><b>+'+cMx(cobro)+'</b></div>'+
-       '<div class="l"><span>Te costó el producto</span><b>−'+cMx(cuesta)+'</b></div>'+
-       '<div class="l"><span>Le pagas al moto</span><b>−'+cMx(moto)+'</b></div>'+
-       '<div class="l tot"><span>Te queda</span><b>'+cMx(gana)+'</b></div></div>';
-  h+='<div class="calc-mini"><div><div class="et">No bajes de</div><div class="n">'+cMx(piso)+'</div>'+
-     '<div class="ay">'+cMx(cuesta)+' + '+cMx(moto)+' de moto − '+cMx(cobro)+' que te paga. Ahí sales tablas.</div></div>'+
-     '<div><div class="et">Le cobras envío</div><div class="n">'+cMx(cobro)+'</div></div></div>';
-  out.innerHTML=h;
+  const f=cNum($$('c-origen').value)||1,
+        moto=cNum($$('c-moto').value),cobro=cNum($$('c-cobro').value);
+
+  let gastas=0,hay=false;
+
+  document.querySelectorAll('.calc-fila').forEach(el=>{
+    const i=+el.dataset.i,d=cFilas[i];
+    const p=cNum(d.p),pz=Math.max(1,Math.round(cNum(d.n))||1),comp=cNum(d.c);
+    const caja=el.querySelector('.calc-res');
+    if(!(p>0)){caja.innerHTML='';return;}
+    hay=true;
+    const imp=Math.round(p*(f-1)),cuesta=Math.round(p*f),piso=cuesta+moto-cobro,
+          vende=Math.ceil(cuesta*2/10)*10,gana=vende+cobro-cuesta-moto;
+    gastas+=p*pz;
+    let h='';
+    if(comp>0){
+      const gc=comp+cobro-cuesta-moto;let cl='',t='';
+      if(comp<=piso){cl=' no';t='<b>No lo compres.</b> A ti te sale en '+cMx(piso)+'. Perderías dinero.';}
+      else if(comp<vende){t='<b>Se puede, pero ganas menos.</b> A ese precio te quedan '+cMx(gc)+' por pieza.';}
+      else{cl=' si';t='<b>Buena compra.</b> Está arriba de tu precio. Ganas '+cMx(gc)+' por pieza.';}
+      h+='<div class="calc-nota'+cl+'">Si otros lo venden en '+cMx(comp)+': '+t+'</div>';
+    }
+    h+='<div class="calc-cifra"><div class="et">Te cuesta <em>(estimado)</em></div><div class="n">'+cMx(cuesta)+'</div>'+
+       '<div class="ay">'+(imp>0?'Precio '+cMx(p)+' + impuestos '+cMx(imp):'Sin impuestos de importación')+
+       (pz>1?' · '+pz+' piezas: '+cMx(cuesta*pz):'')+'</div></div>';
+    h+='<div class="calc-cifra tap" data-ctap="1"><div class="et">Véndelo en <em>(sugerido)</em></div>'+
+       '<div class="n verde">'+cMx(vende)+'</div><div class="ay">Ganas '+cMx(gana)+' por pieza · toca para ver</div></div>'+
+       '<div class="calc-det">'+
+         '<div class="l"><span>Te paga el cliente</span><b>'+cMx(vende)+'</b></div>'+
+         '<div class="l"><span>Te paga por el envío</span><b>+'+cMx(cobro)+'</b></div>'+
+         '<div class="l"><span>Te costó el producto</span><b>−'+cMx(cuesta)+'</b></div>'+
+         '<div class="l"><span>Le pagas al moto</span><b>−'+cMx(moto)+'</b></div>'+
+         '<div class="l tot"><span>Te queda</span><b>'+cMx(gana)+'</b></div></div>';
+    h+='<div class="calc-mini"><div><div class="et">No bajes de</div><div class="n">'+cMx(piso)+'</div>'+
+       '<div class="ay">'+cMx(cuesta)+' + '+cMx(moto)+' de moto − '+cMx(cobro)+' que te paga. Ahí sales tablas.</div></div>'+
+       '<div><div class="et">Le cobras envío</div><div class="n">'+cMx(cobro)+'</div></div></div>';
+    caja.innerHTML=h;
+  });
+
+  if(!hay){out.innerHTML='<p class="calc-vacio">Escribe el precio y te digo si conviene.</p>';return;}
+  const total=Math.round(gastas*f);
+  out.innerHTML='<div class="calc-total"><div class="et">Vas a gastar <em>(estimado)</em></div>'+
+    '<div class="n">'+cMx(total)+'</div>'+
+    '<div class="ay">'+cMx(Math.round(gastas))+' en productos + '+cMx(total-Math.round(gastas))+' de impuestos.<br>'+
+    'Considera posibles gastos de envío no incluidos.</div></div>';
 }
 let calcListo=false;
 function calcMe(){
   if(!calcListo){
     calcListo=true;
-    ['c-precio','c-piezas','c-comp','c-moto','c-cobro'].forEach(i=>{const e=document.getElementById(i);if(e)e.addEventListener('input',calcPinta);});
+    cPintaFilas();
+    ['c-moto','c-cobro'].forEach(i=>{const e=document.getElementById(i);if(e)e.addEventListener('input',calcPinta);});
     const o=document.getElementById('c-origen');if(o)o.addEventListener('change',calcPinta);
-    const s=document.getElementById('c-out');if(s)s.addEventListener('click',e=>{const c=e.target.closest('[data-ctap]');if(c)c.classList.toggle('abierto');});
+    const l=document.getElementById('c-lista');
+    if(l){
+      l.addEventListener('input',e=>{
+        const c=e.target.dataset.c;if(!c)return;
+        cFilas[+e.target.closest('.calc-fila').dataset.i][c]=e.target.value;
+        calcPinta();
+      });
+      l.addEventListener('click',e=>{
+        const t=e.target.closest('[data-ctap]');if(t){t.classList.toggle('abierto');return;}
+        const q=e.target.closest('[data-q]');
+        if(q){cFilas.splice(+q.dataset.q,1);cPintaFilas();calcPinta();}
+      });
+    }
+    const m=document.getElementById('c-mas');
+    if(m)m.addEventListener('click',()=>{
+      if(cFilas.length>=10)return;
+      cFilas.push({p:'',n:1,c:''});cPintaFilas();calcPinta();
+      const ul=document.querySelector('.calc-fila:last-child input');if(ul)ul.focus();
+    });
   }
   calcPinta();
 }
