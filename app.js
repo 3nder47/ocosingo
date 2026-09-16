@@ -1,4 +1,4 @@
-const APP_VERSION='12.0';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='12.1';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -340,17 +340,68 @@ function setUsuario(u){
 }
 
 /* ---------- NAV ---------- */
-const ORDEN=['catalogo','ventas'];
+const ORDEN=['catalogo','calc','ventas'];
 function cambiarVista(v){
   const prev=state.vista;state.vista=v;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
   const dir=ORDEN.indexOf(v)>=ORDEN.indexOf(prev)?'slide-l':'slide-r';
   ORDEN.forEach(x=>{const el=document.getElementById('view-'+x);el.classList.toggle('hidden',x!==v);el.classList.remove('slide-l','slide-r');if(x===v&&prev!==v){void el.offsetWidth;el.classList.add(dir);}});
   window.scrollTo({top:0});
-  ({catalogo:cargarCatalogo,ventas:cargarDinero})[v]();
+  ({catalogo:cargarCatalogo,ventas:cargarDinero,calc:calcMe})[v]();
   enviarPendientes();
   const fab=document.getElementById('fab-add');if(fab){const enCat=(v==='catalogo'),esAlex=(state.usuario==='Alex');fab.style.display=enCat?'':'none';if(enCat){fab.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+(esAlex?'Dar de alta un pedido':'Agregar producto');fab.onclick=esAlex?function(){location.href='alta.html';}:abrirAlta;}}
 }
+/* ---------- ¿ME CONVIENE? — calculadora previa a la compra ----------
+   Pura aritmetica: no toca la hoja ni el servidor, asi que funciona sin senal.
+   Vive aqui y no en su propia pantalla para que Irene la tenga a un toque. */
+const cMx=n=>'$'+Math.round(Number(n)||0).toLocaleString('es-MX');
+const cNum=v=>{const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0;};
+function calcPinta(){
+  const $$=i=>document.getElementById(i),out=$$('c-out');if(!out)return;
+  const p=cNum($$('c-precio').value),f=cNum($$('c-origen').value)||1,
+        pz=Math.max(1,Math.round(cNum($$('c-piezas').value))||1),
+        moto=cNum($$('c-moto').value),cobro=cNum($$('c-cobro').value),
+        comp=cNum($$('c-comp').value);
+  if(!(p>0)){out.innerHTML='<p class="calc-vacio">Escribe el precio y te digo si conviene.</p>';return;}
+  const imp=Math.round(p*(f-1)),cuesta=Math.round(p*f),piso=cuesta+moto-cobro,
+        vende=Math.ceil(cuesta*2/10)*10,gana=vende+cobro-cuesta-moto;
+  let h='';
+  if(comp>0){
+    const gc=comp+cobro-cuesta-moto;let cl='',t='';
+    if(comp<=piso){cl=' no';t='<b>No lo compres.</b> A ti te sale en '+cMx(piso)+'. Perderías dinero.';}
+    else if(comp<vende){t='<b>Se puede, pero ganas menos.</b> A ese precio te quedan '+cMx(gc)+' por pieza.';}
+    else{cl=' si';t='<b>Buena compra.</b> Está arriba de tu precio. Ganas '+cMx(gc)+' por pieza.';}
+    h+='<div class="calc-nota'+cl+'">Si otros lo venden en '+cMx(comp)+': '+t+'</div>';
+  }else{
+    h+='<div class="calc-nota">Busca el mismo producto en Marketplace y anota su precio arriba. El precio de otros manda.</div>';
+  }
+  h+='<div class="calc-cifra"><div class="et">Te cuesta <em>(estimado)</em></div><div class="n">'+cMx(cuesta)+'</div>'+
+     '<div class="ay">'+(imp>0?'Precio '+cMx(p)+' + impuestos '+cMx(imp):'Sin impuestos de importación')+
+     (pz>1?' · '+pz+' piezas: '+cMx(cuesta*pz):'')+'</div></div>';
+  h+='<div class="calc-cifra tap" data-ctap="1"><div class="et">Véndelo en <em>(sugerido)</em></div>'+
+     '<div class="n verde">'+cMx(vende)+'</div><div class="ay">Ganas '+cMx(gana)+' por pieza · toca para ver</div></div>'+
+     '<div class="calc-det">'+
+       '<div class="l"><span>Te paga el cliente</span><b>'+cMx(vende)+'</b></div>'+
+       '<div class="l"><span>Te paga por el envío</span><b>+'+cMx(cobro)+'</b></div>'+
+       '<div class="l"><span>Te costó el producto</span><b>−'+cMx(cuesta)+'</b></div>'+
+       '<div class="l"><span>Le pagas al moto</span><b>−'+cMx(moto)+'</b></div>'+
+       '<div class="l tot"><span>Te queda</span><b>'+cMx(gana)+'</b></div></div>';
+  h+='<div class="calc-mini"><div><div class="et">No bajes de</div><div class="n">'+cMx(piso)+'</div>'+
+     '<div class="ay">'+cMx(cuesta)+' + '+cMx(moto)+' de moto − '+cMx(cobro)+' que te paga. Ahí sales tablas.</div></div>'+
+     '<div><div class="et">Le cobras envío</div><div class="n">'+cMx(cobro)+'</div></div></div>';
+  out.innerHTML=h;
+}
+let calcListo=false;
+function calcMe(){
+  if(!calcListo){
+    calcListo=true;
+    ['c-precio','c-piezas','c-comp','c-moto','c-cobro'].forEach(i=>{const e=document.getElementById(i);if(e)e.addEventListener('input',calcPinta);});
+    const o=document.getElementById('c-origen');if(o)o.addEventListener('change',calcPinta);
+    const s=document.getElementById('c-out');if(s)s.addEventListener('click',e=>{const c=e.target.closest('[data-ctap]');if(c)c.classList.toggle('abierto');});
+  }
+  calcPinta();
+}
+
 /* ---------- PULL TO REFRESH ---------- */
 function sheetAbierta(){return[...document.querySelectorAll('.overlay')].some(o=>!o.classList.contains('hidden'))||!document.getElementById('login').classList.contains('hidden');}
 function setupPullToRefresh(){
@@ -904,7 +955,7 @@ function pintarVenta(){
         <button class="opt ${state.precioTipo!=='costo'?'on':''}" id="pt-n" onclick="setPrecioTipo('normal')">Normal · $${precio(p.precio)}</button>
         <button class="opt ${state.precioTipo==='costo'?'on':''}" id="pt-c" onclick="setPrecioTipo('costo')">Al costo · $${precio(p.costoFinal)}<br><small style="font-weight:600">para la familia</small></button>
       </div></div>`:''}
-      <div class="field"><label>Cobro extra</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
+      <div class="field"><label>Cobro extra (el envío YA va en el precio · deja esto en 0)</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="field"><label>Motomandado / gastos</label><div class="money"><span>$</span><input id="gastos" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.gastos||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="calc" id="calc"></div>`;
     pintarCalc();if(fotos.length)tintDesde(fotos[0],document.getElementById('gal-wrap'));
