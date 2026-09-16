@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ui.css?v=2">
+<link rel="stylesheet" href="ui.css?v=3">
 <script>(function(){try{var t=localStorage.getItem("kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -340,13 +340,13 @@ function pintarResumen(){
 
   h+='<div class="c3 card kpi"><div class="lb">Se te está acabando '+ayuda("Productos que vendes seguido (uno cada 45 días o menos, con al menos 3 ventas en el año) y de los que te queda una pieza o ninguna. Son los primeros a reponer.")+'</div>'+
     '<div class="v">'+rep.length+' <small>'+(rep.length===1?"producto":"productos")+'</small></div><ul class="mini">'+
-    (rep.length?rep.slice(0,3).map(function(x){return '<li><span>'+esc(x.descripcion)+'</span><span class="m ok">'+(x.stock?"queda "+x.stock:"agotado")+' · uno cada '+x.cada+' días</span></li>';}).join(""):'<li><span class="tenue">Nada que vendas seguido se está acabando.</span></li>')+
+    (rep.length?rep.slice(0,3).map(function(x){return '<li><span>'+esc(x.descripcion)+' · '+(x.stock?"queda "+x.stock:"agotado")+'</span><span class="m ok">cada '+x.cada+' días</span></li>';}).join(""):'<li><span class="tenue">Nada que vendas seguido se está acabando.</span></li>')+
     '</ul><button class="ir" data-ir="inventario" data-tab="reponer">Ver qué reponer</button></div>';
 
   var deb=VEN.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0),porV={};
-  deb.forEach(function(v){var k=v.vendedor||"—";porV[k]=(porV[k]||0)+(Number(v.aporte)||0);});
+  deb.forEach(function(v){var k="Ventas de "+(v.vendedor||"—");porV[k]=(porV[k]||0)+(Number(v.aporte)||0);});
   var masVieja=deb.reduce(function(s,v){return !s||v.fechaTimestamp<s?v.fechaTimestamp:s;},0);
-  h+='<div class="c3 card kpi"><div class="lb">Pendiente de transferir '+ayuda("Ventas de tu mercancía que hizo alguien más y cuyo costo todavía no te han pasado. Ellas se quedan la ganancia; a ti te transfieren el costo.")+'</div>'+
+  h+='<div class="c3 card kpi"><div class="lb">Pendiente de transferir '+ayuda("Dinero de ventas de tu mercancía que todavía está en Ocosingo. Si vendió Irene o Mamá te deben el costo (la ganancia es de ellas); si vendiste tú y cobraron en efectivo, te deben la venta completa.")+'</div>'+
     '<div class="v">'+mx(debe)+'</div><ul class="mini">'+
     (deb.length?Object.keys(porV).sort(function(a,b){return porV[b]-porV[a];}).slice(0,2).map(function(k){return '<li><span>'+esc(k)+'</span><span class="m mal">'+mx(porV[k])+'</span></li>';}).join("")+'<li><span class="tenue">'+deb.length+(deb.length===1?" venta":" ventas")+(masVieja?', la más vieja del '+fCorta(masVieja):'')+'</span></li>':'<li><span class="tenue">Todo transferido. Nadie te debe.</span></li>')+
     '</ul><button class="ir" data-ir="ventas" data-est="pend">Ver qué ventas son</button></div>';
@@ -428,7 +428,7 @@ function etTransfer(v){
 function pintarVentas(){
   var L=ventasFiltradas(),tot=L.reduce(function(s,v){return s+entra(v);},0),gan=L.reduce(function(s,v){return s+(Number(v.ganancia)||0);},0);
   var deb=L.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0);
-  $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · entraron "+mx(tot)+" · ganancia "+mx(gan)+" ("+pct(gan,tot)+"%)"+(deb.length?" · te deben "+mx(debe)+" de "+deb.length+(deb.length===1?" venta":" ventas"):"");
+  $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · entraron "+mx(tot)+" · ganancia "+mx(gan)+" ("+pct(gan,tot)+"%)"+(deb.length?" · por transferir "+mx(debe)+" de "+deb.length+(deb.length===1?" venta":" ventas"):"");
   if(!L.length){$("v-tabla").innerHTML='<div class="vacio">No hay ventas con estos filtros.</div>';return;}
   if(vVista==="producto"){pintarVentasProducto(L);return;}
   var m={};
@@ -440,14 +440,14 @@ function pintarVentas(){
   if(!Object.keys(vAbiertos).length&&Ms[0])vAbiertos[Ms[0].k]=1;
   var h='<table><thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Entró</th><th class="num">Ganancia</th><th class="num">Margen</th><th class="num">vs mes anterior</th></tr></thead><tbody>';
   Ms.forEach(function(x,i){
-    var ant=Ms[i+1],dif=ant?x.tot-ant.tot:null,ab=vAbiertos[x.k];
+    var ant=Ms[i+1],dif=(ant&&x.k!==kHoy)?x.tot-ant.tot:null,ab=vAbiertos[x.k];
     var d=new Date(x.t);
     h+='<tr class="fila-mes'+(ab?" abierto":"")+'" data-k="'+x.k+'"><td><span class="flecha">▶</span>'+MESL[d.getMonth()]+' '+d.getFullYear()+(x.k===kHoy?' <span class="et gris">en curso</span>':'')+'</td>'+
       '<td class="num">'+x.n+'</td><td class="num">'+mx(x.tot)+'</td><td class="num">'+mx(x.gan)+'</td><td class="num">'+pct(x.gan,x.tot)+'%</td>'+
       '<td class="num '+(dif==null?"tenue":dif>=0?"mas":"menos")+'">'+(dif==null?"—":(dif>=0?"+":"")+mx(dif))+'</td></tr>';
     h+='<tr class="fila-det'+(ab?" show":"")+'"><td colspan="6"><table class="sub-t"><tbody>'+
       x.v.sort(function(a,b){return b.fechaTimestamp-a.fechaTimestamp;}).map(function(v){
-        return '<tr><td>'+fCorta(v.fechaTimestamp)+' · '+esc(v.vendedor||"")+'</td><td>'+esc(v.descripcion)+'</td><td class="num">'+mx(entra(v))+'</td><td class="num '+(Number(v.ganancia)>=0?"mas":"menos")+'">'+mx(v.ganancia)+'</td><td>'+etTransfer(v)+(pendiente(v)?' <span class="tenue">te debe '+mx(v.aporte)+(v.corte?' · corte '+esc(v.corte):'')+'</span>':'')+'</td></tr>';}).join("")+
+        return '<tr><td>'+fCorta(v.fechaTimestamp)+' · '+esc(v.vendedor||"")+'</td><td>'+esc(v.descripcion)+'</td><td class="num">'+mx(entra(v))+'</td><td class="num '+(Number(v.ganancia)>=0?"mas":"menos")+'">'+mx(v.ganancia)+'</td><td>'+etTransfer(v)+(pendiente(v)?' <span class="tenue">por transferir '+mx(v.aporte)+(v.corte?' · corte '+esc(v.corte):'')+'</span>':'')+'</td></tr>';}).join("")+
       '</tbody></table></td></tr>';
   });
   $("v-tabla").innerHTML=h+'</tbody></table>';
