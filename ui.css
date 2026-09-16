@@ -1,4 +1,4 @@
-/* ui.css · v2 · sistema visual de las pantallas de PC de Kiosko
+/* ui.css · v3 · sistema visual de las pantallas de PC de Kiosko
    Plano, blanco, un acento verde. Lo oscuro solo vive en el héroe y la barra flotante.
    Modo oscuro: automático (sistema) o manual con <html data-theme="dark|light">. */
 :root{
@@ -111,9 +111,9 @@ h2{font-size:15px;margin:0 0 2px}
 .barra{height:8px;background:var(--linea);border-radius:var(--pill);overflow:hidden;margin-top:4px}
 .barra i{display:block;height:100%;background:var(--verde);border-radius:var(--pill)}
 .mini{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
-.mini li{display:flex;justify-content:space-between;gap:10px}
-.mini li span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mini .m{font-family:var(--mono);font-weight:600;white-space:nowrap}
+.mini li{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.mini li span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.mini .m{font-family:var(--mono);font-weight:600;white-space:nowrap;flex:none;font-size:13px}
 .mini .m.ok{color:var(--verde-ink)}.mini .m.mal{color:var(--naranja)}
 
 /* ayuda: el "?" que explica cada cifra */
