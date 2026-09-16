@@ -89,7 +89,7 @@ details[open] summary{margin-bottom:1.1rem}
 </header>
 
 <label><span>Precio que ves</span>
-  <span class="money"><i>$</i><input id="precio" type="number" inputmode="decimal" min="0" step="1" placeholder="120"></span>
+  <span class="money"><i>$</i><input id="precio" type="text" inputmode="decimal" min="0" step="any" placeholder="120"></span>
 </label>
 
 <label><span>¿De dónde?</span>
@@ -104,7 +104,7 @@ details[open] summary{margin-bottom:1.1rem}
     <input id="piezas" type="number" inputmode="numeric" min="1" step="1" value="1">
   </label>
   <label><span>Precio de la competencia</span>
-    <span class="money"><i>$</i><input id="mercado" type="number" inputmode="decimal" min="0" step="10" placeholder="opcional"></span>
+    <span class="money"><i>$</i><input id="mercado" type="text" inputmode="decimal" min="0" step="any" placeholder="opcional"></span>
   </label>
 </div>
 
@@ -114,8 +114,8 @@ details[open] summary{margin-bottom:1.1rem}
   <summary>Ajustes</summary>
   <p class="aclara">Cámbialos solo si tu caso es distinto.</p>
   <div class="duo">
-    <label><span>Moto</span><span class="money"><i>$</i><input id="moto" type="number" inputmode="decimal" min="0" step="5" value="35"></span></label>
-    <label><span>Le cobras</span><span class="money"><i>$</i><input id="cobro" type="number" inputmode="decimal" min="0" step="5" value="10"></span></label>
+    <label><span>Moto</span><span class="money"><i>$</i><input id="moto" type="text" inputmode="decimal" min="0" step="any" value="35"></span></label>
+    <label><span>Le cobras</span><span class="money"><i>$</i><input id="cobro" type="text" inputmode="decimal" min="0" step="any" value="10"></span></label>
   </div>
 </details>
 
@@ -123,7 +123,8 @@ details[open] summary{margin-bottom:1.1rem}
 (function(){
 "use strict";
 var $=function(i){return document.getElementById(i);};
-function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
+/* El teclado en español escribe coma decimal: la aceptamos. */
+function num(v){var n=parseFloat(String(v==null?"":v).replace(/,/g,".").replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
 function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
 function a10(n){return Math.ceil(n/10)*10;}
 
