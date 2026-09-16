@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=12.2">
+<link rel="stylesheet" href="styles.css?v=12.3">
 </head>
 <body>
 
@@ -58,13 +58,10 @@
     <div id="view-calc" class="view hidden">
       <div class="calc-head"><h3>¿Me conviene?</h3><p>Escribe el precio antes de comprar.</p></div>
       <div class="calc-campos">
-        <label><span>Precio que ves</span><span class="money"><i>$</i><input id="c-precio" type="text" inputmode="decimal" min="0" step="any" placeholder="120"></span></label>
         <label><span>¿De dónde?</span><select id="c-origen"><option value="1.33">Viene de China (Temu, AliExpress, TikTok)</option><option value="1.00">Ya está en México (local, Mercado Libre)</option></select></label>
-        <div class="calc-duo">
-          <label><span>Piezas</span><input id="c-piezas" type="number" inputmode="numeric" min="1" step="1" value="1"></label>
-          <label><span>Precio de la competencia</span><span class="money"><i>$</i><input id="c-comp" type="text" inputmode="decimal" min="0" step="any" placeholder="opcional"></span></label>
-        </div>
       </div>
+      <div id="c-lista"></div>
+      <button class="calc-mas" id="c-mas">+ Otro producto</button>
       <div id="c-out"></div>
       <div class="calc-ajustes">
         <div class="calc-duo">
@@ -221,6 +218,6 @@
 </div>
 
 <script src="config.js"></script>
-<script src="app.js?v=12.2"></script>
+<script src="app.js?v=12.3"></script>
 </body>
 </html>
