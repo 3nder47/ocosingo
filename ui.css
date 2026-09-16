@@ -1,4 +1,4 @@
-/* ui.css · v1 · sistema visual de las pantallas de PC de Kiosko
+/* ui.css · v2 · sistema visual de las pantallas de PC de Kiosko
    Plano, blanco, un acento verde. Lo oscuro solo vive en el héroe y la barra flotante.
    Modo oscuro: automático (sistema) o manual con <html data-theme="dark|light">. */
 :root{
@@ -91,7 +91,7 @@ h2{font-size:15px;margin:0 0 2px}
 /* ---- tarjetas ---- */
 .card{background:var(--card);border:1px solid var(--linea);border-radius:var(--r);box-shadow:var(--sombra)}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-.c4{grid-column:span 4}.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}
 
 .hero{background:var(--oscuro);color:#fff;border-radius:var(--r);padding:26px 28px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end}
 .hero .lb{color:var(--oscuro-tx);font-weight:600}
@@ -246,13 +246,14 @@ th.orden.on{color:var(--ink)}
 .aviso.info{background:var(--azul-bg);color:var(--azul-ink)}
 .aviso b{color:inherit}
 
+@media (max-width:1100px){.c3{grid-column:span 6}}
 @media (max-width:900px){
   .app{grid-template-columns:1fr}
   .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}
   .marca{padding:0 8px 0 0;width:100%}
   .nav{width:auto}.side .sep,.side .fin{display:none}
   .main{padding:16px 16px 130px}
-  .c4,.c6,.c8{grid-column:span 12}
+  .c3,.c4,.c6,.c8{grid-column:span 12}
   .flot{left:16px;right:16px}
   .hero{grid-template-columns:1fr}.hero .pastillas{align-items:flex-start;flex-direction:row;flex-wrap:wrap}
   .hero .big{font-size:44px}
