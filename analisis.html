@@ -1,66 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#EAF0F6">
-<title>Análisis Estratégico — Kiosko</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1D9E75">
+<title>Kiosko · Resumen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="kiosko.css?v=3">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui.css?v=1">
+<script>(function(){try{var t=localStorage.getItem("kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
 
 <div class="pin" id="pin"><div class="pin-c">
-  <div class="logo-icon">Ki</div>
-  <h1>Análisis Estratégico</h1>
-  <p>Ingresa tu PIN de Kiosko</p>
-  <input id="pin-in" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autofocus>
+  <div class="logo">Ki</div>
+  <h1>Kiosko</h1>
+  <p>Escribe tu PIN para ver tus números.</p>
+  <input id="pin-in" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autofocus aria-label="PIN">
   <div class="pin-e" id="pin-e"></div>
 </div></div>
 
-<div id="app" class="oculto"><div class="app">
-  <aside class="lado">
-    <div class="marca"><div class="logo-icon">Ki</div><div><b>Kiosko</b><small>Ocosingo</small></div></div>
-    <div class="nav-t">DECISIONES CLAVE</div>
-    <button class="nav on" data-ir="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Resumen</button>
-    <button class="nav" data-ir="simular"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 7h6M9 11h6M9 15h3"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>0. ¿Me conviene?</button>
-    <button class="nav" data-ir="recientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="M12 12v9M4 7l8 5 8-5"/></svg>Recién llegados</button>
-    <button class="nav" data-ir="rotacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>1. Qué comprar</button>
-    <button class="nav" data-ir="remate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg>2. Plan de remate <span class="pin-n" id="nav-n"></span></button>
-    <button class="nav" data-ir="margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>3. Qué te deja más dinero</button>
-    <div class="nav-t">HISTÓRICO</div>
-    <button class="nav" data-ir="ventas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>Ventas por mes</button>
-    <button class="nav" data-ir="parado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 12V7M12 12l4 2"/></svg>Dinero detenido</button>
-    <div class="nav-t">OTRAS PANTALLAS</div>
-    <button class="nav" onclick="location.href='glosario.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Glosario</button>
-    <button class="nav" onclick="location.href='alta.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
-  </aside>
+<div id="app" class="app oculto">
+<aside class="side">
+  <div class="marca"><div class="logo">Ki</div><div><b>Kiosko</b><small>Ocosingo</small></div></div>
+  <button class="nav on" data-p="resumen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Resumen</button>
+  <button class="nav" data-p="ventas"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Ventas</button>
+  <button class="nav" data-p="inventario"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>Inventario <span class="n" id="nav-n"></span></button>
+  <div class="sep"></div>
+  <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>¿Me conviene?</button>
+  <a class="nav" href="alta.html"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</a>
+  <div class="fin"><span>Sesión de Alex</span><button class="tema" id="tema" title="Cambiar apariencia">Tema: auto</button></div>
+</aside>
 
-  <div>
-    <div class="movil" id="movil"></div>
-    <main class="main">
-      <div class="cab">
-        <div><h1>Tablero de decisiones</h1><p>Dónde está tu dinero, qué comprar y cuánto recuperar hoy mismo</p></div>
-        <div class="rango"><button id="r-todo" class="on">Todo el tiempo</button><button id="r-12m">Últimos 12 meses</button></div>
+<main class="main">
+  <div id="carga" class="cargando"><div class="spin"></div>Leyendo tu hoja…</div>
+
+  <!-- ===== RESUMEN ===== -->
+  <section class="pant" id="p-resumen">
+    <div class="top">
+      <div><h1>Resumen</h1><p>Dónde está tu dinero y qué hacer con él hoy.</p></div>
+      <div class="seg"><button id="r-todo" class="on">Todo el tiempo</button><button id="r-12m">Últimos 12 meses</button></div>
+    </div>
+    <div class="grid" id="rej"></div>
+  </section>
+
+  <!-- ===== VENTAS ===== -->
+  <section class="pant" id="p-ventas">
+    <div class="top">
+      <div><h1>Ventas</h1><p id="v-sub"></p></div>
+      <div class="seg"><button class="on" data-vista="mes">Por mes</button><button data-vista="producto">Por producto</button></div>
+    </div>
+    <div class="card">
+      <div class="filtros">
+        <div class="buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="v-q" placeholder="Buscar producto"></div>
+        <span class="chip"><select id="v-cat"><option value="">Todas las categorías</option></select></span>
+        <span class="chip"><select id="v-vend"><option value="">Todos los vendedores</option></select></span>
+        <span class="chip"><select id="v-merc"><option value="Alex">Mi mercancía</option><option value="">Mía + la de Irene</option></select></span>
+        <span class="chip"><select id="v-per"><option value="12m">Últimos 12 meses</option><option value="anio">Este año</option><option value="todo">Todo</option></select></span>
       </div>
-      <div class="bento" id="rej"><div class="cargando"><div class="spin"></div>Cargando datos de tu negocio…</div></div>
-    </main>
-  </div>
-</div></div>
+      <div class="tabla-wrap" id="v-tabla"></div>
+    </div>
+  </section>
 
-<div class="bottom-bar" id="bot"><div class="bottom-bar-inner">
-  <div class="bottom-bar-text"><small id="bot-s">Selecciona mercancía a rematar</small><b class="mono" id="bot-v">$0</b></div>
-  <button class="btn-action gh" id="b-limpiar">Limpiar</button>
-  <button class="btn-action pri" id="b-plan" disabled>Generar plan</button>
-</div></div>
-<div class="modal-overlay" id="mo"><div class="modal-box" id="mo-in"></div></div>
+  <!-- ===== INVENTARIO ===== -->
+  <section class="pant" id="p-inventario">
+    <div class="top">
+      <div><h1>Inventario</h1><p id="i-sub"></p></div>
+      <div class="seg"><button class="on" data-merc="Alex">Solo lo mío</button><button data-merc="">Mío + Irene</button></div>
+    </div>
+    <div class="card">
+      <div class="tabs" id="i-tabs">
+        <button class="on" data-tab="todo">Todo<span class="n"></span></button>
+        <button data-tab="reciente">Recién llegado<span class="n"></span></button>
+        <button data-tab="reponer">Se acaba<span class="n"></span></button>
+        <button data-tab="parado">Parado +6 meses<span class="n"></span></button>
+        <button data-tab="nocomprar">No volver a comprar<span class="n"></span></button>
+      </div>
+      <div class="filtros">
+        <div class="buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="i-q" placeholder="Buscar por nombre o modelo"></div>
+        <span class="chip"><select id="i-cat"><option value="">Todas las categorías</option></select></span>
+        <span class="chip"><select id="i-fecha"><option value="">Comprado: cualquier fecha</option><option value="30">Últimos 30 días</option><option value="90">Últimos 3 meses</option><option value="anio">Este año</option><option value="viejo">Hace más de un año</option></select></span>
+        <span class="chip"><select id="i-vista"><option value="producto">Ver por producto</option><option value="categoria">Ver por categoría</option></select></span>
+        <span class="espaciador"></span>
+        <span class="chip" title="Lo que pagas de motomandado en cada entrega; ya viene restado en 'Te queda'">Moto que absorbes <input id="moto" type="number" min="0" step="5" value="25"> $</span>
+      </div>
+      <div class="nota" id="i-nota" style="display:none"></div>
+      <div class="tabla-wrap" id="i-tabla"></div>
+    </div>
+  </section>
+
+  <!-- ===== ¿ME CONVIENE? ===== -->
+  <section class="pant" id="p-conviene">
+    <div class="top"><div><h1>¿Me conviene comprarlo?</h1><p>Escribe lo que ves en la plataforma antes de pagar. Te digo cuánto te cuesta puesto en Ocosingo y a cuánto venderlo.</p></div></div>
+    <div class="card">
+      <div class="form">
+        <label class="campo"><span>Precio en la plataforma, por pieza</span><span class="money"><i>$</i><input id="sim-precio" type="number" min="0" step="1" placeholder="200" inputmode="decimal"></span></label>
+        <label class="campo"><span>Piezas</span><input id="sim-piezas" type="number" min="1" step="1" value="2"></label>
+        <label class="campo"><span>¿Dónde lo compras?</span><select id="sim-tienda">
+          <option value="1.33">Temu / AliExpress / TikTok / Shopee — viene de China</option>
+          <option value="1.00">Temu con etiqueta "Local" — ya está en México</option>
+          <option value="1.00">Mercado Libre — compra nacional</option>
+          <option value="">Otro · pongo el factor a mano</option></select></label>
+        <label class="campo"><span>Factor <button class="ayuda" type="button" data-t="Lo que viene de China paga 33.5% de impuesto de paquetería: por eso 1.33. Lo que ya está en México no paga nada: 1.00. A veces el que se ve más caro sale más barato.">?</button></span><span class="money"><i>×</i><input id="sim-factor" type="number" min="1" step=".01" value="1.33"></span></label>
+        <label class="campo"><span>Precio en Marketplace (opcional)</span><span class="money"><i>$</i><input id="sim-mercado" type="number" min="0" step="10" placeholder="360" inputmode="decimal"></span></label>
+        <label class="campo"><span>Categoría</span><select id="sim-cat"><option value="">— elige —</option></select></label>
+      </div>
+      <div id="sim-out"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="flot" id="flot">
+  <div><small>Seleccionado para rematar</small><b id="flot-v">$0</b></div>
+  <div class="tenue" id="flot-n" style="color:var(--oscuro-tx)"></div>
+  <span class="esp"></span>
+  <button class="btn gh" id="b-limpiar">Limpiar</button>
+  <button class="btn pri" id="b-plan">Armar plan de remate</button>
+</div>
+
+<div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
 <script src="config.js"></script>
 <script>
 (function(){
 "use strict";
+/* ============ API (misma lógica de reintentos que antes) ============ */
 var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
 function apiUnaVez(a,p,b,ms){ms=ms||30000;
   if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
@@ -73,591 +139,479 @@ function apiUnaVez(a,p,b,ms){ms=ms||30000;
      if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
      if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
      throw e;});}
-
-/* ---------- Reintentos ante los hipos de Google ----------------------------
-   Apps Script a veces ejecuta el codigo bien y falla al ENTREGAR la respuesta
-   (404 o 5xx desde googleusercontent). Se reintenta 2 veces mas, con 0.4 s y
-   1.2 s de espera. Si los tres intentos fallan sale el mismo error de siempre.
-   Solo se reintenta lo que no puede duplicar nada: las lecturas y verificarPin.
-   aplicarRemate NO se reintenta: guardaria el precio ya rematado en la columna
-   T como "precio antes" y romperia el deshacer. */
-var REINTENTABLES={verificarPin:1};
-var TRANSITORIOS=[404,429,500,502,503,504];
+var REINTENTABLES={verificarPin:1},TRANSITORIOS=[404,429,500,502,503,504];
 function api(a,p,b,ms){
   var esperas=[400,1200],puede=!b||REINTENTABLES[a]===1;
   function intento(i){
     return apiUnaVez(a,p,b,ms).catch(function(e){
-      var transitorio=(e.tipo==="http"&&TRANSITORIOS.indexOf(e.status)>-1)
-                    ||(e.tipo==="red"&&navigator.onLine!==false);
-      if(!puede||!transitorio||i>=esperas.length)throw e;
+      var tr=(e.tipo==="http"&&TRANSITORIOS.indexOf(e.status)>-1)||(e.tipo==="red"&&navigator.onLine!==false);
+      if(!puede||!tr||i>=esperas.length)throw e;
       return new Promise(function(ok){setTimeout(ok,esperas[i]);}).then(function(){return intento(i+1);});
     });
   }
   return intento(0);
 }
 
+/* ============ utilidades ============ */
 var $=function(i){return document.getElementById(i);};
+var DIA=864e5,HOY=Date.now();
 function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
-function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
+function mx(n){var v=Math.round(Number(n)||0);return (v<0?"−":"")+"$"+Math.abs(v).toLocaleString("es-MX");}
 function r2(n){return Math.round((Number(n)||0)*100)/100;}
 function a10(n){return Math.ceil(n/10)*10;}
+function pct(a,b){return b>0?Math.round(a/b*100):0;}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
-function dias(d){if(d==null||!isFinite(d))return"—";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
-var PAL=["#10B981","#84CC16","#3B82F6","#F97316","#8B5CF6","#14B8A6","#EF4444","#F59E0B","#EC4899","#64748B"];
-var D=null,CAT=[],MOTO_REAL=35,COBRO=10,MESES=[],rango="todo",sel={},FOTOS={},MOTO=25,orden="dinero",verTodo=false,seccion="resumen";
+function dias(d){if(d==null||!isFinite(d))return"—";d=Math.round(d);if(d<1)return"hoy";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
+var MESN=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+var MESL=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+function fCorta(ts){if(!ts)return"—";var d=new Date(ts);return d.getDate()+" "+MESN[d.getMonth()]+" "+d.getFullYear();}
+function fMes(ts){var d=new Date(ts);return MESN[d.getMonth()]+" "+d.getFullYear();}
+function pz(n){return n+(n===1?" pieza":" piezas");}
+function ayuda(t){return '<button class="ayuda" type="button" data-t="'+esc(t)+'">?</button>';}
+function foto(x){return x.imagen?'<img class="foto" src="'+esc(x.imagen)+'" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'foto\'}))">':'<span class="foto"></span>';}
 
-function cuenta(el,hasta,fmt){
-  if(!el)return;var t0=performance.now(),dur=1000;
-  (function paso(t){var k=Math.min(1,(t-t0)/dur);k=1-Math.pow(1-k,3);el.textContent=fmt(hasta*k);if(k<1)requestAnimationFrame(paso);})(t0);
-}
+/* ============ estado ============ */
+var D=null,CAT=[],VEN=[],INV=[],rango="todo",MOTO=25,COBRO=10;
+var sel={};                       // clave -> precio de remate
+var vVista="mes",vAbiertos={};    // ventas
+var iTab="todo",iMerc="Alex";     // inventario
+var vOrden={campo:"utilidad",dir:-1};
 
-/* ---------- Sesion de Alex, compartida entre alta / analisis / glosario ----------
-   Vive en sessionStorage: aguanta recargas y saltos entre pantallas dentro de la
-   misma pestana, y se borra sola al cerrar el navegador. No guarda el PIN: solo
-   la marca de que ya lo validaste. */
+/* ============ sesión ============ */
 var SES_KEY="kiosko:sesion:alex";
 function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
 function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
-function entrar(){
-  $("pin").classList.add("oculto");$("app").classList.remove("oculto");
-  cargar();
-}
-
 var pi=$("pin-in");
 pi.addEventListener("input",function(){
   if(pi.value.length<4)return;
-  var v=pi.value;pi.disabled=true;$("pin-e").style.color="";$("pin-e").textContent="Conectando… la primera vez puede tardar unos segundos";
+  var v=pi.value;pi.disabled=true;$("pin-e").style.color="";$("pin-e").textContent="Conectando… la primera vez tarda unos segundos";
   api("verificarPin",null,{pin:v},60000).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
-    if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
+    if(d.vendedor!=="Alex")throw new Error("Esta pantalla es solo de Alex");
     abrirSesion();entrar();
   }).catch(function(e){$("pin-e").style.color="var(--rojo)";$("pin-e").textContent=e.message+" · vuelve a escribirlo";pi.value="";pi.disabled=false;pi.focus();});
 });
+function entrar(){$("pin").classList.add("oculto");$("app").classList.remove("oculto");cargar();}
 
+/* ============ tema ============ */
+var TEMAS=["auto","dark","light"],TEMAN={auto:"auto",dark:"oscuro",light:"claro"};
+function tema(){var t;try{t=localStorage.getItem("kiosko:tema");}catch(e){}return TEMAS.indexOf(t)>-1?t:"auto";}
+function pintarTema(){var t=tema();if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);$("tema").textContent="Tema: "+TEMAN[t];}
+$("tema").addEventListener("click",function(){var n=TEMAS[(TEMAS.indexOf(tema())+1)%3];try{if(n==="auto")localStorage.removeItem("kiosko:tema");else localStorage.setItem("kiosko:tema",n);}catch(e){}pintarTema();});
+pintarTema();
+
+/* ============ carga ============ */
 function cargar(){
-  $("rej").innerHTML='<div class="cargando"><div class="spin"></div>Sincronizando tu hoja…</div>';
-  $("bot").classList.remove("on");
+  $("carga").classList.remove("oculto");
   Promise.all([
     api("analisis",{rango:rango},null,45000),
     api("catalogo",null,null,30000).catch(function(){return[];}),
-    api("inicio",{usuario:"Alex"},null,35000).catch(function(){return{};})
+    api("ventas",{limite:3000},null,45000).catch(function(){return[];})
   ]).then(function(r){
-    D=r[0];sel={};FOTOS={};CAT=r[1]||[];
-    (r[1]||[]).forEach(function(x){if(x&&x.descripcion&&x.imagen)FOTOS[norm(x.descripcion)]=x.imagen;});
-    MESES=(r[2]&&r[2].ventasMes)||[];
-    pintar();
-  }).catch(function(e){$("rej").innerHTML='<div class="cargando">'+esc(e.message)+"</div>";});
+    D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];
+    armarInventario();llenarSelects();
+    $("carga").classList.add("oculto");
+    pintarTodo();ir(pantalla||"resumen");
+  }).catch(function(e){$("carga").innerHTML='<b>'+esc(e.message)+'</b><br><button class="btn claro" style="margin-top:12px" onclick="location.reload()">Volver a intentar</button>';});
 }
-$("r-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcaR();cargar();});
-$("r-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcaR();cargar();});
+function recargarAnalisis(){
+  api("analisis",{rango:rango},null,45000).then(function(d){D=d||{};pintarResumen();pintarConviene();}).catch(function(){});
+}
+$("r-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcaR();recargarAnalisis();});
+$("r-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcaR();recargarAnalisis();});
 function marcaR(){$("r-todo").classList.toggle("on",rango==="todo");$("r-12m").classList.toggle("on",rango==="12m");}
-function meses(){if(rango==="12m")return 12;var d=D&&D.resumen&&D.resumen.desde;if(!d)return 12;
-  return Math.max(1,Math.round((Date.now()-Number(d))/(30.4*864e5)));}
-function viejos(){var V=(D.viejos||[]).filter(function(x){return x.dias>180;}).slice();
-  V.sort(orden==="dinero"?function(a,b){return b.capital-a.capital;}:function(a,b){return b.dias-a.dias;});return V;}
-function costoU(x){return x.piezas?x.capital/x.piezas:0;}
+function meses(){if(rango==="12m")return 12;var d=D.resumen&&D.resumen.desde;if(!d)return 12;return Math.max(1,Math.round((HOY-Number(d))/(30.4*DIA)));}
 
-/* Gráfica: escala proporcional, raya de promedio y el mes en curso marcado aparte */
-function area(){
-  if(!MESES.length)return "";
-  var W=680,H=200,P={t:26,b:10,l:4,r:4};
-  var vals=MESES.map(function(m){return Number(m.total)||0;}),n=vals.length;
-  var completos=n>1?vals.slice(0,n-1):vals;
-  var prom=completos.reduce(function(a,b){return a+b;},0)/Math.max(1,completos.length);
-  var max=Math.max.apply(null,vals.concat([1]));
-  var px=function(i){return P.l+i*((W-P.l-P.r)/Math.max(1,n-1));};
-  var py=function(v){return P.t+(H-P.t-P.b)*(1-v/max);};
-  var pts=vals.map(function(v,i){return [px(i),py(v)];});
-  var d=pts.map(function(q,i){if(!i)return "M"+q[0].toFixed(1)+","+q[1].toFixed(1);
-    var p0=pts[i-1],cx=(p0[0]+q[0])/2;
-    return "C"+cx.toFixed(1)+","+p0[1].toFixed(1)+" "+cx.toFixed(1)+","+q[1].toFixed(1)+" "+q[0].toFixed(1)+","+q[1].toFixed(1);}).join(" ");
-  var ar=d+" L"+pts[n-1][0].toFixed(1)+","+H+" L"+pts[0][0].toFixed(1)+","+H+" Z";
-  var yp=py(prom);
-  return '<div class="chart-container" id="chart"><svg viewBox="0 0 '+W+" "+H+'">'+
-    '<defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10B981"/><stop offset="1" stop-color="#84CC16"/></linearGradient>'+
-    '<linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10B981" stop-opacity=".3"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>'+
-    '<line x1="'+P.l+'" y1="'+yp.toFixed(1)+'" x2="'+(W-P.r)+'" y2="'+yp.toFixed(1)+'" stroke="#94A3B8" stroke-width="1" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>'+
-    '<text x="'+(W-P.r)+'" y="'+(yp-7).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#94A3B8">promedio '+mx(prom)+'</text>'+
-    '<path class="area" d="'+ar+'"/><path class="linea" vector-effect="non-scaling-stroke" d="'+d+'"/>'+
-    pts.map(function(q,i){return '<circle class="pt'+(i===n-1?" curso":"")+'" data-i="'+i+'" cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="5"/>';}).join("")+
-    '</svg><div class="tip" id="tip"></div>'+
-    '<div class="ejes"><span>'+esc(MESES[0].label)+"</span><span>"+esc(MESES[n-1].label)+" · en curso</span></div></div>";
-}
-/* Texto honesto: compara meses completos y deja el actual aparte */
-function textoVentas(){
-  var n=MESES.length,curso=MESES[n-1],comp=n>1?MESES[n-2]:null,ant=n>2?MESES[n-3]:null;
-  var dif=(comp&&ant)?(Number(comp.total)-Number(ant.total)):0;
-  return '<p class="sub">Historial de los últimos '+n+' meses. La raya punteada es tu promedio mensual: arriba fue buen mes, abajo fue flojo.'+
-    (comp?" Tu último mes completo, <b>"+esc(comp.label)+"</b>, cerró en <b>"+mx(comp.total)+"</b>"+
-      (ant?" ("+(dif>=0?"<b style='color:var(--verde-deep)'>+"+mx(dif)+"</b>":"<b style='color:var(--rojo)'>−"+mx(-dif)+"</b>")+" contra "+esc(ant.label)+")":"")+".":"")+
-    " <b>"+esc(curso.label)+"</b> va a la mitad, por eso no se compara todavía.</p>";
-}
-/* Desglose visual: filas con barra proporcional. Sirve para explicar CUALQUIER
-   cuenta con peras y manzanas, en vez de soltar una fórmula. */
-function desglose(titulo,filas,resultado,nota){
-  var max=Math.max.apply(null,filas.concat([resultado]).map(function(f){return Math.abs(f.v);}).concat([1]));
-  var h='<div class="desglose"><div class="dg-t">'+esc(titulo)+"</div>";
-  filas.forEach(function(f){
-    h+='<div class="dg-fila '+(f.signo==="-"?"dg-menos":"dg-mas")+'">'+
-       '<div class="et">'+esc(f.et)+(f.sub?"<small>"+esc(f.sub)+"</small>":"")+"</div>"+
-       '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(f.v)/max*100).toFixed(1)+'%"></div></div>'+
-       '<div class="val">'+(f.signo==="-"?"−":"+")+mx(Math.abs(f.v))+"</div></div>";
+/* ============ inventario: un renglón por producto, con su historia de ventas ============
+   Junta lo que hay en cajas (catalogo) con lo que ya se vendió (ventas). Así un producto
+   agotado que se vendía rápido también aparece: es el candidato a reponer. */
+var CATMAP={};
+function claveDe(desc,origen){return norm(desc)+"|"+(origen||"Alex");}
+function armarInventario(){
+  var m={},v12=HOY-365*DIA;
+  CATMAP={};
+  (D.productos||[]).concat(D.viejos||[],D.costos||[],D.productosFlojos||[]).forEach(function(p){if(p&&p.descripcion&&p.categoria)CATMAP[norm(p.descripcion)]=p.categoria;});
+  CAT.forEach(function(x){
+    if(!x||!x.descripcion)return;
+    CATMAP[norm(x.descripcion)]=x.categoria||CATMAP[norm(x.descripcion)];
+    var k=claveDe(x.descripcion,x.origen);
+    m[k]={clave:k,descripcion:x.descripcion,categoria:x.categoria||"Sin categoría",origen:x.origen||"Alex",stock:Number(x.stock)||0,
+      costo:Number(x.costoFinal)||0,precio:Number(x.precio)||0,agregado:Number(x.agregado)||0,imagen:x.imagen||"",
+      dias:x.agregado?Math.round((HOY-Number(x.agregado))/DIA):0,ventas12:0,ventasTot:0,primera12:0,ultima:0};
   });
-  h+='<div class="dg-fila dg-res">'+
-     '<div class="et">'+esc(resultado.et)+(resultado.sub?"<small>"+esc(resultado.sub)+"</small>":"")+"</div>"+
-     '<div class="pista"><div class="barra" style="width:'+Math.max(4,Math.abs(resultado.v)/max*100).toFixed(1)+'%"></div></div>'+
-     '<div class="val">'+mx(resultado.v)+"</div></div>";
-  if(nota)h+='<div class="dg-nota">'+nota+"</div>";
-  return h+"</div>";
-}
-function dona(segs,total){
-  if(!(total>0))return '<div class="dona-wrapper"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" stroke="rgba(210,220,233,.4)"/></svg><div class="ctr"><b class="mono">$0</b><span>en cajas</span></div></div>';
-  var C=2*Math.PI*78,off=0;
-  var arcos=segs.filter(function(s){return s.v>0;}).map(function(s){
-    var len=Math.max(0,s.v/total*C-3);
-    var h='<circle cx="95" cy="95" r="78" stroke="'+s.c+'" stroke-linecap="round" stroke-dasharray="'+len.toFixed(1)+" "+(C-len).toFixed(1)+'" stroke-dashoffset="'+(-off).toFixed(1)+'"/>';
-    off+=s.v/total*C;return h;}).join("");
-  return '<div class="dona-wrapper"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" stroke="rgba(210,220,233,.4)"/>'+arcos+
-    '</svg><div class="ctr"><b class="mono">'+mx(total)+"</b><span>en cajas</span></div></div>";
-}
-
-var SECS=[["resumen","Resumen"],["simular","¿Me conviene?"],["recientes","Recién llegados"],["rotacion","1. Qué comprar"],["remate","2. Sacar dinero"],["margen","3. Qué deja más"],["ventas","Ventas"],["parado","Parado"]];
-
-function pintar(){
-  var R=D.resumen||{},cap=D.capital||[],rot=D.rotacion||[],mar=D.margen||[],V=viejos();
-  var porMes=R.utilidad/meses(),cong=porMes>0?D.capitalTotal/porMes:0;
-  var capV=V.reduce(function(s,x){return s+x.capital;},0),pzV=V.reduce(function(s,x){return s+x.piezas;},0);
-  var T=D.capitalTotal||1,h="";
-  $("movil").innerHTML=SECS.map(function(s,i){return '<button data-ir="'+s[0]+'"'+(i===0?' class="on"':"")+">"+s[1]+"</button>";}).join("");
-  $("nav-n").textContent=V.length?V.length:"";
-
-  h+='<section class="hero-bento ani" id="s-resumen"><div><div class="lb">Capital congelado en mercancía</div>'+
-    '<div class="big mono" id="hero-v">$0</div>'+
-    '<div class="lb">'+D.piezasTotal+' piezas pagadas que siguen en cajas</div></div>'+
-    '<div class="pillas"><span class="hp lima">'+(cong?cong.toFixed(1):"—")+" meses de ganancia</span>"+
-    '<span class="hp">Ganas '+mx(porMes)+" al mes</span></div></section>";
-
-  var ks=[
-    ["En riesgo (+6 meses)",mx(capV),pzV+" pzas · "+V.length+" productos","var(--naranja)","#FFF7ED",'<path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/>'],
-    ["Margen general",Math.round(R.margen)+"%","de cada $100 que entran","var(--verde-deep)","#ECFDF5",'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',R.margen],
-    ["Ganancia del periodo",mx(R.utilidad),R.ventas+" ventas · "+mx(R.porVenta)+" c/u","var(--azul)","#EFF6FF",'<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>']
-  ];
-  var kpiIr=["remate","margen","ventas"];
-  h+=ks.map(function(k,i){return '<div class="kpi-card ani" data-ir="'+kpiIr[i]+'" style="animation-delay:'+(.08*(i+1))+'s;cursor:pointer" title="Ver detalle">'+
-    '<div class="ico" style="background:'+k[4]+';color:'+k[3]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+k[5]+"</svg></div>"+
-    '<div><div class="lb">'+k[0]+'</div><b class="mono">'+k[1]+"</b><small>"+k[2]+"</small></div>"+
-    (k[6]!=null?'<div class="rb" style="margin-top:.75rem"><div class="tr"><i class="fi" style="width:'+Math.min(100,Number(k[6])||0).toFixed(0)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div></div>':"")+
-    "</div>";}).join("");
-
-  /* ---- Antes de comprar: qué te va a costar puesto aquí ---- */
-  var cats={};
-  (D.rotacion||[]).forEach(function(x){cats[x.categoria]=x;});
-  h+='<section class="b-card ani" id="s-simular">'+
-    '<span class="decision-tag d1">Antes de comprar</span>'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg> ¿Me conviene comprarlo?</h2>'+
-    '<p class="sub">Escribe lo que ves en la plataforma <b>antes</b> de pagar. Te digo cuánto te costará puesto en Ocosingo, a cuánto tendrías que venderlo y si esa categoría se está moviendo.</p>'+
-    '<div class="ctrl-bar" style="align-items:flex-end">'+
-      '<label class="campo" style="flex:1;min-width:140px"><span>Precio en la plataforma, por pieza</span><span class="money"><i>$</i><input id="sim-precio" type="number" min="0" step="1" placeholder="200" inputmode="decimal"></span></label>'+
-      '<label class="campo" style="width:100px"><span>Piezas</span><input id="sim-piezas" type="number" min="1" step="1" value="2"></label>'+
-      '<label class="campo" style="flex:1;min-width:190px"><span>¿Dónde lo compras?</span><select id="sim-tienda" class="chip" style="padding:.7rem .9rem;border-radius:var(--r2);width:100%">'+
-        '<option value="1.33">Temu / AliExpress / TikTok / Shopee — viene de China</option>'+
-        '<option value="1.00">Temu con etiqueta "Local" — ya está en México</option>'+
-        '<option value="1.00">Mercado Libre — compra nacional</option>'+
-        '<option value="">Otro · pongo el factor a mano</option>'+
-      "</select></label>"+
-      '<label class="campo" style="width:120px"><span>Factor</span><span class="money"><i>×</i><input id="sim-factor" type="number" min="1" step=".01" value="1.33"></span></label>'+
-      '<label class="campo" style="flex:1;min-width:160px"><span>Precio en Marketplace <small style="font-weight:600">(opcional)</small></span><span class="money"><i>$</i><input id="sim-mercado" type="number" min="0" step="10" placeholder="360" inputmode="decimal"></span></label>'+
-      '<label class="campo" style="flex:1;min-width:150px"><span>Categoría</span><select id="sim-cat" class="chip" style="padding:.7rem .9rem;border-radius:var(--r2);width:100%">'+
-        '<option value="">— elige —</option>'+Object.keys(cats).sort().map(function(c){return '<option>'+esc(c)+"</option>";}).join("")+"</select></label>"+
-      '<small>Lo que viene de China paga 33.5% de impuesto de paquetería: por eso el factor 1.33. Lo que ya está en México no paga nada, así que su factor es 1.00 — <b>a veces el que se ve más caro sale más barato</b>. Tus dos últimos pedidos de Temu dieron 1.30 y 1.32.</small>'+
-    "</div>"+
-    '<div id="sim-out"></div></section>';
-
-  h+=recientesHTML();
-
-  var maxD=Math.max.apply(null,rot.map(function(x){return Math.max(x.diasVenta,x.diasStock);}).concat([1]));
-  var ator=rot.filter(function(x){return x.piezas>0&&x.ventas>=3&&x.diasStock>x.diasVenta*2;});
-  h+='<section class="b-card w7 ani" id="s-rotacion">'+
-    '<span class="decision-tag d1">Decisión 1: Qué comprar</span>'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg> Rotación de inventario</h2>'+
-    '<p class="sub">Verde: <b>días que tarda en venderse</b>. Naranja: <b>días que lleva parado hoy</b>. Invierte en verde, frena en naranja.</p>'+
-    '<div style="margin-top:1.25rem">'+rot.map(function(x){
-      var mal=x.piezas&&x.ventas>=3&&x.diasStock>x.diasVenta*2;
-      return '<div class="rot-item"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" ventas · "+(x.piezas?x.piezas+" en stock":"sin stock")+"</small></div></div>"+
-        '<div class="rb"><span class="et">Venta</span><div class="tr"><i class="fi" style="width:'+Math.max(4,x.diasVenta/maxD*100).toFixed(1)+'%;background:linear-gradient(90deg,#10B981,#84CC16)"></i></div><span class="vl mono">'+dias(x.diasVenta)+"</span></div>"+
-        '<div class="rb"><span class="et">Parado</span><div class="tr"><i class="fi" style="width:'+Math.max(4,x.diasStock/maxD*100).toFixed(1)+'%;background:'+(mal?"linear-gradient(90deg,#EF4444,#F97316)":"linear-gradient(90deg,#F97316,#F59E0B)")+'"></i></div><span class="vl mono">'+dias(x.diasStock)+"</span></div></div>";
-    }).join("")+"</div>"+
-    (ator.length?'<div class="aviso warn"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span><div>Atención en <b>'+ator.map(function(x){return esc(x.categoria);}).join("</b>, <b>")+"</b>: lo que te queda lleva parado más del doble de lo que tarda en venderse.</div></div>":'<div class="aviso ok"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><div>Rotación saludable: nada excede sus tiempos normales.</div></div>')+
-    '<button class="btn-help" data-exp="rotacion">¿Cómo interpretar esto?</button></section>';
-
-  h+='<section class="b-card w5 ani" id="s-parado">'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 12V7M12 12l4 2"/></svg> Distribución del capital</h2>'+
-    '<p class="sub">Cada rebanada es una categoría. Mientras más grande, más dinero tuyo espera ahí.</p>'+
-    '<div style="margin-top:1rem">'+dona(cap.map(function(x,i){return{v:x.capital,c:PAL[i%PAL.length]};}),T)+"</div>"+
-    '<div class="legenda">'+cap.slice(0,7).map(function(x,i){
-      return '<button><i style="background:'+PAL[i%PAL.length]+'"></i><span class="t">'+esc(x.categoria)+'</span><span class="v mono">'+mx(x.capital)+" · "+Math.round(x.capital/T*100)+"%</span></button>";}).join("")+"</div>"+
-    '<button class="btn-help" data-exp="capital">¿Por qué es vital?</button></section>';
-
-  h+='<section class="b-card ani" id="s-remate">'+
-    '<span class="decision-tag d2">Decisión 2: Recuperar efectivo</span>'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.6 8.4 12 17l-4-4"/><path d="M4 4h16v16H4z"/></svg> Plan de remate</h2>'+
-    '<p class="sub">Tienes <b>'+mx(capV)+'</b> parados hace más de 6 meses en <b>'+pzV+' piezas</b>. Elige cuáles mover y a qué precio.</p>'+
-    (V.length>4?'<div class="aviso warn"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span><div><b>Empieza por aquí:</b> '+esc(V.slice(0,4).map(function(x){return x.descripcion;}).join(", "))+" concentran <b>"+mx(V.slice(0,4).reduce(function(s,x){return s+x.capital;},0))+"</b>. Mover esos cuatro vale más que mover los otros "+(V.length-4)+" juntos.</div></div>":"")+
-    '<div class="ctrl-bar"><span>Envío que absorbes por pieza:</span><span class="inp-pill">$<input id="moto" type="number" step="5" min="0" value="'+MOTO+'"></span>'+
-    '<span style="margin-left:auto">Ordenar:</span><div class="ord-pill"><button data-ord="dinero"'+(orden==="dinero"?' class="on"':"")+'>Dinero</button><button data-ord="dias"'+(orden==="dias"?' class="on"':"")+'>Antigüedad</button></div>'+
-    '<small>El motomandado sale de tu bolsa en casi todas tus entregas. Ya viene restado en cada cuenta.</small></div>'+
-    '<div class="product-grid">'+(V.length?V.slice(0,verTodo?999:12).map(pcHTML).join(""):'<div class="aviso ok" style="grid-column:1/-1"><span class="ic"></span><div>Nada lleva más de 6 meses parado. Vas bien.</div></div>')+"</div>"+
-    (V.length>12&&!verTodo?'<button class="vermas-btn" id="vermas">Ver los '+(V.length-12)+" productos restantes · suman "+mx(V.slice(12).reduce(function(s,x){return s+x.capital;},0))+"</button>":"")+
-    '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.25rem"><button class="btn-help" data-exp="remate">¿Vender al costo es perder?</button>'+
-    '<button class="btn-help" data-exp="pildoras">¿De dónde salen los 3 precios?</button>'+
-    '<button class="btn-help" data-exp="envio">¿Por qué descuento el envío?</button></div></section>';
-
-  h+='<section class="b-card ani" id="s-margen">'+
-    '<span class="decision-tag d3">Decisión 3: En qué enfocarte</span>'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Qué te deja más dinero</h2>'+
-    '<p class="sub">Esto es <b>historia, no recomendación</b>: lo que ya ganaste con cada categoría. La barra compara el margen; la más larga es la que mejor te paga por peso vendido. Ojo: la de mayor margen casi nunca es la que más dinero total te ha dejado.</p>'+
-    '<div style="margin-top:1.25rem">'+(function(){var mm=Math.max.apply(null,mar.map(function(y){return y.margen;}).concat([1]));
-      return mar.map(function(x,i){
-        return '<div class="rot-item"><div class="hd"><div><b>'+esc(x.categoria)+"</b><small>"+x.ventas+" ventas · te dejó "+mx(x.porVenta)+' de ganancia en cada una</small></div><div style="text-align:right"><b style="color:var(--verde-deep)" class="mono">'+mx(x.utilidad)+'</b><small>ganancia acumulada · '+Math.round(x.margen)+"% margen</small></div></div>"+
-          '<div class="rb"><div class="tr"><i class="fi" style="width:'+Math.max(6,x.margen/mm*100).toFixed(1)+'%;background:'+PAL[i%PAL.length]+'"></i></div></div></div>';}).join("");})()+"</div>"+
-    '<button class="btn-help" data-exp="margen">¿Qué es el margen?</button></section>';
-
-  if(MESES.length){
-    h+='<section class="b-card ani" id="s-ventas">'+
-      '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg> Comportamiento de ventas</h2>'+
-      textoVentas()+area()+"</section>";
-  }
-
-  $("rej").innerHTML=h;
-  cuenta($("hero-v"),D.capitalTotal,mx);
-  cablearChart();total();irA(seccion);
-  ["sim-precio","sim-piezas","sim-factor","sim-mercado"].forEach(function(id){var e=$(id);if(e)e.addEventListener("input",simular);});
-  var sc=$("sim-cat");if(sc)sc.addEventListener("change",simular);
-  var mr=$("rec-moto");if(mr)mr.addEventListener("input",function(){MOTO_REAL=num(mr.value);var w=$("rec-wrap");if(w)w.innerHTML=recientesLista();});
-  var st=$("sim-tienda");if(st)st.addEventListener("change",function(){
-    if(st.value)$("sim-factor").value=st.value;
-    simular();});
-  simular();
-}
-
-/* ---------- Recien llegados: la cuenta de cada producto nuevo, con y sin envio ----------
-   Sirve para ver (y mostrarle a Irene) cuanto queda por pieza si se cobra el envio
-   aparte o si va incluido en el precio. Usa lo que ya devuelve `catalogo`. */
-function recientes(){
-  var lim=Date.now()-30*864e5;
-  return CAT.filter(function(x){return x&&x.origen==="Alex"&&Number(x.agregado)>=lim&&Number(x.stock)>0;})
-    .sort(function(a,b){return Number(b.agregado)-Number(a.agregado);});
-}
-function ganancia(precio,costo,conCobro){
-  var entra=precio+(conCobro?COBRO:0),g=entra-costo-MOTO_REAL;
-  return {g:g,m:entra>0?Math.round(g/entra*100):0};
-}
-function recientesLista(){
-  var L=recientes();
-  if(!L.length)return '<div class="aviso ok" style="grid-column:1/-1"><span class="ic"></span><div>No hay productos dados de alta en los últimos 30 días.</div></div>';
-  var pz=0,inv=0,gI=0,entra=0;
-  L.forEach(function(x){var n=Number(x.stock)||0,c=Number(x.costoFinal)||0,p=Number(x.precio)||0;
-    pz+=n;inv+=c*n;entra+=p*n;gI+=ganancia(p,c,false).g*n;});
-  var mI=entra>0?Math.round(gI/entra*100):0;
-  return '<div style="grid-column:1/-1">'+
-    desglose("Si se venden estas "+pz+" piezas con envío incluido",
-      [{et:"Entra por las ventas",sub:pz+" piezas a su precio",v:entra,signo:"+"},
-       {et:"Lo que ya pagaste",sub:"tu inversión en este pedido",v:inv,signo:"-"},
-       {et:"Motomandados",sub:pz+" entregas × "+mx(MOTO_REAL)+", los pagas tú",v:MOTO_REAL*pz,signo:"-"}],
-      {et:gI>=0?"Te queda":"Pierdes",sub:mI+"% de margen",v:gI},
-      "Regalar el envío te cuesta <b>"+mx(COBRO)+" por pieza</b>: en estas "+pz+" son <b>"+mx(COBRO*pz)+"</b> que dejas de cobrar. A cambio, el precio se anuncia redondo y sin letra chica.")+
-    "</div>"+
-    L.map(function(x){
-      var c=Number(x.costoFinal)||0,p=Number(x.precio)||0,n=Number(x.stock)||0,img=x.imagen;
-      var g=ganancia(p,c,false),gc=ganancia(p,c,true);
-      return '<article class="prod-card" style="cursor:default"><div class="top">'+
-        (img?'<img class="im" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="im sin"></span>')+
-        '<div class="tx"><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+' · '+n+' pieza'+(n===1?"":"s")+'</small></div></div>'+
-        desglose("Una pieza, con envío incluido",
-          [{et:"Precio de venta",sub:"lo que paga el cliente",v:p,signo:"+"},
-           {et:"Lo que te costó",sub:"ya puesto en Ocosingo",v:c,signo:"-"},
-           {et:"Motomandado",sub:"lo pagas tú",v:MOTO_REAL,signo:"-"}],
-          {et:g.g>=0?"Te queda":"Pierdes",sub:g.m+"% de margen",v:g.g},
-          "Cobrando los "+mx(COBRO)+" de envío aparte te quedarían <b>"+mx(gc.g)+"</b>.")+
-        '</article>';}).join("");
-}
-function recientesHTML(){
-  return '<section class="b-card ani" id="s-recientes">'+
-    '<span class="decision-tag d1">Lo último que entró</span>'+
-    '<h2 class="tit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="M12 12v9M4 7l8 5 8-5"/></svg> Recién llegados</h2>'+
-    '<p class="sub">Lo que diste de alta en los últimos 30 días. Cada tarjeta responde una sola pregunta: <b>si Irene lo vende con envío incluido, ¿cuánto te queda?</b> Abajo de cada cuenta dice cuánto más sería cobrando el envío aparte.</p>'+
-    '<div class="ctrl-bar"><span>Lo que cobra el moto:</span><span class="inp-pill">$<input id="rec-moto" type="number" step="5" min="0" value="'+MOTO_REAL+'"></span>'+
-    '<small>$35 en el centro, $40–45 si llueve o está lejos. Cámbialo para ver el peor caso.</small></div>'+
-    '<div class="product-grid" id="rec-wrap">'+recientesLista()+'</div></section>';
-}
-
-/* Las tres pildoras dependen del motomandado. Se generan aqui, en su propia
-   funcion, para poder REGENERARLAS cuando cambia el campo de envio. Antes se
-   calculaban una sola vez al dibujar la tarjeta: si cambiabas el envio, la
-   pildora "Sin perder" seguia mostrando el precio piso viejo mientras la
-   cuenta de abajo ya usaba el nuevo. Tocarla te dejaba por debajo del costo. */
-function pillasHTML(x,cu){
-  var op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
-  op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
-  return '<div class="precios-opt" style="grid-template-columns:repeat('+u.length+',1fr)">'+u.map(function(o){
-    return '<button class="po-btn" data-act="p" data-v="'+o[1]+'"><span>'+o[0]+'</span><b class="mono">'+mx(o[1])+"</b></button>";}).join("")+"</div>";
-}
-
-function pcHTML(x,i){
-  var cu=costoU(x),img=FOTOS[norm(x.descripcion)];
-  return '<article class="prod-card" data-i="'+i+'">'+
-    '<div class="top">'+
-      (img?'<img class="im" src="'+esc(img)+'" alt="" loading="lazy" onerror="this.remove()">':'<span class="im sin"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.4"/><path d="m21 15-5-5L5 19"/></svg></span>')+
-      '<div class="tx"><b>'+esc(x.descripcion)+"</b><small>"+esc(x.categoria)+" · "+x.piezas+" pza · te costó "+mx(cu)+" c/u</small></div>"+
-      '<button class="chk-box" data-act="tog"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg></button>'+
-    "</div>"+
-    '<div class="tags"><span class="tg cong">'+mx(x.capital)+' congelados</span><span class="tg dias">'+dias(x.dias)+"</span></div>"+
-    pillasHTML(x,cu)+
-    '<div class="libre-input">o pon tu precio: <span class="inp-pill">$<input data-act="in" type="number" step="10" min="0" value="'+a10(cu+MOTO)+'"></span></div>'+
-    '<div class="cuenta-box" data-f="1">Toca la palomita para incluirlo en el plan.</div>'+
-    '<button class="btn-help" data-act="porque" style="margin-top:0">¿Como salio este precio?</button></article>';
-}
-
-function render(card,i,x){
-  if(!x)return;
-  var on=sel[i]!=null&&sel[i]>0;card.classList.toggle("on",on);
-  var p=num(card.querySelector("[data-act=in]").value),cu=costoU(x);
-  var po=card.querySelector(".precios-opt");if(po)po.outerHTML=pillasHTML(x,cu);
-  card.querySelectorAll(".po-btn").forEach(function(o){o.classList.toggle("on",num(o.getAttribute("data-v"))===p);});
-  var neto=(p-MOTO)*x.piezas,dif=neto-x.capital,porPza=p-MOTO-cu;
-  card.querySelector("[data-f]").innerHTML=on
-    ? "<b>Si vendes una:</b> entra "+mx(p)+" − envío "+mx(MOTO)+" − costo "+mx(cu)+" = "+
-      (porPza>=0?'<b class="bien">+'+mx(porPza)+"</b>":'<b class="mal">'+mx(porPza)+"</b>")+" libre.<br>"+
-      "<b>Si salen las "+x.piezas+":</b> recuperas <b class='mono'>"+mx(neto)+"</b> de "+mx(x.capital)+" · "+
-      (dif>=0?'<b class="bien">+'+mx(dif)+"</b>":'te faltan <b class="mal">'+mx(-dif)+"</b>")
-    : "Toca la palomita para incluirlo en el plan.";
-}
-
-/* Explica el remate de ESTE producto con sus propios numeros */
-function explicarProducto(x,precio){
-  if(!x)return;
-  var cu=costoU(x),porPza=precio-MOTO-cu,neto=(precio-MOTO)*x.piezas,dif=neto-x.capital;
-  abrirHTML("<h3>"+esc(x.descripcion)+"</h3>"+
-    "<p>Lleva <b>"+dias(x.dias)+"</b> parado y tienes <b>"+x.piezas+" pieza"+(x.piezas===1?"":"s")+"</b>. Asi sale la cuenta del remate.</p>"+
-    desglose("Si vendes una pieza a "+mx(precio),
-      [{et:"Precio de remate",sub:"lo que te paga el cliente",v:precio,signo:"+"},
-       {et:"Motomandado",sub:"sale de tu bolsa en cada entrega",v:MOTO,signo:"-"},
-       {et:"Lo que te costo",sub:"ya puesto aqui",v:cu,signo:"-"}],
-      {et:porPza>=0?"Te queda":"Pierdes",sub:"por cada pieza",v:porPza},
-      "Tu <b>precio piso</b> es "+mx(cu+MOTO)+". Debajo de ahi pagas por regalar mercancia, salvo que el cliente recoja.")+
-    desglose("Si salen las "+x.piezas+" piezas",
-      [{et:"Entra en total",sub:x.piezas+" x "+mx(precio),v:precio*x.piezas,signo:"+"},
-       {et:"Envios",sub:x.piezas+" x "+mx(MOTO),v:MOTO*x.piezas,signo:"-"}],
-      {et:"Recuperas",sub:"de los "+mx(x.capital)+" que pagaste",v:neto},
-      (dif>=0?"Recuperas tu dinero y te sobran <b>"+mx(dif)+"</b>."
-             :"Recuperas <b>"+mx(-dif)+" menos</b> de lo que pagaste. <b>Eso esta bien</b> si lleva un año parado: un billete dormido no vale mas por esperar, y ese dinero libre puede comprar algo que si rota.")+
-      "<br>Si los vendes <b>en paquete</b>, un solo viaje cubre varias piezas y esa resta del envio casi desaparece.")+
-    '<button class="btn-action pri" data-cerrar="1">Entendido</button>');
-}
-function simular(){
-  var out=$("sim-out");if(!out)return;
-  var pr=num($("sim-precio").value),pz=Math.max(1,Math.round(num($("sim-piezas").value))||1);
-  var fa=num($("sim-factor").value)||1.33,cat=$("sim-cat").value;
-  if(!(pr>0)){out.innerHTML='<p class="sub" style="margin-top:1rem">Escribe el precio que ves en la plataforma y te hago la cuenta.</p>';return;}
-  var cf=r2(pr*fa),inv=r2(cf*pz),piso=r2(cf+MOTO),sug=a10(cf*2),gana=r2(sug+10-cf-MOTO);
-  var c=null;(D.rotacion||[]).forEach(function(x){if(x.categoria===cat)c=x;});
-  var alerta="";
-  if(c){
-    var mal=c.piezas>0&&c.ventas>=3&&c.diasStock>c.diasVenta*2;
-    alerta='<div class="aviso '+(mal?"warn":"ok")+'"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">'+
-      (mal?'<path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>':'<path d="m5 12 5 5L20 7"/>')+
-      "</svg></span><div><b>"+esc(cat)+"</b>: normalmente se vende en <b>"+dias(c.diasVenta)+"</b>"+
-      (c.piezas?", y hoy tienes <b>"+c.piezas+" piezas</b> que llevan <b>"+dias(c.diasStock)+"</b> paradas":", y hoy no tienes existencia")+". "+
-      (mal?"<b>Piénsalo dos veces:</b> lo que ya tienes de esta categoría no se está moviendo. Meter más dinero aquí lo congela.":"Esta categoría está sana: tu stock está dentro de sus tiempos normales.")+
-      "</div></div>";
-  }
-  out.innerHTML=desglose("Lo que de verdad te va a costar",
-    [{et:"Precio en la plataforma",sub:pz+" pieza"+(pz===1?"":"s")+" × "+mx(pr),v:pr*pz,signo:"+"},
-     {et:"Impuestos y envío",sub:"factor ×"+fa.toFixed(2),v:r2(inv-pr*pz),signo:"+"}],
-    {et:"Te costará",sub:mx(cf)+" cada pieza",v:inv},
-    "Ese es el dinero que sale de tu bolsa y se queda dormido hasta que vendas.")+
-  '<div class="compara" style="display:grid;gap:.75rem;grid-template-columns:1fr 1fr;margin-top:1rem">'+
-    '<div class="rot-item" style="margin:0"><div class="lb" style="font-size:.72rem;font-weight:800;color:var(--gris);text-transform:uppercase">Tu precio piso</div>'+
-    '<div class="mono" style="font-size:1.5rem;font-weight:800">'+mx(piso)+"</div>"+
-    '<small style="color:var(--gris);font-weight:600">costo + envío. Debajo de aquí pierdes dinero.</small></div>'+
-    '<div class="rot-item" style="margin:0;background:#ECFDF5;border-color:#A7F3D0"><div class="lb" style="font-size:.72rem;font-weight:800;color:var(--verde-deep);text-transform:uppercase">Véndelo en</div>'+
-    '<div class="mono" style="font-size:1.5rem;font-weight:800;color:var(--verde-deep)">'+mx(sug)+"</div>"+
-    '<small style="color:var(--gris);font-weight:600">te dejaría '+mx(gana)+" por pieza</small></div></div>"+
-  veredicto(sug,piso,cf)+alerta;
-}
-/* Compara tu precio contra lo que cobra la competencia en Marketplace */
-function veredicto(sug,piso,cf){
-  var mer=num($("sim-mercado").value);
-  if(!(mer>0)){
-    return '<div class="aviso ok" style="background:#EFF6FF;border-color:#DBEAFE;color:#1E40AF"><span class="ic" style="background:var(--azul)">'+
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>'+
-      '<div><b>Búscalo en Marketplace y anota el precio aquí arriba.</b> El mercado manda sobre cualquier regla: si allá está más barato que tu precio sugerido, el sugerido no sirve.</div></div>';
-  }
-  var gana=r2(mer+10-cf-MOTO),margen=mer+10>0?Math.round(gana/(mer+10)*100):0;
-  var tipo,txt;
-  if(mer<=piso){tipo="warn";txt="<b>No lo compres.</b> La competencia lo vende en "+mx(mer)+" y a ti te costaría "+mx(piso)+" puesto y entregado. Venderías con pérdida desde el primer día.";}
-  else if(mer<sug){tipo="warn";txt="<b>Se puede, pero con menos margen del que esperabas.</b> Tu sugerido era "+mx(sug)+" y el mercado está en "+mx(mer)+". Si te alineas al mercado te quedarían <b>"+mx(gana)+"</b> por pieza ("+margen+"% de margen). Decide si ese número te compensa el esfuerzo de la venta.";}
-  else {tipo="ok";txt="<b>Buena oportunidad.</b> El mercado está en "+mx(mer)+", arriba de tu precio sugerido de "+mx(sug)+". Puedes ponerte un poco abajo de la competencia y aun así ganar <b>"+mx(gana)+"</b> por pieza.";}
-  return '<div class="aviso '+tipo+'"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">'+
-    (tipo==="warn"?'<path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>':'<path d="m5 12 5 5L20 7"/>')+
-    "</svg></span><div>"+txt+"</div></div>";
-}
-function verBarra(){
-  var hay=Object.keys(sel).some(function(i){return sel[i]>0;});
-  $("bot").classList.toggle("on",hay||seccion==="remate");
-}
-function total(){
-  var V=viejos(),lib=0,cost=0,pz=0,n=0;
-  Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;lib+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;n++;});
-  $("bot-v").textContent=mx(lib);
-  $("bot-s").textContent=n?(pz+" piezas · "+n+" productos · pagaste "+mx(cost)):"Selecciona mercancía a rematar";
-  $("b-plan").disabled=!n;
-  verBarra();
-}
-
-function cablearChart(){
-  var ch=$("chart");if(!ch)return;
-  ch.addEventListener("mouseover",function(e){
-    var p=e.target.closest(".pt");if(!p)return;
-    var m=MESES[Number(p.getAttribute("data-i"))];if(!m)return;
-    var tip=$("tip"),r=ch.getBoundingClientRect(),pr=p.getBoundingClientRect();
-    tip.textContent=m.label+" · "+mx(m.total)+(m.cantidad?" · "+m.cantidad+" pzas":"");
-    tip.style.left=(pr.left-r.left+pr.width/2)+"px";tip.style.top=(pr.top-r.top)+"px";
-    tip.classList.add("on");p.classList.add("on");
+  // la pieza más vieja en cajas (solo mercancía de Alex; viene de análisis)
+  (D.viejos||[]).forEach(function(v){var k=claveDe(v.descripcion,"Alex"),x=m[k];if(x&&v.dias>x.dias)x.dias=v.dias;});
+  VEN.forEach(function(v){
+    if(!v||!v.descripcion||!v.fechaTimestamp)return;
+    var k=claveDe(v.descripcion,v.origen),x=m[k];
+    if(!x){x=m[k]={clave:k,descripcion:v.descripcion,categoria:CATMAP[norm(v.descripcion)]||"Sin categoría",origen:v.origen||"Alex",stock:0,
+      costo:Number(v.costoFinal)||0,precio:Number(v.precio)||0,agregado:0,imagen:v.imagen||"",dias:0,ventas12:0,ventasTot:0,primera12:0,ultima:0};}
+    x.ventasTot++;
+    if(v.fechaTimestamp>x.ultima)x.ultima=v.fechaTimestamp;
+    if(v.fechaTimestamp>=v12){x.ventas12++;if(!x.primera12||v.fechaTimestamp<x.primera12)x.primera12=v.fechaTimestamp;}
   });
-  ch.addEventListener("mouseout",function(e){
-    var p=e.target.closest(".pt");if(!p)return;
-    $("tip").classList.remove("on");p.classList.remove("on");
+  INV=Object.keys(m).map(function(k){
+    var x=m[k];
+    x.capital=x.stock*x.costo;
+    x.cada=x.ventas12>=2?Math.max(1,Math.round((HOY-x.primera12)/DIA/x.ventas12)):null;   // se vende uno cada N días
+    x.reciente=x.stock>0&&x.agregado>=HOY-30*DIA;
+    x.reponer=x.ventas12>=3&&x.cada!=null&&x.cada<=45&&x.stock<=1;
+    x.parado=x.stock>0&&x.dias>180;
+    x.nocomprar=x.stock>0&&x.dias>365&&x.ventas12===0;
+    x.todo=x.stock>0;
+    return x;
+  }).sort(function(a,b){return b.capital-a.capital;});
+}
+function invFiltrado(){
+  var q=norm($("i-q").value),cat=$("i-cat").value,f=$("i-fecha").value,a0=new Date(new Date().getFullYear(),0,1).getTime();
+  return INV.filter(function(x){
+    if(iMerc&&x.origen!==iMerc)return false;
+    if(!x[iTab])return false;
+    if(cat&&x.categoria!==cat)return false;
+    if(q&&norm(x.descripcion).indexOf(q)<0&&norm(x.categoria).indexOf(q)<0)return false;
+    if(f==="30"&&!(x.agregado>=HOY-30*DIA))return false;
+    if(f==="90"&&!(x.agregado>=HOY-90*DIA))return false;
+    if(f==="anio"&&!(x.agregado>=a0))return false;
+    if(f==="viejo"&&!(x.dias>365))return false;
+    return true;
   });
 }
-/* ---------- Pestañas: una sección a la vez, sin scroll kilométrico ----------
-   Cada botón del menú muestra SOLO su sección. "Resumen" muestra el hero y los
-   tres KPI. Al repintar (cambio de rango, orden, ver más) se conserva la pestaña. */
-function irA(id){
-  var rej=$("rej");if(!rej)return;
-  if(id!=="resumen"&&!$("s-"+id))id="resumen";
-  seccion=id;rej.classList.add("tabs");
-  Array.prototype.forEach.call(rej.children,function(el){
-    var ver=id==="resumen"?(el.id==="s-resumen"||el.classList.contains("kpi-card")):el.id==="s-"+id;
-    el.classList.toggle("vis",ver);
-  });
-  document.querySelectorAll(".lado [data-ir],.movil [data-ir]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-ir")===id);});
-  verBarra();window.scrollTo({top:0,behavior:"smooth"});
-}
-function espiar(){
-  var obs=new IntersectionObserver(function(ents){
-    ents.forEach(function(en){
-      if(!en.isIntersecting)return;
-      var id=en.target.id.replace("s-","");
-      if(id===seccion)return;seccion=id;
-      document.querySelectorAll("[data-ir]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-ir")===id);});
-      verBarra();
-    });
-  },{rootMargin:"-45% 0px -50% 0px"});
-  SECS.forEach(function(s){var el=$("s-"+s[0]);if(el)obs.observe(el);});
+function llenarSelects(){
+  var cats={},vend={};
+  INV.forEach(function(x){cats[x.categoria]=1;});
+  VEN.forEach(function(v){if(v.vendedor)vend[v.vendedor]=1;});
+  var oc=Object.keys(cats).sort().map(function(c){return '<option>'+esc(c)+"</option>";}).join("");
+  $("i-cat").innerHTML='<option value="">Todas las categorías</option>'+oc;
+  $("v-cat").innerHTML='<option value="">Todas las categorías</option>'+oc;
+  $("sim-cat").innerHTML='<option value="">— elige —</option>'+(D.rotacion||[]).map(function(x){return '<option>'+esc(x.categoria)+"</option>";}).join("");
+  $("v-vend").innerHTML='<option value="">Todos los vendedores</option>'+Object.keys(vend).sort().map(function(c){return '<option>'+esc(c)+"</option>";}).join("");
 }
 
+/* ============ navegación ============ */
+var pantalla="resumen";
+function ir(p,tab){
+  pantalla=p;
+  document.querySelectorAll(".pant").forEach(function(s){s.classList.toggle("on",s.id==="p-"+p);});
+  document.querySelectorAll(".nav[data-p]").forEach(function(b){b.classList.toggle("on",b.dataset.p===p);});
+  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?"}[p];
+  if(tab){iTab=tab;pintarInventario();}
+  barra();window.scrollTo(0,0);
+}
 document.addEventListener("click",function(e){
-  var ir=e.target.closest("[data-ir]");
-  if(ir){irA(ir.getAttribute("data-ir"));return;}
-  var ex=e.target.closest("[data-exp]");if(ex){abrir(ex.getAttribute("data-exp"));return;}
-  var od=e.target.closest("[data-ord]");if(od){orden=od.getAttribute("data-ord");sel={};verTodo=false;pintar();return;}
-  if(e.target.closest("#vermas")){verTodo=true;pintar();return;}
-  var card=e.target.closest(".prod-card");if(!card)return;
-  var b=e.target.closest("[data-act]");if(!b)return;
-  var i=card.getAttribute("data-i"),x=viejos()[i],act=b.getAttribute("data-act");
-  if(act==="tog"){if(sel[i])delete sel[i];else sel[i]=num(card.querySelector("[data-act=in]").value)||a10(costoU(x)+MOTO);}
-  if(act==="porque"){explicarProducto(x,num(card.querySelector("[data-act=in]").value));return;}
-  if(act==="p"){var v=num(b.getAttribute("data-v"));card.querySelector("[data-act=in]").value=v;sel[i]=v;}
-  render(card,i,x);total();
+  var b=e.target.closest("[data-p]");if(b&&b.classList.contains("nav")){ir(b.dataset.p);return;}
+  var g=e.target.closest("[data-ir]");if(g){ir(g.dataset.ir,g.dataset.tab);return;}
 });
-document.addEventListener("input",function(e){
-  if(e.target.id==="moto"){MOTO=num(e.target.value);
-    document.querySelectorAll(".prod-card").forEach(function(c){render(c,c.getAttribute("data-i"),viejos()[c.getAttribute("data-i")]);});total();return;}
-  var b=e.target.closest("[data-act=in]");if(!b)return;
-  var card=b.closest(".prod-card"),i=card.getAttribute("data-i");
-  sel[i]=num(b.value);render(card,i,viejos()[i]);total();
-});
-$("b-limpiar").addEventListener("click",function(){
-  sel={};document.querySelectorAll(".prod-card").forEach(function(c){c.classList.remove("on");
-    c.querySelector("[data-f]").textContent="Toca la palomita para incluirlo en el plan.";
-    c.querySelectorAll(".po-btn").forEach(function(o){o.classList.remove("on");});});
-  total();});
 
+/* ============ RESUMEN ============ */
+function pintarTodo(){pintarResumen();pintarVentas();pintarInventario();pintarConviene();}
+function mias(){return VEN.filter(function(v){return v.origen==="Alex";});}
+function pintarResumen(){
+  var R=D.resumen||{},T=Number(D.capitalTotal)||0,pzT=Number(D.piezasTotal)||0;
+  var porMes=R.utilidad/meses(),cong=porMes>0?T/porMes:0;
+  var mio=INV.filter(function(x){return x.origen==="Alex";});
+  var par=mio.filter(function(x){return x.parado;}).sort(function(a,b){return b.capital-a.capital;});
+  var capPar=par.reduce(function(s,x){return s+x.capital;},0),pzPar=par.reduce(function(s,x){return s+x.stock;},0);
+  var rep=mio.filter(function(x){return x.reponer;}).sort(function(a,b){return a.cada-b.cada;});
+  var top=(D.productos||[]).slice(0,3);
+  var VM=mias(),compras=VM.reduce(function(s,v){return s+(Number(v.costoFinal)||0);},0)+T;
+  var motoAbs=VM.reduce(function(s,v){return s+(Number(v.gastoExt)||0);},0),motoCob=VM.reduce(function(s,v){return s+(Number(v.cobroExtra)||0);},0);
+  $("nav-n").textContent=par.length||"";
+
+  var h='<div class="c12 hero"><div><div class="lb">Dinero parado en mercancía</div><div class="big">'+mx(T)+'</div>'+
+    '<div class="sub">'+pzT+' piezas pagadas que siguen en cajas. Al ritmo actual tardas <b>'+(cong?cong.toFixed(1)+" meses":"—")+'</b> en ganarlo de vuelta.</div></div>'+
+    '<div class="pastillas"><span class="pill lima">Ganas '+mx(porMes)+' al mes</span><span class="pill blanca">'+mx(capPar)+' llevan más de 6 meses</span></div></div>';
+
+  h+='<div class="c4 card kpi"><div class="lb">Parado más de 6 meses '+ayuda("Mercancía comprada hace más de medio año que nadie ha comprado. Ese dinero no está perdido, pero tampoco trabaja.")+'</div>'+
+    '<div class="v">'+mx(capPar)+'</div><ul class="mini">'+
+    (par.length?par.slice(0,3).map(function(x){return '<li><span>'+esc(x.descripcion)+' · '+pz(x.stock)+'</span><span class="m mal">'+mx(x.capital)+'</span></li>';}).join(""):'<li><span class="tenue">Nada lleva más de 6 meses. Vas bien.</span></li>')+
+    '</ul><button class="ir" data-ir="inventario" data-tab="parado">'+(par.length===1?"Ver el producto y armar remate":par.length?"Ver los "+par.length+" productos y armar remate":"Ver inventario")+'</button></div>';
+
+  h+='<div class="c4 card kpi"><div class="lb">Qué te deja más dinero '+ayuda("Ganancia acumulada por producto: precio de venta más lo que cobraste de envío, menos lo que te costó y el moto. Es historia, no promesa.")+'</div>'+
+    '<div class="v">'+mx(R.utilidad)+'</div><ul class="mini">'+
+    (top.length?top.map(function(x){return '<li><span>'+esc(x.descripcion)+' · '+x.ventas+' ventas</span><span class="m ok">'+mx(x.utilidad)+'</span></li>';}).join(""):'<li><span class="tenue">Aún no hay ventas en este periodo.</span></li>')+
+    '</ul><button class="ir" data-ir="ventas">Ver ganancia por producto</button></div>';
+
+  h+='<div class="c4 card kpi"><div class="lb">Se te está acabando '+ayuda("Productos que vendes seguido (uno cada 45 días o menos, con al menos 3 ventas en el año) y de los que te queda una pieza o ninguna. Son los primeros a reponer.")+'</div>'+
+    '<div class="v">'+rep.length+' <small>'+(rep.length===1?"producto":"productos")+'</small></div><ul class="mini">'+
+    (rep.length?rep.slice(0,3).map(function(x){return '<li><span>'+esc(x.descripcion)+'</span><span class="m ok">'+(x.stock?"queda "+x.stock:"agotado")+' · uno cada '+x.cada+' días</span></li>';}).join(""):'<li><span class="tenue">Nada que vendas seguido se está acabando.</span></li>')+
+    '</ul><button class="ir" data-ir="inventario" data-tab="reponer">Ver qué reponer</button></div>';
+
+  h+='<div class="c8 card graf"><h2>Ventas por mes</h2>'+grafica()+'</div>';
+
+  h+='<div class="c4 card kpi"><div class="lb">A dónde se fue el dinero '+ayuda("Todo lo que has pagado por tu mercancía desde el inicio (vendida y en cajas), más lo que pagaste de motomandado y lo que sí cobraste de envío.")+'</div>'+
+    '<div class="v">'+mx(compras+motoAbs)+'</div><ul class="mini">'+
+    '<li><span>Compras de mercancía</span><span class="m">'+mx(compras)+'</span></li>'+
+    '<li><span>Motomandados que pagaste</span><span class="m mal">'+mx(motoAbs)+'</span></li>'+
+    '<li><span>Envíos que cobraste</span><span class="m ok">'+mx(motoCob)+'</span></li></ul>'+
+    '<div class="lee">De cada $100 que entran te quedan <b>$'+Math.round(R.margen||0)+'</b>.</div><div class="barra"><i style="width:'+Math.min(100,Math.round(R.margen||0))+'%"></i></div></div>';
+  $("rej").innerHTML=h;
+  cablearGrafica();
+}
+function mesesSerie(n){
+  var VM=mias(),m={},hoy=new Date();
+  for(var i=n-1;i>=0;i--){var d=new Date(hoy.getFullYear(),hoy.getMonth()-i,1),k=d.getFullYear()+"-"+d.getMonth();m[k]={k:k,t:d.getTime(),label:MESN[d.getMonth()]+" "+d.getFullYear(),total:0,n:0,gan:0};}
+  VM.forEach(function(v){if(!v.fechaTimestamp)return;var d=new Date(v.fechaTimestamp),k=d.getFullYear()+"-"+d.getMonth();if(!m[k])return;m[k].total+=(Number(v.precio)||0)+(Number(v.cobroExtra)||0);m[k].n++;m[k].gan+=Number(v.ganancia)||0;});
+  return Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return a.t-b.t;});
+}
+var SERIE=[];
+function grafica(){
+  SERIE=mesesSerie(12);
+  var n=SERIE.length,vals=SERIE.map(function(x){return x.total;}),comp=vals.slice(0,n-1);
+  var prom=comp.reduce(function(a,b){return a+b;},0)/Math.max(1,comp.length),max=Math.max.apply(null,vals.concat([1]));
+  var W=680,H=170,P={t:14,b:8};
+  var px=function(i){return i*(W/Math.max(1,n-1));},py=function(v){return P.t+(H-P.t-P.b)*(1-v/max);};
+  var pts=vals.map(function(v,i){return [px(i),py(v)];});
+  var linea=pts.slice(0,n-1).map(function(q,i){return (i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1);}).join(" ");
+  var area=linea+" L"+pts[n-2][0].toFixed(1)+","+H+" L0,"+H+" Z";
+  var ult=SERIE[n-2],ant=SERIE[n-3],dif=ult&&ant?ult.total-ant.total:0;
+  var mejor=comp.slice().sort(function(a,b){return b-a;});var pos=ult?mejor.indexOf(ult.total)+1:0;
+  var txt=ult?'Tu promedio es <b class="mono">'+mx(prom)+'</b>. '+MESL[new Date(ult.t).getMonth()]+' cerró en <b class="mono">'+mx(ult.total)+'</b>'+
+    (ant?' ('+(dif>=0?'<b class="mas">+'+mx(dif)+'</b>':'<b class="menos">'+mx(dif)+'</b>')+' contra '+MESN[new Date(ant.t).getMonth()]+')':'')+(pos===1?', tu mejor mes':pos===2?', tu segundo mejor mes':'')+'. '+MESL[new Date().getMonth()]+' va a la mitad.':'Aún no hay meses completos.';
+  return '<p>'+txt+'</p><div class="lienzo"><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" id="chart">'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D9E75" stop-opacity=".22"/><stop offset="1" stop-color="#1D9E75" stop-opacity="0"/></linearGradient></defs>'+
+    '<line x1="0" y1="'+py(prom).toFixed(1)+'" x2="'+W+'" y2="'+py(prom).toFixed(1)+'" stroke="#94A3B8" stroke-dasharray="4 4"/>'+
+    '<path d="'+area+'" fill="url(#g)"/><path d="'+linea+'" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'+
+    (n>1?'<path d="M'+pts[n-2][0].toFixed(1)+','+pts[n-2][1].toFixed(1)+' L'+pts[n-1][0].toFixed(1)+','+pts[n-1][1].toFixed(1)+'" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>':'')+
+    pts.map(function(q,i){return '<circle class="pt" data-i="'+i+'" cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="9" fill="transparent"/>'+(i===n-2?'<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="5" fill="#fff" stroke="#1D9E75" stroke-width="2.5" vector-effect="non-scaling-stroke"/>':'');}).join("")+
+    '</svg><div class="tip" id="tip"></div></div><div class="ejes"><span>'+(SERIE[0]?SERIE[0].label:"")+'</span><span>'+(SERIE[n-1]?SERIE[n-1].label+" · en curso":"")+'</span></div>';
+}
+function cablearGrafica(){
+  var ch=$("chart");if(!ch)return;
+  ch.addEventListener("mousemove",function(e){var p=e.target.closest(".pt");var tip=$("tip");if(!p){tip.classList.remove("on");return;}
+    var m=SERIE[Number(p.dataset.i)],r=ch.getBoundingClientRect(),pr=p.getBoundingClientRect();
+    tip.textContent=m.label+" · "+mx(m.total)+" · "+m.n+(m.n===1?" venta":" ventas")+" · ganaste "+mx(m.gan);
+    tip.style.left=(pr.left-r.left+pr.width/2)+"px";tip.style.top=(pr.top-r.top)+"px";tip.classList.add("on");});
+  ch.addEventListener("mouseleave",function(){$("tip").classList.remove("on");});
+}
+
+/* ============ VENTAS ============ */
+function ventasFiltradas(){
+  var q=norm($("v-q").value),cat=$("v-cat").value,vend=$("v-vend").value,merc=$("v-merc").value,per=$("v-per").value;
+  var a0=new Date(new Date().getFullYear(),0,1).getTime(),d12=HOY-365*DIA;
+  return VEN.filter(function(v){
+    if(!v.fechaTimestamp)return false;
+    if(merc&&v.origen!==merc)return false;
+    if(vend&&v.vendedor!==vend)return false;
+    if(cat&&(CATMAP[norm(v.descripcion)]||"Sin categoría")!==cat)return false;
+    if(q&&norm(v.descripcion).indexOf(q)<0)return false;
+    if(per==="12m"&&v.fechaTimestamp<d12)return false;
+    if(per==="anio"&&v.fechaTimestamp<a0)return false;
+    return true;
+  });
+}
+function entra(v){return (Number(v.precio)||0)+(Number(v.cobroExtra)||0);}
+function etTransfer(v){
+  if(v.origen!=="Alex")return '<span class="et azul">De Irene</span>';
+  var s=String(v.estatusTransferencia||"");
+  if(/^transferido/i.test(s))return '<span class="et ok">Transferido</span>';
+  if(/no transferido/i.test(s))return '<span class="et alto">Pendiente</span>';
+  return s?'<span class="et gris">'+esc(s)+'</span>':'';
+}
+function pintarVentas(){
+  var L=ventasFiltradas(),tot=L.reduce(function(s,v){return s+entra(v);},0),gan=L.reduce(function(s,v){return s+(Number(v.ganancia)||0);},0);
+  $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · entraron "+mx(tot)+" · ganancia "+mx(gan)+" ("+pct(gan,tot)+"%)";
+  if(!L.length){$("v-tabla").innerHTML='<div class="vacio">No hay ventas con estos filtros.</div>';return;}
+  if(vVista==="producto"){pintarVentasProducto(L);return;}
+  var m={};
+  L.forEach(function(v){var d=new Date(v.fechaTimestamp),k=d.getFullYear()+"-"+String(d.getMonth()).padStart(2,"0");
+    if(!m[k])m[k]={k:k,t:new Date(d.getFullYear(),d.getMonth(),1).getTime(),n:0,tot:0,gan:0,v:[]};
+    m[k].n++;m[k].tot+=entra(v);m[k].gan+=Number(v.ganancia)||0;m[k].v.push(v);});
+  var Ms=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.t-a.t;});
+  var hoy=new Date(),kHoy=hoy.getFullYear()+"-"+String(hoy.getMonth()).padStart(2,"0");
+  if(!Object.keys(vAbiertos).length&&Ms[0])vAbiertos[Ms[0].k]=1;
+  var h='<table><thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Entró</th><th class="num">Ganancia</th><th class="num">Margen</th><th class="num">vs mes anterior</th></tr></thead><tbody>';
+  Ms.forEach(function(x,i){
+    var ant=Ms[i+1],dif=ant?x.tot-ant.tot:null,ab=vAbiertos[x.k];
+    var d=new Date(x.t);
+    h+='<tr class="fila-mes'+(ab?" abierto":"")+'" data-k="'+x.k+'"><td><span class="flecha">▶</span>'+MESL[d.getMonth()]+' '+d.getFullYear()+(x.k===kHoy?' <span class="et gris">en curso</span>':'')+'</td>'+
+      '<td class="num">'+x.n+'</td><td class="num">'+mx(x.tot)+'</td><td class="num">'+mx(x.gan)+'</td><td class="num">'+pct(x.gan,x.tot)+'%</td>'+
+      '<td class="num '+(dif==null?"tenue":dif>=0?"mas":"menos")+'">'+(dif==null?"—":(dif>=0?"+":"")+mx(dif))+'</td></tr>';
+    h+='<tr class="fila-det'+(ab?" show":"")+'"><td colspan="6"><table class="sub-t"><tbody>'+
+      x.v.sort(function(a,b){return b.fechaTimestamp-a.fechaTimestamp;}).map(function(v){
+        return '<tr><td>'+fCorta(v.fechaTimestamp)+' · '+esc(v.vendedor||"")+'</td><td>'+esc(v.descripcion)+'</td><td class="num">'+mx(entra(v))+'</td><td class="num '+(Number(v.ganancia)>=0?"mas":"menos")+'">'+mx(v.ganancia)+'</td><td>'+etTransfer(v)+'</td></tr>';}).join("")+
+      '</tbody></table></td></tr>';
+  });
+  $("v-tabla").innerHTML=h+'</tbody></table>';
+}
+function pintarVentasProducto(L){
+  var m={};
+  L.forEach(function(v){var k=claveDe(v.descripcion,v.origen);if(!m[k])m[k]={descripcion:v.descripcion,categoria:CATMAP[norm(v.descripcion)]||"Sin categoría",imagen:v.imagen,n:0,tot:0,utilidad:0,ultima:0};
+    m[k].n++;m[k].tot+=entra(v);m[k].utilidad+=Number(v.ganancia)||0;if(v.fechaTimestamp>m[k].ultima)m[k].ultima=v.fechaTimestamp;});
+  var P=Object.keys(m).map(function(k){var x=m[k];x.margen=pct(x.utilidad,x.tot);x.porVenta=x.n?x.utilidad/x.n:0;return x;});
+  var c=vOrden.campo,dir=vOrden.dir;P.sort(function(a,b){return (a[c]>b[c]?1:a[c]<b[c]?-1:0)*dir;});
+  var th=function(campo,txt){return '<th class="num orden'+(c===campo?" on":"")+'" data-ord="'+campo+'">'+txt+(c===campo?(dir<0?" ↓":" ↑"):"")+'</th>';};
+  var h='<table><thead><tr><th>Producto</th>'+th("n","Ventas")+th("tot","Entró")+th("utilidad","Ganancia")+th("porVenta","Por venta")+th("margen","Margen")+th("ultima","Última venta")+'</tr></thead><tbody>'+
+    P.map(function(x){return '<tr><td><div class="prod">'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+'</small></div></div></td>'+
+      '<td class="num">'+x.n+'</td><td class="num">'+mx(x.tot)+'</td><td class="num mas">'+mx(x.utilidad)+'</td><td class="num">'+mx(x.porVenta)+'</td><td class="num">'+x.margen+'%</td><td class="num tenue">'+fCorta(x.ultima)+'</td></tr>';}).join("")+
+    '</tbody></table><div class="pie"><span>'+P.length+' productos</span><span>Clic en una columna para ordenar</span></div>';
+  $("v-tabla").innerHTML=h;
+}
+["v-q","v-cat","v-vend","v-merc","v-per"].forEach(function(id){$(id).addEventListener("input",pintarVentas);$(id).addEventListener("change",pintarVentas);});
+document.querySelectorAll("[data-vista]").forEach(function(b){b.addEventListener("click",function(){vVista=b.dataset.vista;document.querySelectorAll("[data-vista]").forEach(function(o){o.classList.toggle("on",o===b);});pintarVentas();});});
+$("v-tabla").addEventListener("click",function(e){
+  var th=e.target.closest("[data-ord]");if(th){var c=th.dataset.ord;if(vOrden.campo===c)vOrden.dir*=-1;else vOrden={campo:c,dir:-1};pintarVentas();return;}
+  var r=e.target.closest(".fila-mes");if(!r)return;
+  if(vAbiertos[r.dataset.k])delete vAbiertos[r.dataset.k];else vAbiertos[r.dataset.k]=1;
+  r.classList.toggle("abierto");r.nextElementSibling.classList.toggle("show");
+});
+
+/* ============ INVENTARIO ============ */
+var NOTAS={reponer:"Los vendes seguido y te queda una pieza o ninguna. Lo que más rápido regresa el dinero: repón estos primero.",
+  parado:"Más de 6 meses sin venderse. Marca los que quieras mover y arma el remate.",
+  nocomprar:"Llevan más de un año en cajas y no vendiste ni uno en los últimos 12 meses. No los vuelvas a pedir.",
+  reciente:"Dado de alta en los últimos 30 días. 'Te queda' ya trae descontado el moto que absorbes."};
+function estado(x){
+  if(x.reponer)return '<span class="et alto">'+(x.stock?"Queda "+x.stock:"Agotado")+' · uno cada '+x.cada+' días</span>';
+  if(x.nocomprar)return '<span class="et mal">Parado '+dias(x.dias)+' · sin ventas en el año</span>';
+  if(x.parado)return '<span class="et mal">Parado '+dias(x.dias)+'</span>';
+  if(x.reciente)return '<span class="et ok">Nuevo</span>';
+  if(x.cada)return '<span class="et ok">Uno cada '+x.cada+' días</span>';
+  if(x.ventas12===1)return '<span class="et gris">1 venta en el año</span>';
+  return '<span class="et gris">Sin ventas en el año</span>';
+}
+function pintarInventario(){
+  var mio=INV.filter(function(x){return !iMerc||x.origen===iMerc;});
+  ["todo","reciente","reponer","parado","nocomprar"].forEach(function(t){var b=document.querySelector('#i-tabs [data-tab="'+t+'"]');var n=mio.filter(function(x){return x[t];}).length;b.querySelector(".n").textContent=n;b.classList.toggle("on",t===iTab);});
+  var L=invFiltrado(),cap=L.reduce(function(s,x){return s+x.capital;},0),pzs=L.reduce(function(s,x){return s+x.stock;},0);
+  var capT=mio.reduce(function(s,x){return s+x.capital;},0),pzT=mio.reduce(function(s,x){return s+x.stock;},0);
+  $("i-sub").textContent=pzT+" piezas · "+mx(capT)+" pagados. Marca lo que quieras rematar.";
+  var n=$("i-nota");if(NOTAS[iTab]){n.textContent=NOTAS[iTab];n.style.display="block";n.classList.toggle("warn",iTab==="nocomprar"||iTab==="parado");}else n.style.display="none";
+  if(!L.length){$("i-tabla").innerHTML='<div class="vacio">Nada aquí con estos filtros.</div>';barra();return;}
+  var h;
+  if($("i-vista").value==="categoria"){
+    var m={};L.forEach(function(x){var c=x.categoria;if(!m[c])m[c]={categoria:c,prod:0,stock:0,capital:0,vale:0,v12:0};m[c].prod++;m[c].stock+=x.stock;m[c].capital+=x.capital;m[c].vale+=x.stock*x.precio;m[c].v12+=x.ventas12;});
+    var C=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.capital-a.capital;});
+    h='<table><thead><tr><th>Categoría</th><th class="num">Productos</th><th class="num">Piezas</th><th class="num">Pagado</th><th class="num">Si se vende todo</th><th class="num">Ventas en el año</th></tr></thead><tbody>'+
+      C.map(function(c){return '<tr><td><b>'+esc(c.categoria)+'</b></td><td class="num">'+c.prod+'</td><td class="num">'+c.stock+'</td><td class="num">'+mx(c.capital)+'</td><td class="num">'+mx(c.vale)+'</td><td class="num">'+c.v12+'</td></tr>';}).join("")+'</tbody></table>';
+  }else{
+    h='<table><thead><tr><th style="width:36px"></th><th>Producto</th><th class="num">Piezas</th><th>Comprado</th><th class="num">Te costó por pieza</th><th class="num">Precio</th><th class="num">Te queda por pieza '+ayuda("Precio menos lo que te costó menos el moto que absorbes.")+'</th><th>Cómo va</th></tr></thead><tbody>'+
+      L.map(function(x){var q=x.precio-x.costo-MOTO,rem=x.origen==="Alex"&&x.stock>0;
+        return '<tr><td>'+(rem?'<input class="chk" type="checkbox" data-k="'+esc(x.clave)+'"'+(sel[x.clave]?" checked":"")+'>':'')+'</td>'+
+          '<td><div class="prod">'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+(x.origen!=="Alex"?' · de '+esc(x.origen):'')+'</small></div></div></td>'+
+          '<td class="num">'+x.stock+'</td><td>'+(x.stock?(x.dias?'hace '+dias(x.dias)+' <span class="tenue">· '+fCorta(HOY-x.dias*DIA)+'</span>':'—'):'<span class="tenue">última venta '+fCorta(x.ultima)+'</span>')+'</td>'+
+          '<td class="num">'+mx(x.costo)+'</td><td class="num">'+mx(x.precio)+'</td><td class="num '+(q>=0?"mas":"menos")+'">'+mx(q)+'</td><td>'+estado(x)+'</td></tr>';}).join("")+'</tbody></table>';
+  }
+  $("i-tabla").innerHTML=h+'<div class="pie"><span>'+L.length+' de '+mio.filter(function(x){return x.todo;}).length+' productos · '+pz(pzs)+'</span><span class="mono">Pagado en lo que ves: '+mx(cap)+'</span></div>';
+  barra();
+}
+["i-q","i-cat","i-fecha","i-vista"].forEach(function(id){$(id).addEventListener("input",pintarInventario);$(id).addEventListener("change",pintarInventario);});
+$("i-tabs").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(!b)return;iTab=b.dataset.tab;pintarInventario();});
+document.querySelectorAll("[data-merc]").forEach(function(b){b.addEventListener("click",function(){iMerc=b.dataset.merc;document.querySelectorAll("[data-merc]").forEach(function(o){o.classList.toggle("on",o===b);});pintarInventario();});});
+$("moto").addEventListener("input",function(){MOTO=num(this.value);pintarInventario();});
+$("i-tabla").addEventListener("change",function(e){var c=e.target.closest(".chk");if(!c)return;var k=c.dataset.k;
+  if(c.checked){var x=porClave(k);sel[k]=a10(x.costo+MOTO);}else delete sel[k];barra();});
+function porClave(k){for(var i=0;i<INV.length;i++)if(INV[i].clave===k)return INV[i];return null;}
+
+/* ============ REMATE ============ */
+function seleccion(){return Object.keys(sel).map(porClave).filter(function(x){return x&&x.stock>0;});}
+function barra(){
+  var S=seleccion(),lib=0,pzs=0,cost=0;
+  S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;cost+=x.capital;});
+  $("flot").classList.toggle("on",S.length>0&&pantalla==="inventario");
+  $("flot-v").textContent=mx(lib);
+  $("flot-n").textContent=S.length?pzs+" piezas · "+S.length+(S.length===1?" producto":" productos")+" · pagaste "+mx(cost):"";
+}
+$("b-limpiar").addEventListener("click",function(){sel={};pintarInventario();});
+function pillas(x){
+  var cu=x.costo,op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
+  op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
+  return u.map(function(o){return '<button class="po'+(sel[x.clave]===o[1]?" on":"")+'" data-po="'+o[1]+'"><span>'+o[0]+'</span><b>'+mx(o[1])+'</b></button>';}).join("");
+}
+function cuentaRem(x){
+  var p=sel[x.clave]||0,porPza=p-MOTO-x.costo,neto=(p-MOTO)*x.stock,dif=neto-x.capital;
+  return 'Cada una: '+mx(p)+' − moto '+mx(MOTO)+' − costo '+mx(x.costo)+' = <b class="'+(porPza>=0?"mas":"menos")+'">'+mx(porPza)+'</b>. '+
+    'Las '+x.stock+': recuperas <b>'+mx(neto)+'</b> de '+mx(x.capital)+(dif>=0?' <b class="mas">(+'+mx(dif)+')</b>':' <b class="menos">(faltan '+mx(-dif)+')</b>');
+}
+function renglonRem(x){
+  return '<div class="rem" data-k="'+esc(x.clave)+'"><div class="nom"><b>'+esc(x.descripcion)+'</b><small>'+pz(x.stock)+' · te costó '+mx(x.costo)+' por pieza · parado '+dias(x.dias)+' · hoy a '+mx(x.precio)+'</small></div>'+
+    '<div class="ops">'+pillas(x)+'<span class="chip">$<input class="mono" data-libre="1" type="number" step="10" min="0" value="'+(sel[x.clave]||0)+'"></span></div>'+
+    '<div class="cuenta">'+cuentaRem(x)+'</div></div>';
+}
+function planTexto(S){
+  var lib=0,pzs=0;S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;});
+  return "REMATE KIOSKO\n"+pzs+" piezas · recuperas "+mx(lib)+" ya con el envío descontado\n\n"+S.map(function(x){return "• "+x.descripcion+" — "+x.stock+" pza · REMATE "+mx(sel[x.clave])+" (antes "+mx(x.precio)+")";}).join("\n");
+}
+function resumenRem(S){
+  var lib=0,pzs=0,cost=0;S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;cost+=x.capital;});
+  return 'Mueves <b>'+pzs+' piezas</b> y recuperas <b>'+mx(lib)+'</b> limpios, ya sin el moto de '+mx(MOTO)+' por pieza. Te costaron '+mx(cost)+'.'+
+    (lib<cost?' Recuperas menos de lo que pagaste: <b>está bien</b> si llevan meses sin moverse, un billete dormido no vale más por esperar.':'')+
+    ' Ofrécelas en paquete: el moto cuesta lo mismo lleve una o tres.';
+}
 $("b-plan").addEventListener("click",function(){
-  var V=viejos(),lin=[],lib=0,cost=0,pz=0;
-  Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;
-    lib+=(sel[i]-MOTO)*x.piezas;cost+=x.capital;pz+=x.piezas;
-    lin.push("• "+x.descripcion+" — "+x.piezas+" pza · REMATE "+mx(sel[i])+" (antes "+mx(x.precio)+")");});
-  var txt="REMATE KIOSKO\n"+pz+" piezas · recuperas "+mx(lib)+" ya con el envío descontado\n\n"+lin.join("\n");
-  abrirHTML("<h3>Tu plan de remate</h3>"+
-    "<p>Vas a mover <b>"+pz+" piezas</b> paradas hace meses y a recuperar <b>"+mx(lib)+"</b> limpios, ya descontado el envío de "+mx(MOTO)+" por pieza. Te costaron "+mx(cost)+".</p>"+
-    (lib<cost?"<p>Recuperas menos de lo que pagaste. <b>Eso está bien</b> si llevan un año sin moverse: un billete dormido no vale más por esperar.</p>":"")+
-    "<p><b>Véndelas en paquete.</b> El envío cuesta lo mismo lleves una pieza o tres: es por viaje. Ofrece lotes o pide que lo recojan y esa resta desaparece.</p>"+
-    '<textarea readonly id="plan-txt">'+esc(txt)+"</textarea>"+
-    '<p class="sub" style="margin-top:1rem"><b>Aplicar el remate</b> cambia el precio en tu hoja, en todas las piezas sin vender de esos productos, y se refleja solo en la app y en tu catalogo. El precio anterior queda guardado: se puede deshacer.</p>'+
-    '<div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap"><button class="btn-action pri" id="aplicar">Aplicar remate a mi hoja</button>'+
-    '<button class="btn-action gh" id="cp">Solo copiar lista</button><button class="btn-action gh" data-cerrar="1">Cerrar</button></div>'+
-    '<div id="res-remate" class="sub" style="margin-top:1rem"></div>');
+  var S=seleccion();if(!S.length)return;
+  abrirHTML('<h3>Tu plan de remate</h3><p id="rem-res">'+resumenRem(S)+'</p>'+
+    '<div id="rem-lista">'+S.map(renglonRem).join("")+'</div>'+
+    '<p style="margin-top:14px">Los tres precios: <b>Sin perder</b> es costo + moto, tu piso. <b>Ganas $50</b> es el piso más $50 limpios. <b>Mitad</b> es la mitad de lo que pides hoy: "50% de descuento" se entiende sin pensar.</p>'+
+    '<textarea readonly id="plan-txt">'+esc(planTexto(S))+'</textarea>'+
+    '<p>Aplicar el remate cambia el precio en tu hoja en todas las piezas sin vender de esos productos y se refleja en la app y el catálogo. El precio anterior queda guardado: se puede deshacer.</p>'+
+    '<div class="acciones"><button class="btn pri" id="aplicar">Aplicar remate a mi hoja</button><button class="btn claro" id="cp">Copiar lista</button><button class="btn claro" data-cerrar="1">Cerrar</button></div>'+
+    '<div id="res-remate" style="margin-top:12px"></div>');
   $("aplicar").addEventListener("click",function(){
     var b=this;b.disabled=true;b.textContent="Aplicando…";
-    var items=[];
-    Object.keys(sel).forEach(function(i){var x=V[i];if(!x||!(sel[i]>0))return;
-      items.push({descripcion:x.descripcion,categoria:x.categoria,precio:sel[i]});});
+    var items=seleccion().map(function(x){return {descripcion:x.descripcion,categoria:x.categoria,precio:sel[x.clave]};});
     api("aplicarRemate",null,{remate:{usuario:"Alex",items:items}},45000).then(function(r){
       if(!r||!r.success)throw new Error((r&&r.error)||"No se pudo aplicar");
-      $("res-remate").innerHTML="<b>Listo: "+r.piezas+" pieza"+(r.piezas===1?"":"s")+" con precio nuevo.</b><br>"+
-        r.productos.map(function(p){return esc(p.descripcion)+" · "+p.piezas+" pza · "+mx(p.antes)+" → <b>"+mx(p.ahora)+"</b>";}).join("<br>")+
-        (r.verificado?"":"<br>"+esc(r.aviso||""));
+      $("res-remate").innerHTML="<b>Listo: "+r.piezas+(r.piezas===1?" pieza":" piezas")+" con precio nuevo.</b><br>"+
+        (r.productos||[]).map(function(p){return esc(p.descripcion)+" · "+p.piezas+" pza · "+mx(p.antes)+" → <b>"+mx(p.ahora)+"</b>";}).join("<br>")+(r.verificado?"":"<br>"+esc(r.aviso||""));
       b.textContent="Aplicado";
-    }).catch(function(e){$("res-remate").innerHTML='<b style="color:var(--rojo)">'+esc(e.message)+"</b>";
-      b.disabled=false;b.textContent="Aplicar remate a mi hoja";});
+      seleccion().forEach(function(x){x.precio=sel[x.clave];});sel={};pintarInventario();
+    }).catch(function(e){$("res-remate").innerHTML='<b class="menos">'+esc(e.message)+"</b>";b.disabled=false;b.textContent="Aplicar remate a mi hoja";});
   });
-  $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();
-    try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
+  $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
 });
-
-var EXP={
-  capital:["Capital congelado","Es el dinero que ya pagaste y sigue en cajas. No lo perdiste, pero tampoco lo tienes: no puede comprar nada nuevo hasta que se venda.<br><br>La medida que usan los negocios es cuántos <b>meses de ganancia</b> tienes congelados. Uno o dos es normal. Cinco o más significa que compraste más rápido de lo que vendes."],
-  remate:["¿Vender al costo es perder?","No. Perder es que el dinero siga parado un año más.<br><br>Una pieza que compraste en $150 y no sale a $300 no vale $300: vale lo que alguien pague hoy. Si la rematas en $180 recuperas tu dinero, compras algo que sí rota y ese billete da la vuelta tres veces al año.<br><br>El que empieza se aferra al precio que <b>quería</b> ganar. El que lleva años mira el calendario, no el precio."],
-  pildoras:["Los tres precios que te propongo","<b>Sin perder</b> = costo del producto + envío. Es tu piso real: debajo de ahí pagas por regalar mercancía.<br><br><b>Ganas $50</b> = ese piso más cincuenta pesos limpios por pieza.<br><br><b>Mitad de precio</b> = la mitad de lo que pides hoy. No sale de tus costos, sale de la cabeza del comprador: “50% de descuento” se entiende sin pensar."],
-  envio:["El envío te cuesta más de lo que crees","De tus 461 ventas, <b>225 se entregaron a domicilio</b> y en ellas pagaste <b>$10,485</b> de motomandado.<br><br>Cobraste el extra en <b>30 de esas 225</b>: el 13%. Recuperaste $330. <b>Absorbiste $10,155.</b><br><br>Además el moto no siempre cuesta $35: hay 16 entregas de $100 y 10 de $80. Tu promedio real es <b>$47</b>.<br><br>Si empiezas a cobrarlo siempre, este número mejora solo y sin invertir un peso."],
-  rotacion:["Rotación","Cuántos días pasan, en promedio, desde que compras una pieza hasta que se vende.<br><br>Lo importante es compararlo contra <b>cuánto lleva parado lo que tienes hoy</b>. Si una categoría se vende en 90 días pero tu stock lleva 340, esas piezas concretas son las que no salen. Esas son las que rematas."],
-  margen:["Margen","De cada $100 que entran, cuántos te quedas después de pagar el producto y el envío.<br><br>El margen no es la ganancia. Puedes tener margen alto y ganar poco si vendes pocas piezas: fíjate siempre en las dos columnas juntas."]
-};
-function abrir(k){
-  var e=EXP[k];if(!e)return;
-  var extra="";
-  if(k==="margen"){
-    var mar=(D.margen||[]),mejor=mar.slice().sort(function(a,b){return b.utilidad-a.utilidad;})[0];
-    extra=desglose("Así se calcula una venta tuya",
-      [{et:"Precio de venta",sub:"lo que te paga el cliente",v:280,signo:"+"},
-       {et:"Cobro a domicilio",sub:"lo que le cobras por el envío",v:10,signo:"+"},
-       {et:"Costo del producto",sub:"lo que te costó puesto aquí",v:136.77,signo:"-"},
-       {et:"Motomandado",sub:"lo que le pagas al repartidor",v:35,signo:"-"}],
-      {et:"Tu ganancia",sub:"esto sí es tuyo",v:118.23},
-      "Ejemplo real: tu Kemei KM-1419. Entraron <b>$290</b> y salieron <b>$171.77</b>, así que te quedan <b>$118.23</b>.<br>"+
-      '<span class="dg-pct">Margen = 118.23 ÷ 290 = 41%</span><br>'+
-      "El <b>margen</b> es ese porcentaje. La <b>ganancia acumulada</b> es esta misma cuenta sumada en todas tus ventas de la categoría"+
-      (mejor?": en <b>"+esc(mejor.categoria)+"</b> llevas <b>"+mx(mejor.utilidad)+"</b> juntando "+mejor.ventas+" ventas.":"."));
-  }
-  if(k==="capital"){
-    var pm=(D.resumen||{}).utilidad/meses();
-    extra=desglose("Cuánto de tu ganancia está congelada",
-      [{et:"Dinero en cajas",sub:"ya lo pagaste, no lo tienes",v:D.capitalTotal,signo:"+"},
-       {et:"Ganas al mes",sub:"promedio de "+meses()+" meses",v:pm,signo:"-"}],
-      {et:"Meses congelados",sub:"lo primero entre lo segundo",v:0},
-      "Se divide uno entre otro: <b>"+mx(D.capitalTotal)+" ÷ "+mx(pm)+" = "+
-      (pm>0?(D.capitalTotal/pm).toFixed(1):"—")+" meses</b>.<br>Es cuánto tiempo tendrías que trabajar para volver a juntar el dinero que hoy está dormido en cajas.");
-    extra=extra.replace(/<div class="val">\$0<\/div>/,'<div class="val">'+(pm>0?(D.capitalTotal/pm).toFixed(1):"—")+" meses</div>");
-  }
-  abrirHTML("<h3>"+e[0]+"</h3><p>"+e[1]+"</p>"+extra+'<button class="btn-action pri" data-cerrar="1">Entendido</button>');
+$("mo-in").addEventListener("click",function(e){
+  var b=e.target.closest("[data-po]");if(!b)return;
+  var r=b.closest(".rem"),x=porClave(r.dataset.k);sel[x.clave]=num(b.dataset.po);
+  r.querySelector("[data-libre]").value=sel[x.clave];refrescarRem(r,x);
+});
+$("mo-in").addEventListener("input",function(e){
+  var i=e.target.closest("[data-libre]");if(!i)return;
+  var r=i.closest(".rem"),x=porClave(r.dataset.k);sel[x.clave]=num(i.value);refrescarRem(r,x);
+});
+function refrescarRem(r,x){
+  r.querySelectorAll(".po").forEach(function(o){o.classList.toggle("on",num(o.dataset.po)===sel[x.clave]);});
+  r.querySelector(".cuenta").innerHTML=cuentaRem(x);
+  var S=seleccion();$("rem-res").innerHTML=resumenRem(S);$("plan-txt").value=planTexto(S);barra();
 }
+
+/* ============ ¿ME CONVIENE? ============ */
+function desglose(titulo,filas,res,nota){
+  var max=Math.max.apply(null,filas.concat([res]).map(function(f){return Math.abs(f.v);}).concat([1]));
+  var f=function(x,cls){return '<div class="dg-fila '+cls+'"><div class="et2">'+esc(x.et)+(x.sub?'<small>'+esc(x.sub)+'</small>':'')+'</div><div class="pista"><i style="width:'+Math.max(4,Math.abs(x.v)/max*100).toFixed(1)+'%"></i></div><div class="val">'+(x.signo?(x.signo==="-"?"−":"+"):"")+mx(Math.abs(x.v))+'</div></div>';};
+  return '<div class="desglose"><div class="dg-t">'+esc(titulo)+'</div>'+filas.map(function(x){return f(x,x.signo==="-"?"dg-menos":"dg-mas");}).join("")+f(res,"dg-res")+(nota?'<div class="dg-nota">'+nota+'</div>':'')+'</div>';
+}
+function pintarConviene(){
+  var out=$("sim-out");
+  var pr=num($("sim-precio").value),pzs=Math.max(1,Math.round(num($("sim-piezas").value))||1),fa=num($("sim-factor").value)||1.33,cat=$("sim-cat").value;
+  if(!(pr>0)){out.innerHTML='<p class="tenue" style="padding:0 20px 20px;margin:0">Escribe el precio que ves en la plataforma y te hago la cuenta.</p>';return;}
+  var cf=r2(pr*fa),inv=r2(cf*pzs),piso=r2(cf+MOTO),sug=a10(cf*2),gana=r2(sug+COBRO-cf-MOTO);
+  var c=null;(D.rotacion||[]).forEach(function(x){if(x.categoria===cat)c=x;});
+  var alerta="";
+  if(c){var mal=c.piezas>0&&c.ventas>=3&&c.diasStock>c.diasVenta*2;
+    alerta='<div class="aviso '+(mal?"warn":"ok")+'"><div><b>'+esc(cat)+'</b>: se vende en <b>'+dias(c.diasVenta)+'</b>'+(c.piezas?', y hoy tienes <b>'+c.piezas+' piezas</b> que llevan <b>'+dias(c.diasStock)+'</b> paradas':', y hoy no tienes existencia')+'. '+
+      (mal?'<b>Piénsalo dos veces:</b> lo que ya tienes de esta categoría no se mueve. Meter más dinero aquí lo congela.':'Categoría sana: tu stock está dentro de sus tiempos.')+'</div></div>';}
+  var mer=num($("sim-mercado").value),ver;
+  if(!(mer>0))ver='<div class="aviso info"><div><b>Búscalo en Marketplace y anota el precio arriba.</b> El mercado manda: si allá está más barato que tu sugerido, el sugerido no sirve.</div></div>';
+  else{var g=r2(mer+COBRO-cf-MOTO),mg=pct(g,mer+COBRO);
+    if(mer<=piso)ver='<div class="aviso warn"><div><b>No lo compres.</b> La competencia lo vende en '+mx(mer)+' y a ti te costaría '+mx(piso)+' puesto y entregado.</div></div>';
+    else if(mer<sug)ver='<div class="aviso warn"><div><b>Se puede, con menos margen.</b> Tu sugerido era '+mx(sug)+' y el mercado está en '+mx(mer)+'. Alineado al mercado te quedan <b>'+mx(g)+'</b> por pieza ('+mg+'%).</div></div>';
+    else ver='<div class="aviso ok"><div><b>Buena oportunidad.</b> El mercado está en '+mx(mer)+', arriba de tu sugerido de '+mx(sug)+'. Puedes ponerte abajo de la competencia y aun así ganar <b>'+mx(g)+'</b> por pieza.</div></div>';}
+  out.innerHTML='<div style="padding:0 20px">'+desglose("Lo que de verdad te va a costar",
+      [{et:"Precio en la plataforma",sub:pzs+(pzs===1?" pieza":" piezas")+" × "+mx(pr),v:pr*pzs,signo:"+"},{et:"Impuestos y envío",sub:"factor ×"+fa.toFixed(2),v:r2(inv-pr*pzs),signo:"+"}],
+      {et:"Te costará",sub:mx(cf)+" cada pieza",v:inv},"Ese dinero sale de tu bolsa y se queda dormido hasta que vendas.")+'</div>'+
+    '<div class="dos"><div class="cifra"><div class="lb">Tu precio piso</div><div class="v">'+mx(piso)+'</div><small class="tenue">costo + moto. Debajo de aquí pierdes.</small></div>'+
+    '<div class="cifra ok"><div class="lb">Véndelo en</div><div class="v">'+mx(sug)+'</div><small class="tenue">te dejaría '+mx(gana)+' por pieza cobrando el envío</small></div></div>'+ver+alerta;
+}
+["sim-precio","sim-piezas","sim-factor","sim-mercado"].forEach(function(id){$(id).addEventListener("input",pintarConviene);});
+$("sim-cat").addEventListener("change",pintarConviene);
+$("sim-tienda").addEventListener("change",function(){if(this.value)$("sim-factor").value=this.value;pintarConviene();});
+
+/* ============ modal ============ */
 function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")$("mo").classList.remove("on");});
 
-/* Ya validaste el PIN en esta sesion del navegador: pasa directo. */
 if(sesionViva())entrar();
 })();
 </script>
