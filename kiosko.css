@@ -338,3 +338,41 @@ button{cursor:pointer;border:none;background:none}
 /* Pestañas en analisis.html: una sección a la vez. Cada sección visible ocupa el ancho completo. */
 .bento.tabs>*:not(.vis){display:none!important}
 .bento.tabs>.vis.b-card{grid-column:1/-1}
+
+/* ============================================================
+   JERARQUÍA — menos ruido, mismo contenido
+   Nada se oculta ni se acorta: solo se baja el peso visual de lo
+   secundario para que la vista caiga primero en las cifras.
+   ============================================================ */
+
+/* 1. Una sola sombra fuerte por pantalla. Las tarjetas dejan de
+      competir entre sí; el relieve aparece solo al pasar encima. */
+.b-card{box-shadow:0 1px 2px rgba(15,23,42,.04);border:1px solid var(--linea)}
+.b-card:hover{transform:none;box-shadow:0 8px 24px rgba(15,23,42,.07)}
+.kpi-card{box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.kpi-card:hover{transform:none;box-shadow:0 8px 24px rgba(15,23,42,.07)}
+.rot-item,.prod-card{box-shadow:none;border:1px solid var(--linea)}
+
+/* 2. El verde vuelve a significar UNA cosa: dinero que ganas.
+      Los iconos y adornos pasan a gris; la cifra conserva el color. */
+.kpi-card .ico{box-shadow:none;background:#F1F5F9 !important;color:var(--gris) !important}
+.decision-tag{background:transparent;border:1px solid var(--linea);color:var(--gris)}
+
+/* 3. El hero pierde el resplandor animado y el degradado de fondo.
+      La cifra grande basta para que sea lo primero que se mire. */
+.hero-bento{background:#0F172A}
+.hero-bento::before,.hero-bento::after{display:none}
+
+/* 4. Menos movimiento: las secciones aparecen, no saltan. */
+.ani{animation:aparece .25s var(--ease) both;opacity:0}
+.b-card,.kpi-card{animation-delay:0s !important}
+
+/* 5. Texto de apoyo un punto más callado que las cifras. */
+.sub{color:#8A96A6}
+.kpi-card .lb,.rot-item small{color:#8A96A6}
+
+/* 6. Quien prefiera nada de movimiento, no lo tiene. */
+@media(prefers-reduced-motion:reduce){
+  .ani,.hero-bento .big{animation:none !important;opacity:1 !important}
+  .b-card:hover,.kpi-card:hover{box-shadow:0 1px 2px rgba(15,23,42,.04)}
+}
