@@ -966,3 +966,15 @@ button.bt:active{transform:scale(.97)}
 .calc-nota.si{background:#ECFBF3;color:#075E42}
 .calc-nota.no{background:#FDF0F0;color:#8E2323}
 .calc-ajustes{margin-top:2rem;padding-top:1.25rem;border-top:1px solid rgba(128,128,128,.18)}
+.calc-fila{border-top:1px solid rgba(128,128,128,.18);padding-top:1.1rem;margin-top:1.1rem}
+.calc-fila:first-child{border-top:0;padding-top:0;margin-top:1.25rem}
+.calc-quita{background:none;border:0;font-family:inherit;font-weight:700;font-size:.78rem;
+  letter-spacing:.06em;text-transform:uppercase;opacity:.5;padding:.2rem 0;cursor:pointer;color:inherit}
+.calc-mas{display:block;width:100%;margin-top:1.1rem;padding:.9rem;border-radius:16px;cursor:pointer;
+  border:1px dashed rgba(128,128,128,.4);background:none;font-family:inherit;font-weight:700;
+  font-size:.95rem;color:inherit;opacity:.75}
+.calc-total{margin-top:1.5rem;padding:1.25rem;border-radius:18px;background:#111318;color:#fff}
+.calc-total .et{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.calc-total .et em{font-style:normal;text-transform:none;letter-spacing:.02em;font-weight:600}
+.calc-total .n{font-size:2.5rem;font-weight:800;letter-spacing:-.04em;line-height:1.05;margin-top:.25rem}
+.calc-total .ay{font-size:.85rem;font-weight:600;opacity:.7;margin-top:.5rem;line-height:1.5}
