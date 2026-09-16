@@ -1,4 +1,4 @@
-const APP_VERSION='12.4';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='12.7';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -360,26 +360,47 @@ function coma(v){return String(v==null?'':v).replace(/,/g,'.').replace(/[^0-9.\-
    Vive aqui y no en su propia pantalla para que Irene la tenga a un toque. */
 const cMx=n=>'$'+Math.round(Number(n)||0).toLocaleString('es-MX');
 const cNum=v=>{const n=parseFloat(coma(v));return isFinite(n)?n:0;};
-let cFilas=[{p:'',n:1,c:''}];
+let cFilas=[{p:'',n:1,c:'',v:''}];
 
 /* Un renglon por producto. Las plataformas piden un minimo de compra para el
    envio gratis, pero ese minimo varia por vendedor y no es fiable calcularlo:
    por eso solo se avisa, no se estima. */
 function cFila(f,i){
-  return `<div class="calc-fila" data-i="${i}">
+  return `<article class="calc-card" data-i="${i}">
+    <div class="calc-cab"><span>Producto ${i+1}</span>${cFilas.length>1?`<button class="calc-x" data-q="${i}" aria-label="Quitar">&times;</button>`:''}</div>
     <div class="calc-duo">
       <label><span>Precio que ves</span><span class="money"><i>$</i><input data-c="p" type="text" inputmode="decimal" placeholder="120" value="${esc(f.p)}"></span></label>
       <label><span>Piezas</span><input data-c="n" type="number" inputmode="numeric" min="1" step="1" value="${f.n}"></label>
     </div>
     <label><span>Precio de la competencia</span><span class="money"><i>$</i><input data-c="c" type="text" inputmode="decimal" placeholder="opcional" value="${esc(f.c)}"></span></label>
-    ${cFilas.length>1?`<button class="calc-quita" data-q="${i}">Quitar</button>`:''}
     <div class="calc-res"></div>
-  </div>`;
+  </article>`;
 }
 function cPintaFilas(){
   const w=document.getElementById('c-lista');if(!w)return;
   w.innerHTML=cFilas.map(cFila).join('');
 }
+/* Recalcula lo que depende del precio de venta sin tocar el campo que se esta
+   escribiendo. */
+function cSoloVenta(el,i){
+  const d=cFilas[i],$$=x=>document.getElementById(x);
+  const f=cNum($$('c-origen').value)||1,moto=cNum($$('c-moto').value),cobro=cNum($$('c-cobro').value);
+  const p=cNum(d.p);if(!(p>0))return;
+  const cuesta=Math.round(p*f),sug=Math.ceil(cuesta*2/10)*10,
+        propio=cNum(d.v),vende=propio>0?propio:sug,gana=vende+cobro-cuesta-moto;
+  const ay=el.querySelector('.calc-hero .ay');
+  if(ay)ay.innerHTML='Ganas <b>'+cMx(gana)+'</b> por pieza · toca para ver la cuenta';
+  const det=el.querySelector('.calc-det');
+  if(det){
+    const ls=det.querySelectorAll('.l b');
+    if(ls[0])ls[0].textContent=cMx(vende);
+    if(ls[4])ls[4].textContent=cMx(gana);
+  }
+  const et=el.querySelector('.calc-hero .et');
+  if(et)et.innerHTML='Véndelo en <em>('+(propio>0&&propio!==sug?'tuyo':'sugerido')+')</em>'+
+    (propio>0&&propio!==sug?' <button class="calc-volver" data-sug="'+sug+'">volver al sugerido</button>':'');
+}
+
 function calcPinta(){
   const $$=i=>document.getElementById(i),out=$$('c-out');if(!out)return;
   const f=cNum($$('c-origen').value)||1,
@@ -387,16 +408,36 @@ function calcPinta(){
 
   let gastas=0,hay=false;
 
-  document.querySelectorAll('.calc-fila').forEach(el=>{
+  document.querySelectorAll('.calc-card').forEach(el=>{
     const i=+el.dataset.i,d=cFilas[i];
     const p=cNum(d.p),pz=Math.max(1,Math.round(cNum(d.n))||1),comp=cNum(d.c);
     const caja=el.querySelector('.calc-res');
     if(!(p>0)){caja.innerHTML='';return;}
     hay=true;
     const imp=Math.round(p*(f-1)),cuesta=Math.round(p*f),piso=cuesta+moto-cobro,
-          vende=Math.ceil(cuesta*2/10)*10,gana=vende+cobro-cuesta-moto;
+          sug=Math.ceil(cuesta*2/10)*10,
+          propio=cNum(d.v),vende=propio>0?propio:sug,
+          gana=vende+cobro-cuesta-moto;
     gastas+=p*pz;
     let h='';
+    h+='<div class="calc-row"><span>Te cuesta <em>(estimado)</em></span><b>'+cMx(cuesta)+'</b></div>'+
+       '<div class="calc-sub">Precio '+cMx(p)+(imp>0?' + impuestos '+cMx(imp):' · sin impuestos')+
+       (pz>1?' · '+pz+' piezas: '+cMx(cuesta*pz):'')+'</div>';
+
+    h+='<div class="calc-hero"><div class="et">Véndelo en <em>('+(propio>0&&propio!==sug?'tuyo':'sugerido')+')</em>'+
+       (propio>0&&propio!==sug?' <button class="calc-volver" data-sug="'+sug+'">volver al sugerido</button>':'')+'</div>'+
+       '<div class="calc-edit"><span>$</span><input data-c="v" type="text" inputmode="decimal" value="'+vende+'"></div>'+
+       '<div class="ay" data-ctap="1">Ganas <b>'+cMx(gana)+'</b> por pieza · toca para ver la cuenta</div></div>'+
+       '<div class="calc-det">'+
+         '<div class="l"><span>Te paga el cliente</span><b>'+cMx(vende)+'</b></div>'+
+         '<div class="l"><span>Te paga por el envío</span><b>+'+cMx(cobro)+'</b></div>'+
+         '<div class="l"><span>Te costó el producto</span><b>−'+cMx(cuesta)+'</b></div>'+
+         '<div class="l"><span>Le pagas al moto</span><b>−'+cMx(moto)+'</b></div>'+
+         '<div class="l tot"><span>Te queda</span><b>'+cMx(gana)+'</b></div></div>';
+
+    h+='<div class="calc-row bajo"><span>No bajes de</span><b>'+cMx(piso)+'</b></div>'+
+       '<div class="calc-sub">'+cMx(cuesta)+' + '+cMx(moto)+' de moto − '+cMx(cobro)+' que te paga.</div>';
+
     if(comp>0){
       const gc=comp+cobro-cuesta-moto;let cl='',t='';
       if(comp<=piso){cl=' no';t='<b>No lo compres.</b> A ti te sale en '+cMx(piso)+'. Perderías dinero.';}
@@ -404,20 +445,6 @@ function calcPinta(){
       else{cl=' si';t='<b>Buena compra.</b> Está arriba de tu precio. Ganas '+cMx(gc)+' por pieza.';}
       h+='<div class="calc-nota'+cl+'">Si otros lo venden en '+cMx(comp)+': '+t+'</div>';
     }
-    h+='<div class="calc-cifra"><div class="et">Te cuesta <em>(estimado)</em></div><div class="n">'+cMx(cuesta)+'</div>'+
-       '<div class="ay">'+(imp>0?'Precio '+cMx(p)+' + impuestos '+cMx(imp):'Sin impuestos de importación')+
-       (pz>1?' · '+pz+' piezas: '+cMx(cuesta*pz):'')+'</div></div>';
-    h+='<div class="calc-cifra tap" data-ctap="1"><div class="et">Véndelo en <em>(sugerido)</em></div>'+
-       '<div class="n verde">'+cMx(vende)+'</div><div class="ay">Ganas '+cMx(gana)+' por pieza · toca para ver</div></div>'+
-       '<div class="calc-det">'+
-         '<div class="l"><span>Te paga el cliente</span><b>'+cMx(vende)+'</b></div>'+
-         '<div class="l"><span>Te paga por el envío</span><b>+'+cMx(cobro)+'</b></div>'+
-         '<div class="l"><span>Te costó el producto</span><b>−'+cMx(cuesta)+'</b></div>'+
-         '<div class="l"><span>Le pagas al moto</span><b>−'+cMx(moto)+'</b></div>'+
-         '<div class="l tot"><span>Te queda</span><b>'+cMx(gana)+'</b></div></div>';
-    h+='<div class="calc-mini"><div><div class="et">No bajes de</div><div class="n">'+cMx(piso)+'</div>'+
-       '<div class="ay">'+cMx(cuesta)+' + '+cMx(moto)+' de moto − '+cMx(cobro)+' que te paga. Ahí sales tablas.</div></div>'+
-       '<div><div class="et">Le cobras envío</div><div class="n">'+cMx(cobro)+'</div></div></div>';
     caja.innerHTML=h;
   });
 
@@ -439,20 +466,29 @@ function calcMe(){
     if(l){
       l.addEventListener('input',e=>{
         const c=e.target.dataset.c;if(!c)return;
-        cFilas[+e.target.closest('.calc-fila').dataset.i][c]=e.target.value;
+        const el=e.target.closest('.calc-card'),i=+el.dataset.i;
+        cFilas[i][c]=e.target.value;
+        /* Si solo cambia el precio de venta, NO se redibuja el renglon: se
+           actualizan las cifras en su lugar. Redibujar mata el foco y en el
+           telefono no se podria escribir mas de un digito. */
+        if(c==='v'){cSoloVenta(el,i);return;}
         calcPinta();
       });
       l.addEventListener('click',e=>{
         const t=e.target.closest('[data-ctap]');if(t){t.classList.toggle('abierto');return;}
+        const v=e.target.closest('[data-sug]');
+        if(v){cFilas[+v.closest('.calc-card').dataset.i].v='';calcPinta();return;}
         const q=e.target.closest('[data-q]');
         if(q){cFilas.splice(+q.dataset.q,1);cPintaFilas();calcPinta();}
       });
     }
+    const lim=document.getElementById('c-limpiar');
+    if(lim)lim.addEventListener('click',()=>{cFilas=[{p:'',n:1,c:'',v:''}];cPintaFilas();calcPinta();window.scrollTo({top:0,behavior:'smooth'});});
     const m=document.getElementById('c-mas');
     if(m)m.addEventListener('click',()=>{
       if(cFilas.length>=10)return;
-      cFilas.push({p:'',n:1,c:''});cPintaFilas();calcPinta();
-      const ul=document.querySelector('.calc-fila:last-child input');if(ul)ul.focus();
+      cFilas.push({p:'',n:1,c:'',v:''});cPintaFilas();calcPinta();
+      const ul=document.querySelector('.calc-card:last-child input');if(ul)ul.focus();
     });
   }
   calcPinta();
