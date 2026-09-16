@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>¿Me conviene? — Kiosko</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --ink:#111318; --gris:#8A8F98; --linea:#E6E8EC; --fondo:#FFFFFF; --suave:#F4F5F7;
+  --verde:#0EA96A; --verde-bg:#ECFBF3; --rojo:#D93A3A; --rojo-bg:#FDF0F0;
+  --r:18px;
+}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--fondo);color:var(--ink);
+  -webkit-font-smoothing:antialiased;padding:1.5rem 1.25rem 4rem;max-width:520px;margin:0 auto}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+h1{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.pie{color:var(--gris);font-weight:600;font-size:.95rem;margin-top:.25rem}
+header{margin-bottom:2rem}
+
+label{display:block;margin-bottom:1.1rem}
+label>span{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gris);margin-bottom:.4rem}
+input,select{width:100%;font-family:inherit;font-size:1.25rem;font-weight:700;color:var(--ink);
+  background:var(--suave);border:1px solid transparent;border-radius:var(--r);
+  padding:.95rem 1rem;appearance:none;outline:none}
+input:focus,select:focus{border-color:var(--ink);background:#fff}
+input::placeholder{color:#C3C7CE}
+.money{position:relative}
+.money i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+  font-style:normal;font-weight:700;color:var(--gris);font-size:1.1rem}
+.money input{padding-left:2.1rem;font-family:"JetBrains Mono",monospace}
+select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A8F98' stroke-width='2.5' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 1rem center;background-size:20px;padding-right:3rem}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+.vacio{color:var(--gris);font-weight:600;text-align:center;padding:3rem 1rem;line-height:1.6}
+
+.cifra{padding:1.5rem 0;border-top:1px solid var(--linea)}
+.cifra .et{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.cifra .et em{font-style:normal;letter-spacing:.04em;text-transform:none;font-weight:600;opacity:.75}
+.tap{cursor:pointer}
+.tap .n::after{content:"";display:inline-block;width:9px;height:9px;margin-left:.6rem;vertical-align:.32em;
+  border-right:2.5px solid var(--gris);border-bottom:2.5px solid var(--gris);transform:rotate(45deg);opacity:.5}
+.tap.abierto .n::after{transform:rotate(-135deg);vertical-align:.1em}
+.detalle{display:none;background:var(--suave);border-radius:var(--r);padding:1rem 1.15rem;margin-top:.9rem}
+.tap.abierto+.detalle{display:block}
+.detalle .l{display:flex;justify-content:space-between;gap:1rem;font-weight:600;
+  font-size:.95rem;padding:.4rem 0;color:var(--gris)}
+.detalle .l b{font-weight:700;color:var(--ink)}
+.detalle .l.tot{border-top:1px solid var(--linea);margin-top:.35rem;padding-top:.65rem;color:var(--ink);font-weight:800}
+.cifra .n{font-size:3rem;font-weight:700;letter-spacing:-.04em;line-height:1.05;margin-top:.3rem}
+.cifra .n.verde{color:var(--verde)}
+.cifra .n.rojo{color:var(--rojo)}
+.cifra .ay{color:var(--gris);font-weight:600;font-size:.9rem;margin-top:.35rem}
+
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;padding:1.5rem 0;border-top:1px solid var(--linea)}
+.mini .n{font-size:1.5rem;font-weight:700;letter-spacing:-.03em;margin-top:.3rem}
+.mini .ay{color:var(--gris);font-weight:600;font-size:.8rem;margin-top:.35rem;line-height:1.45}
+
+.nota{border-radius:var(--r);padding:1rem 1.15rem;font-weight:600;line-height:1.5;
+  font-size:.95rem;margin-top:1.5rem;background:var(--suave);color:var(--ink)}
+.nota.si{background:var(--verde-bg);color:#075E42}
+.nota.no{background:var(--rojo-bg);color:#8E2323}
+.nota b{font-weight:800}
+
+details{margin-top:2.5rem;border-top:1px solid var(--linea);padding-top:1.25rem}
+summary{list-style:none;cursor:pointer;font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gris)}
+summary::-webkit-details-marker{display:none}
+details[open] summary{margin-bottom:1.1rem}
+.aclara{color:var(--gris);font-weight:600;font-size:.85rem;line-height:1.55;margin-top:-.4rem;margin-bottom:1.1rem}
+
+@media(prefers-reduced-motion:no-preference){
+  .cifra .n,.mini .n{transition:color .2s ease}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>¿Me conviene?</h1>
+  <p class="pie">Escribe el precio antes de comprar.</p>
+</header>
+
+<label><span>Precio que ves</span>
+  <span class="money"><i>$</i><input id="precio" type="number" inputmode="decimal" min="0" step="1" placeholder="120"></span>
+</label>
+
+<label><span>¿De dónde?</span>
+  <select id="origen">
+    <option value="1.33">Viene de China (Temu, AliExpress, TikTok)</option>
+    <option value="1.00">Ya está en México (local, Mercado Libre)</option>
+  </select>
+</label>
+
+<div class="duo">
+  <label><span>Piezas</span>
+    <input id="piezas" type="number" inputmode="numeric" min="1" step="1" value="1">
+  </label>
+  <label><span>Precio de la competencia</span>
+    <span class="money"><i>$</i><input id="mercado" type="number" inputmode="decimal" min="0" step="10" placeholder="opcional"></span>
+  </label>
+</div>
+
+<div id="salida"><p class="vacio">Escribe el precio y te digo si conviene.</p></div>
+
+<details id="ajustes">
+  <summary>Ajustes</summary>
+  <p class="aclara">Cámbialos solo si tu caso es distinto.</p>
+  <div class="duo">
+    <label><span>Moto</span><span class="money"><i>$</i><input id="moto" type="number" inputmode="decimal" min="0" step="5" value="35"></span></label>
+    <label><span>Le cobras</span><span class="money"><i>$</i><input id="cobro" type="number" inputmode="decimal" min="0" step="5" value="10"></span></label>
+  </div>
+</details>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i);};
+function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
+function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
+function a10(n){return Math.ceil(n/10)*10;}
+
+/* Una cifra grande con su etiqueta arriba y su lectura abajo. Nada mas. */
+function cifra(et,sec,valor,ayuda,color,tap){
+  return '<div class="cifra'+(tap?" tap":"")+'"'+(tap?' data-tap="1"':"")+'>'+
+    '<div class="et">'+et+(sec?' <em>('+sec+')</em>':"")+'</div>'+
+    '<div class="n mono'+(color?" "+color:"")+'">'+valor+'</div>'+
+    (ayuda?'<div class="ay">'+ayuda+'</div>':"")+'</div>';
+}
+/* El desglose que aparece al tocar "Vendelo en": de donde sale la ganancia. */
+function linea(t,v,tot){return '<div class="l'+(tot?" tot":"")+'"><span>'+t+'</span><b>'+v+'</b></div>';}
+
+function calcular(){
+  var p=num($("precio").value),
+      f=num($("origen").value)||1,
+      pz=Math.max(1,Math.round(num($("piezas").value))||1),
+      moto=num($("moto").value),
+      cobro=num($("cobro").value),
+      comp=num($("mercado").value);
+
+  if(!(p>0)){
+    $("salida").innerHTML='<p class="vacio">Escribe el precio y te digo si conviene.</p>';
+    return;
+  }
+
+  var imp=Math.round(p*(f-1)),          // lo que suma el impuesto de importacion
+      cuesta=Math.round(p*f),            // costo real de una pieza puesta en Ocosingo
+      piso=cuesta+moto-cobro,            // debajo de esto se vende con perdida
+      vende=a10(cuesta*2),               // precio sugerido
+      gana=vende+cobro-cuesta-moto,      // lo que queda limpio por pieza
+      total=cuesta*pz;
+
+  var h="";
+
+  /* 1. El veredicto va PRIMERO y arranca con el dato que ella escribio,
+        no con el juicio: si no, "ganas menos" queda colgando sin referencia. */
+  if(comp>0){
+    var ganaComp=comp+cobro-cuesta-moto,clase="",txt="";
+    if(comp<=piso){clase=" no";txt="<b>No lo compres.</b> A ti te sale en "+mx(piso)+". Perderías dinero.";}
+    else if(comp<vende){clase="";txt="<b>Se puede, pero ganas menos.</b> A ese precio te quedan "+mx(ganaComp)+" por pieza.";}
+    else{clase=" si";txt="<b>Buena compra.</b> Está arriba de tu precio. Ganas "+mx(ganaComp)+" por pieza.";}
+    h+='<div class="nota'+clase+'" style="margin:0 0 .5rem">Si otros lo venden en '+mx(comp)+': '+txt+'</div>';
+  }else{
+    h+='<div class="nota" style="margin:0 0 .5rem">Busca el mismo producto en Marketplace y anota su precio arriba. El precio de otros manda.</div>';
+  }
+
+  h+=cifra("Te cuesta","estimado",mx(cuesta),
+       (imp>0? "Precio "+mx(p)+" + impuestos "+mx(imp) : "Sin impuestos de importación")+
+       (pz>1? " · "+pz+" piezas: "+mx(total) : ""));
+
+  h+=cifra("Véndelo en","sugerido",mx(vende),"Ganas "+mx(gana)+" por pieza · toca para ver","verde",true)+
+     '<div class="detalle">'+
+       linea("Te paga el cliente",mx(vende))+
+       linea("Te paga por el envío","+"+mx(cobro))+
+       linea("Te costó el producto","−"+mx(cuesta))+
+       linea("Le pagas al moto","−"+mx(moto))+
+       linea("Te queda",mx(gana),true)+
+     '</div>';
+
+  h+='<div class="mini">'+
+       '<div><div class="et">No bajes de</div><div class="n mono">'+mx(piso)+'</div>'+
+         '<div class="ay">'+mx(cuesta)+' + '+mx(moto)+' de moto − '+mx(cobro)+' que te paga. Ahí sales tablas.</div></div>'+
+       '<div><div class="et">Le cobras envío</div><div class="n mono">'+mx(cobro)+'</div></div>'+
+     '</div>';
+
+  $("salida").innerHTML=h;
+}
+
+$("salida").addEventListener("click",function(e){
+  var c=e.target.closest("[data-tap]");if(c)c.classList.toggle("abierto");
+});
+
+["precio","piezas","mercado","moto","cobro"].forEach(function(id){
+  $(id).addEventListener("input",calcular);
+});
+$("origen").addEventListener("change",calcular);
+calcular();
+})();
+</script>
+</body>
+</html>
