@@ -926,3 +926,43 @@ button.bt:active{transform:scale(.97)}
 .an-spark path{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .an-spark.up path{stroke:var(--danger)}.an-spark.up circle{fill:var(--danger)}
 .an-spark.down path{stroke:var(--selva)}.an-spark.down circle{fill:var(--selva)}
+
+/* ---------- ¿ME CONVIENE? (vista Calcular) ---------- */
+.nav.nav4{grid-template-columns:repeat(4,1fr)}
+.calc-head h3{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.calc-head p{color:var(--gris,#8A8F98);font-weight:600;margin-top:.2rem}
+.calc-campos{margin-top:1.5rem}
+.calc-campos label,.calc-ajustes label{display:block;margin-bottom:1rem}
+.calc-campos label>span,.calc-ajustes label>span{display:block;font-size:.7rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--gris,#8A8F98);margin-bottom:.35rem}
+.calc-campos input,.calc-campos select,.calc-ajustes input{width:100%;font-family:inherit;font-size:1.2rem;
+  font-weight:700;border:1px solid transparent;border-radius:16px;padding:.85rem 1rem;appearance:none;outline:none}
+.calc-campos .money,.calc-ajustes .money{position:relative;display:block}
+.calc-campos .money i,.calc-ajustes .money i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+  font-style:normal;font-weight:700;opacity:.5}
+.calc-campos .money input,.calc-ajustes .money input{padding-left:2rem}
+.calc-duo{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.calc-vacio{text-align:center;font-weight:600;opacity:.6;padding:2.5rem 1rem}
+.calc-cifra{padding:1.35rem 0;border-top:1px solid rgba(128,128,128,.18)}
+.calc-cifra .et{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.calc-cifra .et em{font-style:normal;text-transform:none;letter-spacing:.02em;font-weight:600}
+.calc-cifra .n{font-size:2.75rem;font-weight:800;letter-spacing:-.04em;line-height:1.05;margin-top:.25rem}
+.calc-cifra .n.verde{color:#0EA96A}
+.calc-cifra .ay,.calc-mini .ay{font-size:.85rem;font-weight:600;opacity:.6;margin-top:.3rem;line-height:1.45}
+.calc-cifra.tap{cursor:pointer}
+.calc-cifra.tap .n::after{content:"";display:inline-block;width:9px;height:9px;margin-left:.55rem;
+  vertical-align:.32em;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;
+  transform:rotate(45deg);opacity:.35}
+.calc-cifra.tap.abierto .n::after{transform:rotate(-135deg);vertical-align:.1em}
+.calc-det{display:none;border-radius:16px;padding:1rem 1.1rem;margin-top:.85rem;background:rgba(128,128,128,.09)}
+.calc-cifra.tap.abierto+.calc-det{display:block}
+.calc-det .l{display:flex;justify-content:space-between;gap:1rem;font-weight:600;font-size:.95rem;padding:.35rem 0;opacity:.75}
+.calc-det .l.tot{border-top:1px solid rgba(128,128,128,.25);margin-top:.3rem;padding-top:.6rem;opacity:1;font-weight:800}
+.calc-mini{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;padding:1.35rem 0;border-top:1px solid rgba(128,128,128,.18)}
+.calc-mini .et{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.calc-mini .n{font-size:1.45rem;font-weight:800;letter-spacing:-.03em;margin-top:.25rem}
+.calc-nota{border-radius:16px;padding:.95rem 1.1rem;font-weight:600;line-height:1.5;font-size:.95rem;
+  margin-bottom:.5rem;background:rgba(128,128,128,.09)}
+.calc-nota.si{background:#ECFBF3;color:#075E42}
+.calc-nota.no{background:#FDF0F0;color:#8E2323}
+.calc-ajustes{margin-top:2rem;padding-top:1.25rem;border-top:1px solid rgba(128,128,128,.18)}
