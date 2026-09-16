@@ -932,15 +932,15 @@ button.bt:active{transform:scale(.97)}
 .calc-head h3{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
 .calc-head p{color:var(--gris,#8A8F98);font-weight:600;margin-top:.2rem}
 .calc-campos{margin-top:1.5rem}
-.calc-campos label,.calc-ajustes label{display:block;margin-bottom:1rem}
-.calc-campos label>span,.calc-ajustes label>span{display:block;font-size:.7rem;font-weight:700;
+.calc-campos label,.calc-ajustes label,.calc-fila label{display:block;margin-bottom:1rem}
+.calc-campos label>span,.calc-ajustes label>span,.calc-fila label>span{display:block;font-size:.7rem;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;color:var(--gris,#8A8F98);margin-bottom:.35rem}
-.calc-campos input,.calc-campos select,.calc-ajustes input{width:100%;font-family:inherit;font-size:1.2rem;
+.calc-campos input,.calc-campos select,.calc-ajustes input,.calc-fila input{width:100%;font-family:inherit;font-size:1.2rem;
   font-weight:700;border:1px solid transparent;border-radius:16px;padding:.85rem 1rem;appearance:none;outline:none}
-.calc-campos .money,.calc-ajustes .money{position:relative;display:block}
-.calc-campos .money i,.calc-ajustes .money i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+.calc-campos .money,.calc-ajustes .money,.calc-fila .money{position:relative;display:block}
+.calc-campos .money i,.calc-ajustes .money i,.calc-fila .money i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);
   font-style:normal;font-weight:700;opacity:.5}
-.calc-campos .money input,.calc-ajustes .money input{padding-left:2rem}
+.calc-campos .money input,.calc-ajustes .money input,.calc-fila .money input{padding-left:2rem}
 .calc-duo{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .calc-vacio{text-align:center;font-weight:600;opacity:.6;padding:2.5rem 1rem}
 .calc-cifra{padding:1.35rem 0;border-top:1px solid rgba(128,128,128,.18)}
@@ -978,3 +978,10 @@ button.bt:active{transform:scale(.97)}
 .calc-total .et em{font-style:normal;text-transform:none;letter-spacing:.02em;font-weight:600}
 .calc-total .n{font-size:2.5rem;font-weight:800;letter-spacing:-.04em;line-height:1.05;margin-top:.25rem}
 .calc-total .ay{font-size:.85rem;font-weight:600;opacity:.7;margin-top:.5rem;line-height:1.5}
+
+/* Los campos nunca deben salirse de la pantalla: el ancho manda sobre el
+   contenido. Sin esto, un <input> conserva su ancho nativo y desborda. */
+#view-calc,#view-calc *{max-width:100%}
+#view-calc input,#view-calc select{width:100%;min-width:0}
+.calc-duo{min-width:0}
+.calc-duo>*{min-width:0}
