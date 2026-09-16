@@ -932,15 +932,15 @@ button.bt:active{transform:scale(.97)}
 .calc-head h3{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
 .calc-head p{color:var(--gris,#8A8F98);font-weight:600;margin-top:.2rem}
 .calc-campos{margin-top:1.5rem}
-.calc-campos label,.calc-ajustes label,.calc-fila label{display:block;margin-bottom:1rem}
-.calc-campos label>span,.calc-ajustes label>span,.calc-fila label>span{display:block;font-size:.7rem;font-weight:700;
+.calc-campos label,.calc-ajustes label,.calc-card label{display:block;margin-bottom:1rem}
+.calc-campos label>span,.calc-ajustes label>span,.calc-card label>span{display:block;font-size:.7rem;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;color:var(--gris,#8A8F98);margin-bottom:.35rem}
-.calc-campos input,.calc-campos select,.calc-ajustes input,.calc-fila input{width:100%;font-family:inherit;font-size:1.2rem;
+.calc-campos input,.calc-campos select,.calc-ajustes input,.calc-card input{width:100%;font-family:inherit;font-size:1.2rem;
   font-weight:700;border:1px solid transparent;border-radius:16px;padding:.85rem 1rem;appearance:none;outline:none}
-.calc-campos .money,.calc-ajustes .money,.calc-fila .money{position:relative;display:block}
-.calc-campos .money i,.calc-ajustes .money i,.calc-fila .money i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+.calc-campos .money,.calc-ajustes .money,.calc-card .money{position:relative;display:block}
+.calc-campos .money i,.calc-ajustes .money i,.calc-card .money i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);
   font-style:normal;font-weight:700;opacity:.5}
-.calc-campos .money input,.calc-ajustes .money input,.calc-fila .money input{padding-left:2rem}
+.calc-campos .money input,.calc-ajustes .money input,.calc-card .money input{padding-left:2rem}
 .calc-duo{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .calc-vacio{text-align:center;font-weight:600;opacity:.6;padding:2.5rem 1rem}
 .calc-cifra{padding:1.35rem 0;border-top:1px solid rgba(128,128,128,.18)}
@@ -956,6 +956,7 @@ button.bt:active{transform:scale(.97)}
 .calc-cifra.tap.abierto .n::after{transform:rotate(-135deg);vertical-align:.1em}
 .calc-det{display:none;border-radius:16px;padding:1rem 1.1rem;margin-top:.85rem;background:rgba(128,128,128,.09)}
 .calc-cifra.tap.abierto+.calc-det{display:block}
+.calc-cifra:has(.ay.abierto)+.calc-det{display:block}
 .calc-det .l{display:flex;justify-content:space-between;gap:1rem;font-weight:600;font-size:.95rem;padding:.35rem 0;opacity:.75}
 .calc-det .l.tot{border-top:1px solid rgba(128,128,128,.25);margin-top:.3rem;padding-top:.6rem;opacity:1;font-weight:800}
 .calc-mini{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;padding:1.35rem 0;border-top:1px solid rgba(128,128,128,.18)}
@@ -966,10 +967,6 @@ button.bt:active{transform:scale(.97)}
 .calc-nota.si{background:#ECFBF3;color:#075E42}
 .calc-nota.no{background:#FDF0F0;color:#8E2323}
 .calc-ajustes{margin-top:2rem;padding-top:1.25rem;border-top:1px solid rgba(128,128,128,.18)}
-.calc-fila{border-top:1px solid rgba(128,128,128,.18);padding-top:1.1rem;margin-top:1.1rem}
-.calc-fila:first-child{border-top:0;padding-top:0;margin-top:1.25rem}
-.calc-quita{background:none;border:0;font-family:inherit;font-weight:700;font-size:.78rem;
-  letter-spacing:.06em;text-transform:uppercase;opacity:.5;padding:.2rem 0;cursor:pointer;color:inherit}
 .calc-mas{display:block;width:100%;margin-top:1.1rem;padding:.9rem;border-radius:16px;cursor:pointer;
   border:1px dashed rgba(128,128,128,.4);background:none;font-family:inherit;font-weight:700;
   font-size:.95rem;color:inherit;opacity:.75}
@@ -983,5 +980,46 @@ button.bt:active{transform:scale(.97)}
    contenido. Sin esto, un <input> conserva su ancho nativo y desborda. */
 #view-calc,#view-calc *{max-width:100%}
 #view-calc input,#view-calc select{width:100%;min-width:0}
-.calc-duo{min-width:0}
-.calc-duo>*{min-width:0}
+/* El precio sugerido es editable: se ve como la cifra grande, pero es un campo. */
+.calc-edit{display:flex;align-items:baseline;gap:.25rem;margin-top:.25rem;color:#0EA96A}
+.calc-edit span{font-size:1.9rem;font-weight:800;opacity:.55}
+.calc-edit input{font-family:inherit;font-size:2.75rem;font-weight:800;letter-spacing:-.04em;
+  line-height:1.05;color:inherit;background:none;border:0;border-bottom:2px dashed rgba(14,169,106,.35);
+  padding:0 0 .1rem;width:100%;min-width:0;outline:none;border-radius:0}
+.calc-edit input:focus{border-bottom-color:#0EA96A;border-bottom-style:solid}
+.calc-cifra .ay[data-ctap]{cursor:pointer}
+.calc-cifra .ay[data-ctap].abierto+.calc-det{display:block}
+.calc-volver{background:none;border:0;font-family:inherit;font-weight:700;font-size:.68rem;
+  letter-spacing:.05em;text-transform:uppercase;color:#0EA96A;cursor:pointer;padding:0 0 0 .5rem}
+
+/* ---------- Cotizacion: una tarjeta por producto ----------
+   Con 3 o 4 renglones seguidos todo pesaba igual y no se veia donde empezaba
+   uno y terminaba otro. Ahora cada producto es una tarjeta numerada y solo
+   tiene UNA cifra grande: el precio de venta. Lo demas baja a renglones. */
+.calc-card{background:#fff;border-radius:22px;padding:1.15rem 1.15rem 1.25rem;margin-top:1rem;
+  box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.calc-cab{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding-bottom:.9rem;margin-bottom:.9rem;border-bottom:1px solid rgba(128,128,128,.14)}
+.calc-cab span{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.45}
+.calc-x{background:none;border:0;font-size:1.5rem;line-height:1;color:inherit;opacity:.35;
+  cursor:pointer;padding:0 .2rem}
+.calc-res{margin-top:.35rem}
+.calc-row{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding-top:1rem;font-weight:700;font-size:1rem}
+.calc-row span{opacity:.6}
+.calc-row em{font-style:normal;font-weight:600;font-size:.85em;opacity:.8}
+.calc-row b{font-size:1.15rem;font-weight:800;letter-spacing:-.02em}
+.calc-row.bajo{border-top:1px solid rgba(128,128,128,.14);margin-top:1.1rem}
+.calc-sub{font-size:.8rem;font-weight:600;opacity:.5;margin-top:.2rem;line-height:1.45}
+.calc-hero{margin-top:1.2rem;padding-top:1.1rem;border-top:1px solid rgba(128,128,128,.14)}
+.calc-hero .et{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.5}
+.calc-hero .et em{font-style:normal;text-transform:none;letter-spacing:.02em;font-weight:600}
+.calc-hero .ay{font-size:.85rem;font-weight:600;opacity:.6;margin-top:.4rem;cursor:pointer}
+.calc-hero .ay b{opacity:1;font-weight:800}
+.calc-hero .ay.abierto{opacity:.9}
+.calc-card:has(.ay.abierto) .calc-det{display:block}
+.calc-acciones{display:grid;grid-template-columns:1fr auto;gap:.6rem;margin-top:1.1rem}
+.calc-limpiar{padding:.9rem 1.1rem;border-radius:16px;border:0;background:rgba(128,128,128,.12);
+  font-family:inherit;font-weight:700;font-size:.9rem;color:inherit;opacity:.7;cursor:pointer}
+.calc-mas{margin-top:0}
+.calc-card,.calc-card *{min-width:0}
