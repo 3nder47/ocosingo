@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=12.1">
+<link rel="stylesheet" href="styles.css?v=12.2">
 </head>
 <body>
 
@@ -58,18 +58,18 @@
     <div id="view-calc" class="view hidden">
       <div class="calc-head"><h3>¿Me conviene?</h3><p>Escribe el precio antes de comprar.</p></div>
       <div class="calc-campos">
-        <label><span>Precio que ves</span><span class="money"><i>$</i><input id="c-precio" type="number" inputmode="decimal" min="0" step="1" placeholder="120"></span></label>
+        <label><span>Precio que ves</span><span class="money"><i>$</i><input id="c-precio" type="text" inputmode="decimal" min="0" step="any" placeholder="120"></span></label>
         <label><span>¿De dónde?</span><select id="c-origen"><option value="1.33">Viene de China (Temu, AliExpress, TikTok)</option><option value="1.00">Ya está en México (local, Mercado Libre)</option></select></label>
         <div class="calc-duo">
           <label><span>Piezas</span><input id="c-piezas" type="number" inputmode="numeric" min="1" step="1" value="1"></label>
-          <label><span>Precio de la competencia</span><span class="money"><i>$</i><input id="c-comp" type="number" inputmode="decimal" min="0" step="10" placeholder="opcional"></span></label>
+          <label><span>Precio de la competencia</span><span class="money"><i>$</i><input id="c-comp" type="text" inputmode="decimal" min="0" step="any" placeholder="opcional"></span></label>
         </div>
       </div>
       <div id="c-out"></div>
       <div class="calc-ajustes">
         <div class="calc-duo">
-          <label><span>Moto</span><span class="money"><i>$</i><input id="c-moto" type="number" inputmode="decimal" min="0" step="5" value="35"></span></label>
-          <label><span>Le cobras</span><span class="money"><i>$</i><input id="c-cobro" type="number" inputmode="decimal" min="0" step="5" value="10"></span></label>
+          <label><span>Moto</span><span class="money"><i>$</i><input id="c-moto" type="text" inputmode="decimal" min="0" step="any" value="35"></span></label>
+          <label><span>Le cobras</span><span class="money"><i>$</i><input id="c-cobro" type="text" inputmode="decimal" min="0" step="any" value="10"></span></label>
         </div>
       </div>
     </div>
@@ -124,12 +124,12 @@
     <h3 id="np-titulo">Agregar producto <span class="tag-irene">tuyo</span></h3>
     <div class="form-field"><label>Descripción</label><input id="np-desc" placeholder="Auriculares X100 Negro" autocomplete="off"></div>
     <div class="form-field"><label>Categoría</label><input id="np-cat" list="cats-list" placeholder="Audifonos" autocomplete="off"><datalist id="cats-list"></datalist></div>
-    <div style="display:flex;gap:12px"><div class="form-field" style="flex:1"><label>Te costó</label><div class="money"><span>$</span><input id="np-costo" type="number" inputmode="decimal" placeholder="0.00"></div></div>
-    <div class="form-field" style="flex:1"><label>Lo vendes en</label><div class="money"><span>$</span><input id="np-precio" type="number" inputmode="decimal" placeholder="0.00"></div></div></div>
+    <div style="display:flex;gap:12px"><div class="form-field" style="flex:1"><label>Te costó</label><div class="money"><span>$</span><input id="np-costo" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+    <div class="form-field" style="flex:1"><label>Lo vendes en</label><div class="money"><span>$</span><input id="np-precio" type="text" inputmode="decimal" placeholder="0.00"></div></div></div>
     <div class="form-field"><label id="np-cant-lbl">Cantidad de piezas</label><div class="cant"><button onclick="npCant(-1)">−</button><b id="np-n">1</b><button onclick="npCant(1)">+</button></div></div>
-    <div class="form-field"><label>Foto (opcional)</label>
-      <input id="np-foto" type="file" accept="image/*" style="display:none" onchange="npFoto(this)">
-      <button class="foto-pick" id="np-foto-btn" onclick="document.getElementById('np-foto').click()"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir foto</span></button>
+    <div class="form-field"><label>Fotos (hasta 4, opcional)</label>
+      <input id="np-foto" type="file" accept="image/*" multiple style="display:none" onchange="npFoto(this)">
+      <button class="foto-pick" id="np-foto-btn" onclick="document.getElementById('np-foto').click()"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir fotos · puedes marcar varias</span></button>
     </div>
     <button class="btn primary" id="np-btn" onclick="guardarProducto()">Agregar a mi inventario</button>
     <button class="btn ghost" onclick="cerrarAlta()">Cancelar</button>
@@ -221,6 +221,6 @@
 </div>
 
 <script src="config.js"></script>
-<script src="app.js?v=12.1"></script>
+<script src="app.js?v=12.2"></script>
 </body>
 </html>
