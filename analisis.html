@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ui.css?v=5">
+<link rel="stylesheet" href="ui.css?v=6">
 <script>(function(){try{var t=localStorage.getItem("kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -378,7 +378,7 @@ function pintarResumen(){
     '</ul><button class="ir" data-ir="inventario" data-tab="reponer">Ver qué reponer</button></div>';
 
   var deb=VEN.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0),porV={};
-  deb.forEach(function(v){var k="Ventas de "+(v.vendedor||"—");porV[k]=(porV[k]||0)+(Number(v.aporte)||0);});
+  deb.forEach(function(v){var k="Ventas de "+nomV(v.vendedor);porV[k]=(porV[k]||0)+(Number(v.aporte)||0);});
   var masVieja=deb.reduce(function(s,v){return !s||v.fechaTimestamp<s?v.fechaTimestamp:s;},0);
   h+='<div class="c3 card kpi"><div class="lb">Pendiente de transferir '+ayuda("Dinero de ventas de tu mercancía que todavía está en Ocosingo. Si vendió Irene o Mamá te deben el costo (la ganancia es de ellas); si vendiste tú y cobraron en efectivo, te deben la venta completa.")+'</div>'+
     '<div class="v">'+mx(debe)+'</div><ul class="mini">'+
@@ -462,7 +462,7 @@ function etTransfer(v){
 function pintarVentas(){
   var L=ventasFiltradas(),tot=L.reduce(function(s,v){return s+entra(v);},0),gan=L.reduce(function(s,v){return s+(Number(v.ganancia)||0);},0);
   var deb=L.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0);
-  $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · entraron "+mx(tot)+" · ganancia "+mx(gan)+" ("+pct(gan,tot)+"%)"+(deb.length?" · por transferir "+mx(debe)+" de "+deb.length+(deb.length===1?" venta":" ventas"):"");
+  $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · precio de venta "+mx(tot)+" · ganancia neta "+mx(gan)+" ("+pct(gan,tot)+"%)"+(deb.length?" · por transferir "+mx(debe)+" de "+deb.length+(deb.length===1?" venta":" ventas"):"");
   pintarScore(L);
   if(!L.length){$("v-tabla").innerHTML='<div class="vacio">No hay ventas con estos filtros.</div>';return;}
   if(vVista==="producto"){pintarVentasProducto(L);return;}
@@ -473,7 +473,7 @@ function pintarVentas(){
   var Ms=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.t-a.t;});
   var hoy=new Date(),kHoy=hoy.getFullYear()+"-"+String(hoy.getMonth()).padStart(2,"0");
   if(!Object.keys(vAbiertos).length&&Ms[0])vAbiertos[Ms[0].k]=1;
-  var h='<table><thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Entró</th><th class="num">Ganancia</th><th class="num">Margen</th><th class="num">vs mes anterior</th></tr></thead><tbody>';
+  var h='<table><thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Precio de venta</th><th class="num">Ganancia neta</th><th class="num">Margen</th><th class="num">vs mes anterior</th></tr></thead><tbody>';
   Ms.forEach(function(x,i){
     var ant=Ms[i+1],dif=(ant&&x.k!==kHoy)?x.tot-ant.tot:null,ab=vAbiertos[x.k];
     var d=new Date(x.t);
@@ -482,29 +482,33 @@ function pintarVentas(){
       '<td class="num '+(dif==null?"tenue":dif>=0?"mas":"menos")+'">'+(dif==null?"—":(dif>=0?"+":"")+mx(dif))+'</td></tr>';
     h+='<tr class="fila-det'+(ab?" show":"")+'"><td colspan="6"><table class="sub-t"><tbody>'+
       x.v.sort(function(a,b){return b.fechaTimestamp-a.fechaTimestamp;}).map(function(v){
-        return '<tr><td>'+fCorta(v.fechaTimestamp)+' · '+esc(v.vendedor||"")+'</td><td>'+esc(v.descripcion)+'</td><td class="num">'+mx(entra(v))+'</td><td class="num '+(Number(v.ganancia)>=0?"mas":"menos")+'">'+mx(v.ganancia)+'</td><td>'+etTransfer(v)+(pendiente(v)?' <span class="tenue">por transferir '+mx(v.aporte)+(v.corte?' · corte '+esc(v.corte):'')+'</span>':'')+'</td></tr>';}).join("")+
+        return '<tr><td>'+fCorta(v.fechaTimestamp)+' · '+esc(nomV(v.vendedor))+'</td><td>'+esc(v.descripcion)+'</td><td class="num">'+mx(entra(v))+'</td><td class="num '+(Number(v.ganancia)>=0?"mas":"menos")+'">'+mx(v.ganancia)+'</td><td>'+etTransfer(v)+(pendiente(v)?' <span class="tenue">por transferir '+mx(v.aporte)+(v.corte?' · corte '+esc(v.corte):'')+'</span>':'')+'</td></tr>';}).join("")+
       '</tbody></table></td></tr>';
   });
   $("v-tabla").innerHTML=h+'</tbody></table>';
 }
 /* Tarjetas que responden a los filtros: en qué se convirtió cada peso que entró */
+function nomV(v){var n=String(v||"").trim();if(!n)return "Sin vendedor";return n.charAt(0).toUpperCase()+n.slice(1).toLowerCase();}
 function pintarScore(L){
   var S=function(f){return L.reduce(function(a,v){return a+(f(v)||0);},0);};
-  var entro=S(entra),costo=S(function(v){return Number(v.costoFinal);}),moto=S(function(v){return Number(v.gastoExt);});
-  var mia=S(function(v){return v.vendedor==="Alex"?Number(v.ganancia):0;}),ellas=S(function(v){return v.vendedor!=="Alex"?Number(v.ganancia):0;});
-  var porV={};L.forEach(function(v){if(v.vendedor&&v.vendedor!=="Alex")porV[v.vendedor]=(porV[v.vendedor]||0)+(Number(v.ganancia)||0);});
+  var venta=S(entra),costo=S(function(v){return Number(v.costoFinal);}),moto=S(function(v){return Number(v.gastoExt);});
+  var bruta=venta-costo,neta=bruta-moto;
+  var porV={};L.forEach(function(v){var k=nomV(v.vendedor);porV[k]=(porV[k]||0)+(Number(v.ganancia)||0);});
+  var mia=porV.Alex||0,otras=Object.keys(porV).filter(function(k){return k!=="Alex";}).sort(function(a,b){return porV[b]-porV[a];});
   var deb=L.filter(pendiente),debe=deb.reduce(function(a,v){return a+(Number(v.aporte)||0);},0);
-  var extra=Math.max(0,entro-costo-moto-mia-ellas);
-  var seg=[["Costo de la mercancía",costo,"var(--tenue)"],["Motomandado",moto,"var(--naranja)"],["Tu ganancia",mia,"var(--verde)"],["Ganancia de "+(Object.keys(porV).join(" y ")||"ellas"),ellas,"var(--azul)"]];
-  var barra=entro>0?'<div class="reparto"><div class="rep-bar">'+seg.map(function(x){return x[1]>0?'<i style="width:'+(x[1]/entro*100).toFixed(1)+'%;background:'+x[2]+'" title="'+esc(x[0])+' '+mx(x[1])+'"></i>':"";}).join("")+'</div>'+
-    '<div class="rep-leg">'+seg.map(function(x){return x[1]>0?'<span><i style="background:'+x[2]+'"></i>'+esc(x[0])+' <b class="mono">'+pct(x[1],entro)+'%</b></span>':"";}).join("")+'</div></div>':"";
+  var colores={Irene:"var(--azul)",Mamá:"#8B5CF6","Sin vendedor":"var(--linea)"};
+  var seg=[["Costo",costo,"var(--tenue)"],["Motomandado",moto,"var(--naranja)"],["Ganancia neta tuya",mia,"var(--verde)"]].concat(otras.map(function(k){return ["Ganancia neta de "+k,porV[k],colores[k]||"#8B5CF6"];}));
+  var barra=venta>0?'<div class="reparto"><div class="rep-bar">'+seg.map(function(x){return x[1]>0?'<i style="width:'+(x[1]/venta*100).toFixed(1)+'%;background:'+x[2]+'" title="'+esc(x[0])+' '+mx(x[1])+'"></i>':"";}).join("")+'</div>'+
+    '<div class="rep-leg">'+seg.map(function(x){return x[1]>0?'<span><i style="background:'+x[2]+'"></i>'+esc(x[0])+' <b class="mono">'+pct(x[1],venta)+'%</b></span>':"";}).join("")+'</div></div>':"";
   var c=function(lb,v,cls,sub,t){return '<div class="card sc"><div class="lb">'+lb+(t?' '+ayuda(t):'')+'</div><div class="v '+(cls||"")+'">'+mx(v)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';};
+  var per={"12m":"últimos 12 meses",anio:"este año",todo:"todo el historial"}[$("v-per").value],est={"":"todas",pend:"solo pendientes de transferir",ok:"solo ya transferidas"}[$("v-est").value];
   $("v-score").innerHTML=
-    c("Entró",entro,"",L.length+(L.length===1?" venta":" ventas"),"Precio más lo que se cobró de envío, de las ventas que ves con estos filtros.")+
-    c("Tu ganancia",mia,"mas","de tus propias ventas","Precio + envío cobrado − costo − moto, solo de lo que vendiste tú. Es tuya.")+
-    c("Ganancia de "+(Object.keys(porV).join(" y ")||"Irene"),ellas,"azul",Object.keys(porV).length>1?Object.keys(porV).map(function(k){return k+" "+mx(porV[k]);}).join(" · "):"se la quedan ellas; a ti te regresan el costo","Cuando venden Irene o Mamá, la ganancia es de ellas. A ti te transfieren el costo del producto, que fue lo que invertiste.")+
-    c("Costo de lo vendido",costo,"","lo que habías pagado por esa mercancía","Lo que te costó, puesto aquí, la mercancía de estas ventas. Es dinero tuyo que regresa, no ganancia.")+
-    c("Motomandado",moto,"menos","gasto, ya se le pagó al repartidor","Todo lo pagado de envíos en estas ventas. Es un gasto, no dinero por transferir.")+
+    '<div class="sc-cab">Con los filtros de abajo: <b>'+per+'</b> · <b>'+est+'</b> · '+L.length+(L.length===1?" venta":" ventas")+'</div>'+
+    c("Precio de venta",venta,"","precio + envío cobrado","Lo que pagaron los clientes en estas ventas: precio más lo que se cobró de envío.")+
+    c("Costo",costo,"","de esa mercancía, puesta aquí","Lo que te costó, puesto en Ocosingo, la mercancía de estas ventas. Es dinero tuyo que regresa, no ganancia.")+
+    c("Ganancia bruta",bruta,"mas","precio de venta − costo","Antes de pagar envíos.")+
+    c("Motomandado",moto,"menos","gasto, ya se le pagó al repartidor","Todo lo pagado de envíos en estas ventas. Es un gasto.")+
+    c("Ganancia neta",neta,"mas",'tuya <b class="mono">'+mx(mia)+'</b>'+otras.filter(function(k){return porV[k]>0;}).map(function(k){return ' · '+k+' <b class="mono">'+mx(porV[k])+'</b>';}).join(""),"Ganancia bruta − motomandado. Si vendió Irene o Mamá, esa parte es de ellas y a ti te transfieren el costo. Las ventas viejas sin vendedor registrado salen aparte.")+
     (deb.length?c("Por transferir",debe,"alto",deb.length+(deb.length===1?" venta pendiente":" ventas pendientes"),"Lo que aún está en Ocosingo y te toca: el costo si vendió Irene o Mamá; la venta completa menos el moto si vendiste tú y cobraron en efectivo."):"")+
     barra;
 }
@@ -515,7 +519,7 @@ function pintarVentasProducto(L){
   var P=Object.keys(m).map(function(k){var x=m[k];x.margen=pct(x.utilidad,x.tot);x.porVenta=x.n?x.utilidad/x.n:0;return x;});
   var c=vOrden.campo,dir=vOrden.dir;P.sort(function(a,b){return (a[c]>b[c]?1:a[c]<b[c]?-1:0)*dir;});
   var th=function(campo,txt){return '<th class="num orden'+(c===campo?" on":"")+'" data-ord="'+campo+'">'+txt+(c===campo?(dir<0?" ↓":" ↑"):"")+'</th>';};
-  var h='<table><thead><tr><th>Producto</th>'+th("n","Ventas")+th("tot","Entró")+th("utilidad","Ganancia")+th("porVenta","Por venta")+th("margen","Margen")+th("ultima","Última venta")+'</tr></thead><tbody>'+
+  var h='<table><thead><tr><th>Producto</th>'+th("n","Ventas")+th("tot","Precio de venta")+th("utilidad","Ganancia neta")+th("porVenta","Neta por venta")+th("margen","Margen")+th("ultima","Última venta")+'</tr></thead><tbody>'+
     P.map(function(x){return '<tr><td><div class="prod">'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+'</small></div></div></td>'+
       '<td class="num">'+x.n+'</td><td class="num">'+mx(x.tot)+'</td><td class="num mas">'+mx(x.utilidad)+'</td><td class="num">'+mx(x.porVenta)+'</td><td class="num">'+x.margen+'%</td><td class="num tenue">'+fCorta(x.ultima)+'</td></tr>';}).join("")+
     '</tbody></table><div class="pie"><span>'+P.length+(P.length===1?' producto':' productos')+'</span><span>Clic en una columna para ordenar</span></div>';
