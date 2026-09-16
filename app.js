@@ -1,4 +1,4 @@
-const APP_VERSION='12.1';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='12.2';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -351,11 +351,15 @@ function cambiarVista(v){
   enviarPendientes();
   const fab=document.getElementById('fab-add');if(fab){const enCat=(v==='catalogo'),esAlex=(state.usuario==='Alex');fab.style.display=enCat?'':'none';if(enCat){fab.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+(esAlex?'Dar de alta un pedido':'Agregar producto');fab.onclick=esAlex?function(){location.href='alta.html';}:abrirAlta;}}
 }
+/* El teclado de Android en espanol escribe coma decimal. Los campos de dinero
+   son type="text" para que la deje pasar, y aqui se normaliza a punto. */
+function coma(v){return String(v==null?'':v).replace(/,/g,'.').replace(/[^0-9.\-]/g,'');}
+
 /* ---------- ¿ME CONVIENE? — calculadora previa a la compra ----------
    Pura aritmetica: no toca la hoja ni el servidor, asi que funciona sin senal.
    Vive aqui y no en su propia pantalla para que Irene la tenga a un toque. */
 const cMx=n=>'$'+Math.round(Number(n)||0).toLocaleString('es-MX');
-const cNum=v=>{const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0;};
+const cNum=v=>{const n=parseFloat(coma(v));return isFinite(n)?n:0;};
 function calcPinta(){
   const $$=i=>document.getElementById(i),out=$$('c-out');if(!out)return;
   const p=cNum($$('c-precio').value),f=cNum($$('c-origen').value)||1,
@@ -705,46 +709,65 @@ function abrirEdicion(){
   document.getElementById('sheet-alta').classList.remove('hidden');
 }
 function prepararAlta(){
-  buzz();state.npN=1;document.getElementById('np-n').textContent='1';npFotoData=null;
+  buzz();state.npN=1;document.getElementById('np-n').textContent='1';npFotoData=null;npFotos=[];
   const fb=document.getElementById('np-foto-btn');fb.classList.remove('ok');fb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir foto</span>';document.getElementById('np-foto').value='';
   ['np-desc','np-cat','np-costo','np-precio'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('cats-list').innerHTML=[...new Set(state.catalogo.map(p=>p.categoria))].sort().map(c=>`<option value="${esc(c)}">`).join('');
   document.getElementById('np-btn').disabled=false;
 }
 function cerrarAlta(){document.getElementById('sheet-alta').classList.add('hidden');}
-let npFotoData=null;
+let npFotoData=null,npFotos=[];   // npFotos: todas las fotos elegidas (la 1a es la principal)
 /* Comprime la foto en el teléfono (máx 1280px, JPEG) antes de mandarla. */
-function npFoto(inp){
-  const f=inp.files&&inp.files[0];if(!f)return;
+/* Encoge una foto y la devuelve como base64. Igual que antes, pero para una sola
+   pieza, para poder repetirlo con todas las que elija. */
+function npEncoge(f){
+  return new Promise((ok,mal)=>{
+    const img=new Image(),url=URL.createObjectURL(f);
+    img.onload=()=>{
+      const max=1280,k=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const dataUrl=c.toDataURL('image/jpeg',0.82);
+      URL.revokeObjectURL(url);ok({b64:dataUrl.split(',')[1],url:dataUrl});
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);mal(new Error('foto ilegible'));};
+    img.src=url;
+  });
+}
+/* Acepta VARIAS fotos. La primera es la principal; las demas van como tomas extra. */
+async function npFoto(inp){
+  const fs=inp.files?[...inp.files].slice(0,4):[];if(!fs.length)return;
   const btn=document.getElementById('np-foto-btn'),txt=document.getElementById('np-foto-txt');
-  txt.textContent='Preparando foto…';
-  const img=new Image();
-  img.onload=()=>{
-    const max=1280,k=Math.min(1,max/Math.max(img.width,img.height));
-    const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
-    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-    const dataUrl=c.toDataURL('image/jpeg',0.82);
-    npFotoData=dataUrl.split(',')[1];
-    btn.classList.add('ok');btn.innerHTML=`<img src="${dataUrl}" alt=""><span>Foto lista · toca para cambiar</span>`;
-    URL.revokeObjectURL(img.src);
-  };
-  img.onerror=()=>{txt.textContent='No se pudo leer la foto, intenta otra';npFotoData=null;};
-  img.src=URL.createObjectURL(f);
+  if(txt)txt.textContent='Preparando fotos…';
+  npFotos=[];
+  for(const f of fs){try{npFotos.push(await npEncoge(f));}catch(e){}}
+  if(!npFotos.length){if(txt)txt.textContent='No se pudieron leer, intenta otras';npFotoData=null;return;}
+  npFotoData=npFotos[0].b64;
+  btn.classList.add('ok');
+  btn.innerHTML=npFotos.map(x=>`<img src="${x.url}" alt="">`).join('')+
+    `<span>${npFotos.length===1?'Foto lista':npFotos.length+' fotos listas'} · toca para cambiar</span>`;
 }
 function npCant(d){buzz();state.npN=Math.min(50,Math.max(1,state.npN+d));document.getElementById('np-n').textContent=state.npN;}
 function guardarProducto(){
   const v=id=>document.getElementById(id).value.trim();
   const ed=state.editando;
-  const producto={origen:'Irene',pid:ed?ed.pid:'',descripcion:v('np-desc'),categoria:v('np-cat'),costo:v('np-costo'),precio:v('np-precio'),cantidad:state.npN};
+  const producto={origen:'Irene',pid:ed?ed.pid:'',descripcion:v('np-desc'),categoria:v('np-cat'),costo:coma(v('np-costo')),precio:coma(v('np-precio')),cantidad:state.npN};
   const etiqueta=ed?'Guardar cambios':'Agregar a mi inventario';
   if(!producto.descripcion||!producto.categoria||!(Number(producto.costo)>0)||!(Number(producto.precio)>0)){toast('Llena descripción, categoría, costo y precio','err');return;}
   const b=document.getElementById('np-btn');b.disabled=true;b.textContent='Guardando…';
   apiPost(ed?'editarProducto':'agregarProducto',{producto}).then(async r=>{
     if(!r.success){toast(r.error||'No se pudo guardar','err');b.disabled=false;b.textContent=etiqueta;return;}
     if(npFotoData){
-      b.textContent='Subiendo foto…';
-      try{const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,base64:npFotoData,mime:'image/jpeg',principal:!!ed});if(!rf.success)toast('Producto guardado, pero la foto no: '+(rf.error||''),'err');}
-      catch(e){toast('Producto guardado; la foto no subió, puedes intentar luego','err');}
+      const lote=npFotos.length?npFotos:[{b64:npFotoData}];
+      let fallaron=0;
+      for(let i=0;i<lote.length;i++){
+        b.textContent=lote.length>1?`Subiendo foto ${i+1} de ${lote.length}…`:'Subiendo foto…';
+        try{
+          const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,base64:lote[i].b64,mime:'image/jpeg',principal:i===0&&!!ed});
+          if(!rf.success)fallaron++;
+        }catch(e){fallaron++;}
+      }
+      if(fallaron)toast(`Producto guardado, pero ${fallaron} foto${fallaron===1?'':'s'} no subió`,'err');
     }
     cerrarAlta();buzz([20,30,20]);
     toast(ed?`Cambios guardados en "${producto.descripcion}"`:`${r.agregados} pieza${r.agregados===1?'':'s'} de "${producto.descripcion}" en tu inventario`,'ok');
@@ -953,10 +976,10 @@ function pintarVenta(){
       </div></div>
       ${Number(p.costoFinal)<p.precio?`<div class="field"><label>Precio</label><div class="opts" data-p="1">
         <button class="opt ${state.precioTipo!=='costo'?'on':''}" id="pt-n" onclick="setPrecioTipo('normal')">Normal · $${precio(p.precio)}</button>
-        <button class="opt ${state.precioTipo==='costo'?'on':''}" id="pt-c" onclick="setPrecioTipo('costo')">Al costo · $${precio(p.costoFinal)}<br><small style="font-weight:600">para la familia</small></button>
+        <button class="opt ${state.precioTipo==='costo'?'on':''}" id="pt-c" onclick="setPrecioTipo('costo')">Al costo · $${precio(p.costoFinal)}</button>
       </div></div>`:''}
-      <div class="field"><label>Cobro extra (el envío YA va en el precio · deja esto en 0)</label><div class="money"><span>$</span><input id="cobro" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
-      <div class="field"><label>Motomandado / gastos</label><div class="money"><span>$</span><input id="gastos" type="number" inputmode="decimal" step="0.01" placeholder="0.00" value="${state.gastos||''}" oninput="guardarInputs();pintarCalc()"></div></div>
+      <div class="field"><label>Cobro extra al cliente</label><div class="money"><span>$</span><input id="cobro" type="text" inputmode="decimal" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
+      <div class="field"><label>Motomandado / gastos</label><div class="money"><span>$</span><input id="gastos" type="text" inputmode="decimal" placeholder="0.00" value="${state.gastos||''}" oninput="guardarInputs();pintarCalc()"></div></div>
       <div class="calc" id="calc"></div>`;
     pintarCalc();if(fotos.length)tintDesde(fotos[0],document.getElementById('gal-wrap'));
     foot.innerHTML=`<button class="btn primary" id="btn-next" onclick="revisar()" ${state.vendedor&&state.metodo?'':'disabled'}>Revisar venta</button><button class="btn ghost" onclick="cerrarVenta()">Cancelar</button>`;
@@ -998,7 +1021,7 @@ function tintDesde(url,el){
   }catch(e){}
 }
 function pintarCalc(){const c=document.getElementById('calc');if(!c||!state.vendedor)return;const t=transferEst();c.innerHTML=`<span>Ganancia estimada</span><b class="num" id="calc-v"></b>`+(t!=null?`</div><div class="calc"><span>Irene te pasa (con tu costo)</span><b class="num">$${money(t)}</b>`:'');tick(document.getElementById('calc-v'),gananciaEst(),{dur:350});}
-function guardarInputs(){state.cobro=document.getElementById('cobro')?.value||'';state.gastos=document.getElementById('gastos')?.value||'';}
+function guardarInputs(){state.cobro=coma(document.getElementById('cobro')?.value||'');state.gastos=coma(document.getElementById('gastos')?.value||'');}
 /* Cambios de vendedor / método: solo actualizan lo afectado, sin reconstruir la hoja (evita reflash de la galería). */
 function setVend(v){buzz();state.vendedor=v;refrescarOpciones();}
 function setMetodo(m){buzz();state.metodo=m;refrescarOpciones();}
