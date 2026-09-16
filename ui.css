@@ -1,4 +1,4 @@
-/* ui.css · v3 · sistema visual de las pantallas de PC de Kiosko
+/* ui.css · v4 · sistema visual de las pantallas de PC de Kiosko
    Plano, blanco, un acento verde. Lo oscuro solo vive en el héroe y la barra flotante.
    Modo oscuro: automático (sistema) o manual con <html data-theme="dark|light">. */
 :root{
@@ -259,3 +259,58 @@ th.orden.on{color:var(--ink)}
   .hero .big{font-size:44px}
   .dos{grid-template-columns:1fr}
 }
+
+/* ===== Alta de pedido ===== */
+.hero .pagado{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:6px 14px;max-width:340px;margin:8px 0}
+.hero .pagado i{font-style:normal;color:#A7F3D0;font-size:22px;font-weight:700}
+.hero .pagado input{background:none;border:0;outline:0;color:#fff;font-family:var(--mono);font-size:34px;font-weight:700;width:100%;letter-spacing:-.02em}
+.hero .pagado input::placeholder{color:rgba(255,255,255,.35)}
+.pill.mango{background:#FDE68A;color:#78350F}
+.fecha-chip input{border:0;background:none;font-weight:700;outline:0;color:var(--ink)}
+.reng{position:relative;padding:18px 20px;display:grid;grid-template-columns:260px 1fr;gap:18px}
+.reng .lado-foto{display:flex;flex-direction:column;gap:10px}
+.reng .cuerpo{display:flex;flex-direction:column;gap:12px;min-width:0}
+.quitar{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:var(--card);border:1px solid var(--linea);color:var(--tenue);display:grid;place-items:center}
+.quitar:hover{color:var(--rojo);border-color:var(--rojo)}
+.galeria{display:grid;grid-template-columns:1.6fr 1fr 1fr;grid-template-rows:repeat(2,1fr);gap:6px;height:160px}
+.gal-slot{border-radius:var(--r-sm);background:var(--bg);border:2px dashed var(--linea);display:grid;place-items:center;color:var(--tenue);overflow:hidden;position:relative;cursor:pointer;font-size:12px;font-weight:600}
+.gal-slot:hover{border-color:var(--verde);color:var(--verde-ink)}
+.gal-slot.principal{grid-row:span 2}
+.gal-slot img{width:100%;height:100%;object-fit:cover}
+.gal-slot.llena{border-style:solid;border-color:var(--linea);cursor:default}
+.gal-slot .quita-foto{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(15,23,42,.75);color:#fff;border:0;display:grid;place-items:center;font-size:12px;line-height:1}
+.gal-slot .et{position:absolute;left:6px;bottom:6px;background:rgba(15,23,42,.75);color:#fff;border-radius:var(--pill);padding:2px 8px;font-size:10px;font-weight:700}
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campos .ancho{grid-column:1/-1}
+.campo small{color:var(--gris);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips .chip{padding:5px 10px;font-size:13px;cursor:pointer}
+.step{display:inline-flex;align-items:center;border:1px solid var(--linea);border-radius:var(--r-sm);background:var(--card)}
+.step button{width:36px;height:36px;border:0;background:none;font-weight:700;color:var(--verde-ink);font-size:18px}
+.step input{width:48px;text-align:center;border:0;background:none;font-weight:700;font-family:var(--mono);outline:0}
+.opc summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--verde-ink);list-style:none;padding:4px 0}
+.opc summary::-webkit-details-marker{display:none}
+.opc summary::before{content:"+ "}.opc[open] summary::before{content:"− "}
+.calculo{background:var(--bg);border-radius:var(--r-sm);padding:14px 16px;display:grid;gap:10px;border:1px solid var(--linea)}
+.calculo.vacio{background:none;border:2px dashed var(--linea);color:var(--tenue);font-weight:600;text-align:center;padding:18px}
+.cal-k{font-size:12px;font-weight:600;color:var(--gris)}
+.cal-v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.precio-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.precio-pill{background:var(--ink);color:var(--bg);border-radius:var(--pill);padding:6px 14px;display:inline-flex;align-items:center;gap:2px;font-weight:700}
+.precio-pill input{width:76px;background:none;border:0;color:inherit;font-weight:700;font-size:16px;text-align:right;padding:0;font-family:var(--mono);outline:0}
+.queda{font-weight:700;color:var(--verde-ink)}.queda.flojo{color:var(--naranja)}
+.cat-estado{min-height:16px;font-size:12px;font-weight:600;display:block;margin-top:4px}
+.cat-estado.nueva{color:var(--naranja)}.cat-estado.dudo{color:var(--gris)}
+.sug{background:var(--verde-bg);color:var(--verde-ink);border:0;border-radius:var(--pill);padding:2px 10px;font-weight:700;font-size:12px}
+.liga{border:0;background:none;padding:0;color:var(--verde-ink);font-weight:700;font-size:13px;text-align:left}
+.liga:hover{text-decoration:underline}
+.mas-btn{width:100%;border:2px dashed var(--linea);border-radius:var(--r);padding:18px;font-weight:700;color:var(--gris);background:none;margin-top:12px}
+.mas-btn:hover{border-color:var(--verde);color:var(--verde-ink)}
+.resumen-lista{list-style:none;display:grid;gap:8px;margin:16px auto;padding:0;max-width:660px;text-align:left}
+.resumen-lista li{background:var(--bg);border-radius:var(--r-sm);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:600}
+.resumen-lista small{display:block;color:var(--gris);font-weight:400;margin-top:2px}
+.pid{background:var(--verde-bg);color:var(--verde-ink);border-radius:var(--pill);padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.pid.nuevo{background:var(--naranja-bg);color:var(--naranja-ink)}
+.check-ok{width:72px;height:72px;border-radius:50%;background:var(--verde-bg);color:var(--verde-ink);display:grid;place-items:center;margin:0 auto 16px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:900px){.reng{grid-template-columns:1fr}.campos{grid-template-columns:1fr}}
