@@ -1,4 +1,4 @@
-/* ui.css · v5 · sistema visual de las pantallas de PC de Kiosko
+/* ui.css · v6 · sistema visual de las pantallas de PC de Kiosko
    Plano, blanco, un acento verde. Lo oscuro solo vive en el héroe y la barra flotante.
    Modo oscuro: automático (sistema) o manual con <html data-theme="dark|light">. */
 :root{
@@ -327,3 +327,5 @@ th.orden.on{color:var(--ink)}
 .rep-bar i{display:block;height:100%}
 .rep-leg{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--gris);font-weight:600}
 .rep-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.sc-cab{grid-column:1/-1;color:var(--gris);font-size:13px}
+.sc .sub b{color:var(--ink)}
