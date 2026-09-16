@@ -1,4 +1,4 @@
-/* ui.css · v4 · sistema visual de las pantallas de PC de Kiosko
+/* ui.css · v5 · sistema visual de las pantallas de PC de Kiosko
    Plano, blanco, un acento verde. Lo oscuro solo vive en el héroe y la barra flotante.
    Modo oscuro: automático (sistema) o manual con <html data-theme="dark|light">. */
 :root{
@@ -314,3 +314,16 @@ th.orden.on{color:var(--ink)}
 .check-ok{width:72px;height:72px;border-radius:50%;background:var(--verde-bg);color:var(--verde-ink);display:grid;place-items:center;margin:0 auto 16px}
 .tags{display:flex;gap:6px;flex-wrap:wrap}
 @media (max-width:900px){.reng{grid-template-columns:1fr}.campos{grid-template-columns:1fr}}
+
+/* ===== scorecards de Ventas ===== */
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.sc{padding:14px 16px}
+.sc .lb{font-size:12px;font-weight:600;color:var(--gris);display:flex;align-items:center;gap:5px}
+.sc .v{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:4px}
+.sc .v.azul{color:var(--azul-ink)}.sc .v.alto{color:var(--naranja-ink)}
+.sc .sub{font-size:12px;color:var(--gris);margin-top:2px}
+.reparto{grid-column:1/-1;background:var(--card);border:1px solid var(--linea);border-radius:var(--r);padding:12px 16px}
+.rep-bar{display:flex;height:14px;border-radius:var(--pill);overflow:hidden;background:var(--linea)}
+.rep-bar i{display:block;height:100%}
+.rep-leg{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--gris);font-weight:600}
+.rep-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
