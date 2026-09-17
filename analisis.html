@@ -462,7 +462,7 @@ function etTransfer(v){
 function pintarVentas(){
   var L=ventasFiltradas(),tot=L.reduce(function(s,v){return s+entra(v);},0),gan=L.reduce(function(s,v){return s+(Number(v.ganancia)||0);},0);
   var deb=L.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0);
-  $("v-sub").textContent=L.length+(L.length===1?" venta":" ventas")+" · precio de venta "+mx(tot)+" · ganancia neta "+mx(gan)+" ("+pct(gan,tot)+"%)"+(deb.length?" · por transferir "+mx(debe)+" de "+deb.length+(deb.length===1?" venta":" ventas"):"");
+  $("v-sub").textContent="Abre un mes para ver qué se vendió. Las tarjetas y la tabla siguen los filtros.";
   pintarScore(L);
   if(!L.length){$("v-tabla").innerHTML='<div class="vacio">No hay ventas con estos filtros.</div>';return;}
   if(vVista==="producto"){pintarVentasProducto(L);return;}
