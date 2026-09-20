@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0E13">
 <title>Kiosko · producto</title>
-<meta name="kiosko-version" content="v6">
+<meta name="kiosko-version" content="v7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,11 +13,16 @@
 :root{
   --tono:#8A6A1F;        /* color extraído de la foto; el JS lo reescribe */
   --tono-hondo:#4A3910;  /* el mismo, más profundo, para el pie */
-  --sobre:#FFFFFF;       /* texto que contrasta con el tono */
+  --sobre:#FFFFFF;       /* el JS lo cambia a oscuro si el fondo es claro */
   --suave:rgba(255,255,255,.72);
   --tenue:rgba(255,255,255,.48);
   --vidrio:rgba(255,255,255,.16);
   --vidrio2:rgba(255,255,255,.1);
+  --nav-bg:rgba(10,14,19,.34);
+  --pt:rgba(255,255,255,.38);
+  --acento:#FFD9A8;      /* lo que debe resaltar: ahorro, etiquetas de texto */
+  --cta-bg:#FFFFFF; --cta-ink:#0E1116;
+  --verde:#0B9A5E;
   --out:cubic-bezier(.22,1,.36,1);
   --sans:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
 }
@@ -54,12 +59,12 @@ img{display:block;max-width:100%}
   .fundido{background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0) 45%,var(--tono) 100%)}
 }
 .nav{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;right:14px;display:flex;justify-content:space-between;z-index:3}
-.nav button{width:38px;height:38px;border-radius:50%;background:rgba(10,14,19,.34);
+.nav button{width:38px;height:38px;border-radius:50%;background:var(--nav-bg);
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:grid;place-items:center}
-.nav svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.nav svg{width:17px;height:17px;stroke:var(--sobre);fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
 .puntos{position:absolute;left:0;right:0;bottom:14px;display:flex;justify-content:center;gap:5px;z-index:3}
-.puntos i{width:5px;height:5px;border-radius:999px;background:rgba(255,255,255,.38);box-shadow:0 1px 3px rgba(10,14,19,.25);transition:width 260ms var(--out),background 200ms ease-out}
-.puntos i.on{width:17px;background:#fff}
+.puntos i{width:5px;height:5px;border-radius:999px;background:var(--pt);box-shadow:0 1px 3px rgba(10,14,19,.18);transition:width 260ms var(--out),background 200ms ease-out}
+.puntos i.on{width:17px;background:var(--sobre)}
 
 /* ---------- etiquetas de relevancia: lo que pediste ---------- */
 .etiquetas{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:14px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;z-index:3}
@@ -69,7 +74,7 @@ img{display:block;max-width:100%}
 .et.oferta{background:#E0342B;color:#fff}
 .et.ultima{background:#F5A524;color:#231400}
 .et.envio{background:#0FA968;color:#fff}
-.et.nuevo{background:#fff;color:#0D1117}
+.et.nuevo{background:var(--sobre);color:var(--tono-hondo)}
 
 /* ---------- cuerpo ---------- */
 .cuerpo{padding:0 22px;margin-top:-6px;position:relative;z-index:2}
@@ -79,7 +84,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 .precio b{font-size:38px;font-weight:800;letter-spacing:-.045em;line-height:1}
 .precio s{color:var(--tenue);font-size:17px}
 .precio .baja{background:rgba(255,255,255,.18);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:800}
-.ahorro{color:#FFD9A8;font-weight:700;font-size:14px;margin-top:7px}
+.ahorro{color:var(--acento);font-weight:700;font-size:14px;margin-top:7px}
 
 /* datos duros, como el TOTAL TIME / YIELD de la referencia */
 .datos{display:flex;gap:0;margin-top:22px}
@@ -95,7 +100,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 .cruzada .mini img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 340ms ease-out}
 .cruzada .mini img.ok{opacity:1}
 .cruzada .tx{flex:1;min-width:0}
-.cruzada span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
+.cruzada span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--acento)}
 .cruzada b{display:block;font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cruzada .flecha{flex:none;opacity:.6}
 .cruzada .flecha svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
@@ -131,8 +136,8 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 .barra .pp{flex:none}
 .barra .pp span{display:block;font-size:10.5px;font-weight:700;color:var(--tenue);letter-spacing:.06em;text-transform:uppercase}
 .barra .pp b{font-size:21px;font-weight:800;letter-spacing:-.03em}
-.barra .cta{flex:1;background:#fff;color:#0D1117;border-radius:999px;padding:15px;font-weight:800;font-size:15.5px;
-  display:flex;align-items:center;justify-content:center;gap:8px}
+.barra .cta{flex:1;background:var(--cta-bg);color:var(--cta-ink);border-radius:999px;padding:15px;font-weight:800;font-size:15.5px;
+  display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 18px rgba(10,14,19,.14)}
 .barra .cta svg{width:18px;height:18px;fill:currentColor;flex:none}
 
 .cargando{min-height:100dvh;display:grid;place-items:center;color:var(--tenue);font-size:14px;padding:30px;text-align:center}
@@ -241,12 +246,64 @@ function delaFoto(url){
     im.src=url;
   });
 }
+/* Brillo real percibido de un color HSL (0 negro … 1 blanco). */
+function hsl2rgb(h,s,l){
+  s/=100;l/=100;
+  var k=function(n){return (n+h/30)%12;},a=s*Math.min(l,1-l);
+  var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));};
+  return [f(0),f(8),f(4)];
+}
+function brillo(h,s,l){
+  return hsl2rgb(h,s,l).map(function(v){return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);})
+    .reduce(function(a,v,i){return a+[0.2126,0.7152,0.0722][i]*v;},0);
+}
+/* Contraste entre dos brillos (1 = nada, 21 = máximo). 4.5 es el mínimo legible. */
+function contraste(a,b){var x=Math.max(a,b),y=Math.min(a,b);return (x+0.05)/(y+0.05);}
+var L_BLANCO=1, L_OSCURO=brillo(0,0,5.5);
+/* Pinta el fondo Y decide el color del texto.
+   No usa un umbral fijo: prueba blanco y oscuro y se queda con el que más
+   contraste dé. Si el color cae en tierra de nadie —un gris medio donde
+   ninguno alcanza el mínimo legible— aclara u oscurece el fondo hasta que sí. */
 function pintarTono(c){
-  var r=document.documentElement.style;
-  r.setProperty("--tono","hsl("+c.h.toFixed(0)+" "+c.s.toFixed(0)+"% "+c.l+"%)");
-  r.setProperty("--tono-hondo","hsl("+c.h.toFixed(0)+" "+Math.min(70,c.s+6).toFixed(0)+"% "+Math.max(11,c.l-17)+"%)");
+  var r=document.documentElement.style,h=c.h.toFixed(0),sa=c.s.toFixed(0);
+  var L=c.l,b,cB,cO,i=0;
+  for(;;){
+    b=brillo(c.h,c.s,L);
+    cB=contraste(b,L_BLANCO);cO=contraste(b,L_OSCURO);
+    if(Math.max(cB,cO)>=4.5||i++>=40)break;
+    L+=(b>0.19?2:-2);
+    L=Math.max(8,Math.min(94,L));
+  }
+  c={h:c.h,s:c.s,l:L};
+  var claro=cO>cB;
+  var hondo=claro?Math.max(64,c.l-9):Math.max(11,c.l-17);
+  r.setProperty("--tono","hsl("+h+" "+sa+"% "+c.l+"%)");
+  r.setProperty("--tono-hondo","hsl("+h+" "+(claro?Math.max(10,c.s-8):Math.min(70,c.s+6)).toFixed(0)+"% "+hondo+"%)");
+  if(claro){
+    r.setProperty("--sobre","#0E1116");
+    r.setProperty("--suave","rgba(14,17,22,.70)");
+    r.setProperty("--tenue","rgba(14,17,22,.46)");
+    r.setProperty("--vidrio","rgba(14,17,22,.07)");
+    r.setProperty("--vidrio2","rgba(14,17,22,.05)");
+    r.setProperty("--nav-bg","rgba(255,255,255,.8)");
+    r.setProperty("--pt","rgba(14,17,22,.22)");
+    r.setProperty("--acento","hsl("+h+" 72% 33%)");      // el mismo tono, saturado y oscuro
+    r.setProperty("--cta-bg","#0B9A5E");                  // el verde de siempre
+    r.setProperty("--cta-ink","#FFFFFF");
+  }else{
+    r.setProperty("--sobre","#FFFFFF");
+    r.setProperty("--suave","rgba(255,255,255,.72)");
+    r.setProperty("--tenue","rgba(255,255,255,.48)");
+    r.setProperty("--vidrio","rgba(255,255,255,.16)");
+    r.setProperty("--vidrio2","rgba(255,255,255,.1)");
+    r.setProperty("--nav-bg","rgba(10,14,19,.34)");
+    r.setProperty("--pt","rgba(255,255,255,.38)");
+    r.setProperty("--acento","hsl("+h+" 88% 82%)");
+    r.setProperty("--cta-bg","#FFFFFF");
+    r.setProperty("--cta-ink","#0E1116");
+  }
   var m=document.querySelector('meta[name=theme-color]');
-  if(m)m.setAttribute("content","hsl("+c.h.toFixed(0)+" "+c.s.toFixed(0)+"% "+c.l+"%)");
+  if(m)m.setAttribute("content","hsl("+h+" "+sa+"% "+c.l+"%)");
 }
 
 /* ---------- datos ---------- */
