@@ -90,7 +90,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 /* la tarjeta de venta cruzada, como READ THE STORY */
 .cruzada{display:flex;align-items:center;gap:13px;width:100%;margin-top:22px;text-align:left;
   background:var(--vidrio);border-radius:17px;padding:12px 14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-.cruzada .mini{width:46px;height:46px;border-radius:12px;overflow:hidden;flex:none;background:var(--vidrio2)}
+.cruzada .mini{display:block;width:46px;height:46px;border-radius:12px;overflow:hidden;flex:none;background:var(--vidrio2)}
 .cruzada .mini img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 340ms ease-out}
 .cruzada .mini img.ok{opacity:1}
 .cruzada .tx{flex:1;min-width:0}
@@ -112,12 +112,13 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 .fila{display:flex;gap:11px;overflow-x:auto;scrollbar-width:none;margin:0 -22px;padding:0 22px 4px;touch-action:pan-x}
 .fila::-webkit-scrollbar{display:none}
 .vecino{flex:none;width:132px;text-align:left}
-.vecino .ph{aspect-ratio:1;border-radius:15px;overflow:hidden;background:var(--vidrio2);position:relative}
+.vecino .ph{display:block;aspect-ratio:1;border-radius:15px;overflow:hidden;background:var(--vidrio2);position:relative}
 .vecino .ph img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 340ms ease-out}
 .vecino .ph img.ok{opacity:1}
 .vecino .mini-et{position:absolute;top:7px;left:7px;border-radius:999px;padding:3px 8px;font-size:9.5px;font-weight:800}
-.vecino .nm{font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.3;color:var(--suave);
+.vecino .nm{font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.32;color:var(--sobre);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:33px}
+.vecino .pp{color:var(--suave)}
 .vecino .pp{font-size:15px;font-weight:800;letter-spacing:-.02em;margin-top:3px}
 
 /* barra fija */
@@ -190,9 +191,20 @@ function delaFoto(url){
           var b=cubos[k];b.n++;b.h+=c.h;b.s+=c.s;b.l+=c.l;tot++;
         }
         Object.keys(cubos).forEach(function(k){var b=cubos[k];if(!mejor||b.n>mejor.n)mejor=b;});
-        if(!mejor||tot<40)return mal(new Error("foto sin color dominante"));
         CORS_OK=true;
-        var res={h:mejor.h/mejor.n,s:Math.min(72,Math.max(30,mejor.s/mejor.n)),l:32};
+        var res;
+        if(mejor&&tot>=40){
+          res={h:mejor.h/mejor.n,s:Math.min(72,Math.max(30,mejor.s/mejor.n)),l:32};
+        }else{
+          // Foto neutra (caja blanca, producto negro). No hay color que mandar,
+          // pero sí temperatura: se mide cuánto tira a cálida o a fría y se
+          // construye un tono propio. Así ninguna foto queda sin su color.
+          var R2=0,G2=0,B2=0,n2=0;
+          for(var j=0;j<d.length;j+=4){if(d[j+3]<200)continue;R2+=d[j];G2+=d[j+1];B2+=d[j+2];n2++;}
+          if(!n2)return mal(new Error("foto vacía"));
+          var c2=rgb2hsl(R2/n2,G2/n2,B2/n2);
+          res={h:c2.h,s:Math.min(38,Math.max(16,c2.s*2.6+12)),l:30};
+        }
         CACHE[url]=res;ok(res);
       }catch(e){CORS_OK=false;mal(e);}      // Drive bloqueó la lectura
     };
@@ -230,6 +242,20 @@ function pedir(a){return fetch(API+"?accion="+a,{redirect:"follow"}).then(functi
    document.getElementById("app").innerHTML='<div class="cargando"><div><b style="display:block;font-size:17px;color:#fff;margin-bottom:6px">No cargó el catálogo</b>'+esc(e.message)+'</div></div>';
  });
 function porSlug(s){for(var i=0;i<TODO.length;i++)if(TODO[i].slug===s)return TODO[i];return null;}
+
+/* Historial: vive solo en este teléfono, no se manda a ningún lado. */
+var LLAVE="kiosko:vistos";
+function leerVistos(){try{return JSON.parse(localStorage.getItem(LLAVE)||"[]");}catch(e){return [];}}
+function guardarVisto(sl){
+  try{
+    var v=leerVistos().filter(function(x){return x!==sl;});
+    v.unshift(sl);localStorage.setItem(LLAVE,JSON.stringify(v.slice(0,12)));
+  }catch(e){}
+}
+function vistosAntes(p){
+  return leerVistos().filter(function(sl){return sl!==p.slug;})
+    .map(porSlug).filter(Boolean).slice(0,10);
+}
 function arrancar(){
   var s=decodeURIComponent((location.hash||"").replace("#",""));
   var p=porSlug(s);
@@ -270,9 +296,18 @@ function wa(p){
 }
 var SVG_WA='<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2z"/><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1s-.7 1-.9 1.2c-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5S9.4 7.4 9.2 7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 1.9.8 2.6.9 3.5.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>';
 
+function carrusel(titulo,l){
+  return '<div class="mas-de"><h2>'+esc(titulo)+'</h2><div class="fila">'+l.map(function(x){
+    var et=x.baja?'<span class="mini-et" style="background:#E0342B;color:#fff">−'+x.baja+'%</span>':
+           x.ultima?'<span class="mini-et" style="background:#F5A524;color:#231400">Última</span>':"";
+    return '<button class="vecino press" data-s="'+x.slug+'"><span class="ph">'+et+
+      (x.imagen?'<img src="'+esc(x.imagen)+'" alt="" loading="lazy" onload="this.classList.add(\'ok\')" onerror="this.remove()">':"")+'</span>'+
+      '<span class="nm">'+esc(x.descripcion)+'</span><span class="pp">'+mx(x.precio)+'</span></button>';}).join("")+'</div></div>';
+}
 function ver(p,sinHash){
   actual=p;
-  var fotos=p.fotos.length?p.fotos:[""],vs=vecinos(p),sug=vs[0];
+  var fotos=p.fotos.length?p.fotos:[""],vs=vecinos(p),sug=vs[0],antes=vistosAntes(p);
+  guardarVisto(p.slug);
   // el tono: primero el de la categoría para que nunca haya blanco, luego el de la foto
   pintarTono(porCategoria(p.categoria));
   if(fotos[0])delaFoto(fotos[0]).then(pintarTono).catch(function(){});
@@ -313,14 +348,8 @@ function ver(p,sinHash){
       ' Te llega <b>hoy mismo</b> en Ocosingo y pagas cuando lo tengas en la mano.'+
       (p.precio>=600?' El envío va incluido.':' El motomandado cuesta lo mismo lleve una pieza o tres.')+'</p>'+
 
-    (vs.length?'<div class="mas-de"><h2>Más de '+esc(p.categoria)+'</h2><div class="fila">'+
-      vs.map(function(x){
-        var et=x.baja?'<span class="mini-et" style="background:#E0342B;color:#fff">−'+x.baja+'%</span>':
-               x.ultima?'<span class="mini-et" style="background:#F5A524;color:#231400">Última</span>':"";
-        return '<button class="vecino press" data-s="'+x.slug+'"><span class="ph">'+et+
-          (x.imagen?'<img src="'+esc(x.imagen)+'" alt="" loading="lazy" onload="this.classList.add(\'ok\')" onerror="this.remove()">':"")+'</span>'+
-          '<span class="nm">'+esc(x.descripcion)+'</span><span class="pp">'+mx(x.precio)+'</span></button>';}).join("")+
-      '</div></div>':"")+
+    (vs.length?carrusel("Más de "+p.categoria,vs):"")+
+    (antes.length?carrusel("Lo que viste antes",antes):"")+
   '</div>'+
 
   '<div class="barra"><div class="pp"><span>Precio</span><b>'+mx(p.precio)+'</b></div>'+
