@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0E13">
 <title>Kiosko · producto</title>
-<meta name="kiosko-version" content="v3">
+<meta name="kiosko-version" content="v4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -43,10 +43,14 @@ img{display:block;max-width:100%}
 .foto{position:relative;aspect-ratio:1;overflow:hidden;background:var(--tono)}
 .foto .cinta{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;height:100%}
 .foto .cinta::-webkit-scrollbar{display:none}
-.foto .toma{flex:none;width:100%;height:100%;scroll-snap-align:center;display:grid;place-items:center;overflow:hidden}
-.foto img{width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);
-  transition:opacity 520ms ease-out,transform 900ms var(--out)}
-.foto img.ok{opacity:1;transform:none}
+.foto .toma{flex:none;width:100%;height:100%;scroll-snap-align:center;position:relative;display:grid;place-items:center;overflow:hidden}
+.foto .atras{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:blur(34px) saturate(1.25) brightness(.92);transform:scale(1.35);opacity:0;transition:opacity 620ms ease-out}
+.foto .atras.ok{opacity:.55}
+.foto .real{position:relative;max-width:88%;max-height:88%;width:auto;height:auto;object-fit:contain;
+  opacity:0;transform:scale(1.03);transition:opacity 520ms ease-out,transform 900ms var(--out);
+  filter:drop-shadow(0 14px 30px rgba(10,14,19,.28))}
+.foto .real.ok{opacity:1;transform:none}
 /* la foto se funde con el color en vez de cortarse en seco */
 .fundido{position:absolute;left:0;right:0;bottom:-1px;height:28%;pointer-events:none;
   background:linear-gradient(180deg,transparent 0%,color-mix(in srgb,var(--tono) 30%,transparent) 48%,color-mix(in srgb,var(--tono) 82%,transparent) 78%,var(--tono) 100%)}
@@ -195,7 +199,7 @@ function delaFoto(url){
         CORS_OK=true;
         var res;
         if(mejor&&tot>=40){
-          res={h:mejor.h/mejor.n,s:Math.min(72,Math.max(30,mejor.s/mejor.n)),l:32};
+          res={via:"color",h:mejor.h/mejor.n,s:Math.min(72,Math.max(30,mejor.s/mejor.n)),l:32};
         }else{
           // Foto neutra (caja blanca, producto negro). No hay color que mandar,
           // pero sí temperatura: se mide cuánto tira a cálida o a fría y se
@@ -204,7 +208,7 @@ function delaFoto(url){
           for(var j=0;j<d.length;j+=4){if(d[j+3]<200)continue;R2+=d[j];G2+=d[j+1];B2+=d[j+2];n2++;}
           if(!n2)return mal(new Error("foto vacía"));
           var c2=rgb2hsl(R2/n2,G2/n2,B2/n2);
-          res={h:c2.h,s:Math.min(38,Math.max(16,c2.s*2.6+12)),l:30};
+          res={via:"tono",h:c2.h,s:Math.min(38,Math.max(16,c2.s*2.6+12)),l:30};
         }
         CACHE[url]=res;ok(res);
       }catch(e){CORS_OK=false;mal(e);}      // Drive bloqueó la lectura
@@ -311,7 +315,10 @@ function ver(p,sinHash){
   guardarVisto(p.slug);
   // el tono: primero el de la categoría para que nunca haya blanco, luego el de la foto
   pintarTono(porCategoria(p.categoria));
-  if(fotos[0])delaFoto(fotos[0]).then(pintarTono).catch(function(){});
+  if(fotos[0])delaFoto(fotos[0]).then(function(c){
+    pintarTono(c);
+    var dx=document.getElementById("dx");if(dx)dx.textContent=c.via||"foto";
+  }).catch(function(){});
 
   document.getElementById("app").innerHTML=
   '<div class="hoja"><div class="foto">'+
@@ -319,7 +326,10 @@ function ver(p,sinHash){
       '<button class="press" id="compartir" aria-label="Compartir"><svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M12 3v13M8 7l4-4 4 4"/></svg></button></div>'+
     etiquetas(p)+
     '<div class="cinta" id="cinta">'+fotos.map(function(u,i){
-      return '<div class="toma">'+(u?'<img src="'+esc(u)+'" alt="'+esc(p.descripcion)+'" loading="'+(i?"lazy":"eager")+'" onload="this.classList.add(\'ok\')" onerror="this.remove()">':"")+'</div>';}).join("")+'</div>'+
+      return '<div class="toma">'+(u?
+        '<img class="atras" src="'+esc(u)+'" alt="" aria-hidden="true" onload="this.classList.add(\'ok\')" onerror="this.remove()">'+
+        '<img class="real" src="'+esc(u)+'" alt="'+esc(p.descripcion)+'" loading="'+(i?"lazy":"eager")+'" onload="this.classList.add(\'ok\')" onerror="this.remove()">'
+        :"")+'</div>';}).join("")+'</div>'+
     (fotos.length>1?'<div class="puntos" id="puntos">'+fotos.map(function(_,i){return '<i'+(i?"":' class="on"')+'></i>';}).join("")+'</div>':"")+
     '<div class="fundido"></div></div>'+
 
@@ -353,7 +363,7 @@ function ver(p,sinHash){
     (antes.length?carrusel("Lo que viste antes",antes):"")+
   '</div>'+
 
-  '<div class="barra"><div class="pp"><span>Precio · v3</span><b>'+mx(p.precio)+'</b></div>'+
+  '<div class="barra"><div class="pp"><span>Precio · v4 <i id="dx" style="font-style:normal;opacity:.6">cat</i></span><b>'+mx(p.precio)+'</b></div>'+
     '<a class="cta press" href="'+esc(wa(p))+'" target="_blank" rel="noopener">'+SVG_WA+'Lo quiero</a></div></div>';
 
   window.scrollTo(0,0);
