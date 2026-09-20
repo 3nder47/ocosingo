@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0E13">
 <title>Kiosko · producto</title>
+<meta name="kiosko-version" content="v3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -40,7 +41,7 @@ img{display:block;max-width:100%}
 
 /* ---------- foto ---------- */
 .foto{position:relative;aspect-ratio:1;overflow:hidden;background:var(--tono)}
-.foto .cinta{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;height:100%;touch-action:pan-x}
+.foto .cinta{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;height:100%}
 .foto .cinta::-webkit-scrollbar{display:none}
 .foto .toma{flex:none;width:100%;height:100%;scroll-snap-align:center;display:grid;place-items:center;overflow:hidden}
 .foto img{width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);
@@ -109,7 +110,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 
 .mas-de{margin-top:30px}
 .mas-de h2{font-size:12px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--tenue);margin:0 0 13px}
-.fila{display:flex;gap:11px;overflow-x:auto;scrollbar-width:none;margin:0 -22px;padding:0 22px 4px;touch-action:pan-x}
+.fila{display:flex;gap:11px;overflow-x:auto;scrollbar-width:none;margin:0 -22px;padding:0 22px 4px}
 .fila::-webkit-scrollbar{display:none}
 .vecino{flex:none;width:132px;text-align:left}
 .vecino .ph{display:block;aspect-ratio:1;border-radius:15px;overflow:hidden;background:var(--vidrio2);position:relative}
@@ -352,7 +353,7 @@ function ver(p,sinHash){
     (antes.length?carrusel("Lo que viste antes",antes):"")+
   '</div>'+
 
-  '<div class="barra"><div class="pp"><span>Precio</span><b>'+mx(p.precio)+'</b></div>'+
+  '<div class="barra"><div class="pp"><span>Precio · v3</span><b>'+mx(p.precio)+'</b></div>'+
     '<a class="cta press" href="'+esc(wa(p))+'" target="_blank" rel="noopener">'+SVG_WA+'Lo quiero</a></div></div>';
 
   window.scrollTo(0,0);
