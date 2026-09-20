@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>Kiosko · Ocosingo</title>
+<meta name="description" content="Audífonos, relojes, bocinas y gadgets con entrega el mismo día en Ocosingo. Pagas cuando lo recibes.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Kiosko Ocosingo">
+<meta property="og:title" content="Kiosko · Ocosingo">
+<meta property="og:description" content="Entrega el mismo día en Ocosingo. Pagas cuando lo recibes.">
+<meta property="og:url" content="https://3nder47.github.io/ocosingo/catalogo2.html">
+<meta property="og:image" content="https://3nder47.github.io/ocosingo/icons/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f6f7fb; --ink:#0f172a; --gris:#6b7280; --tenue:#9ca3af; --linea:#e5e7eb;
+  --verde:#16a34a; --rojo:#ef4444; --ambar:#f59e0b;
+  --acc:#7c3aed; --acc-bg:#f3e8ff; --acc-ink:#6d28d9; --c:#7c3aed; --c-bg:#f3e8ff;
+  --out:cubic-bezier(.22,1,.36,1);
+  --sans:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
+  --display:"Outfit",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(180deg,#fff,#f8fafc);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+body.abierto{overflow:hidden}
+button{font:inherit;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+a{text-decoration:none;color:inherit}
+input{font:inherit;font-size:16px}
+img{display:block;max-width:100%}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.press{transition:transform .2s var(--out)}
+.press:active{transform:scale(.96)}
+.ent{opacity:0;transform:translateY(10px);animation:ent .4s var(--out) forwards}
+@keyframes ent{to{opacity:1;transform:none}}
+.ph{background:var(--bg2);overflow:hidden;position:relative;border-radius:16px}
+.ph img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
+.ph img.ok{opacity:1}
+.tag{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff}
+.tag.rebaja{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.tag.nuevo{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.tag.ultima{background:var(--ambar);color:#000}
+.pr{font-family:var(--display);font-weight:800;font-size:16px}
+.pr s{color:var(--tenue);font-size:12px;margin-left:6px}
+.pr .off{color:var(--rojo)}
+.wrap{padding-bottom:110px}
+.head{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--linea);padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px}
+.head .fila{display:flex;align-items:center;gap:10px}
+.logo{width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--verde));color:#fff;display:grid;place-items:center;font-weight:800}
+.logo-tx b{font-family:var(--display);font-size:16px}
+.logo-tx small{color:var(--gris);font-size:11px}
+.busca{flex:1;display:flex;align-items:center;gap:8px;background:#f1f5f9;border-radius:999px;padding:10px 14px}
+.busca input{border:0;outline:0;background:none;width:100%}
+.busca .x{font-size:18px;color:var(--tenue)}
+.hero{margin-top:12px}
+.slides{display:flex;gap:10px;overflow-x:auto;padding:0 16px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.slides::-webkit-scrollbar{display:none}
+.slide{flex:none;width:calc(100% - 32px);border-radius:26px;overflow:hidden;position:relative;aspect-ratio:16/11;box-shadow:0 10px 30px rgba(0,0,0,.08);scroll-snap-align:center}
+.slide .capa{position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.7))}
+.slide .tx{position:absolute;bottom:16px;left:16px;right:16px;color:#fff}
+.slide h3{margin:0;font-family:var(--display);font-size:22px}
+.slide .pie{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.slide .cta{background:#fff;color:#000;padding:8px 14px;border-radius:999px;font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+.dots i{width:6px;height:6px;border-radius:999px;background:#ddd;transition:width .25s ease}
+.dots i.on{width:18px;background:#000}
+.circulos{display:flex;gap:14px;overflow-x:auto;padding:20px 16px;scrollbar-width:none}
+.circulos::-webkit-scrollbar{display:none}
+.circ{flex:none;width:68px;text-align:center}
+.circ .ph{width:68px;height:68px;border-radius:50%;box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.circ span{font-size:11px;color:var(--gris)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 16px}
+.rail{display:flex;gap:10px;overflow-x:auto;padding:0 16px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.mini{flex:none;width:140px}
+.card,.mini{background:#fff;border-radius:18px;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.nm{font-size:13px;font-weight:600;margin-top:6px}
+.bloque{margin-top:24px}
+.bh{display:flex;justify-content:space-between;align-items:center;padding:0 16px;margin-bottom:10px}
+.bh h2{font-family:var(--display);font-size:20px;margin:0}
+.cuantos{background:var(--acc-bg);color:var(--acc-ink);padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.ccard{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:1.25;background:var(--c-bg)}
+.ccard .capa{position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.7))}
+.ccard .tx{position:absolute;bottom:12px;left:12px;right:12px;color:#fff}
+.oferta{margin:20px 16px;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#111,#333);color:#fff;display:flex}
+.oferta .tx{padding:16px;flex:1}
+.oferta .ph{width:132px;flex:none}
+.kicker{font-size:10px;background:var(--ambar);padding:4px 8px;border-radius:999px;font-weight:700}
+.oferta .ahorro{color:#fde68a;font-size:12px}
+.titulo{padding:16px}
+.titulo h1{font-size:26px;margin:0;font-family:var(--display)}
+.titulo p{margin:0;color:var(--gris)}
+.vacio{text-align:center;padding:60px 20px;color:var(--gris)}
+.vacio b{display:block;color:var(--ink);font-size:18px}
+.trust{display:flex;gap:10px;padding:20px 16px}
+.trust div{flex:1;background:#fff;border-radius:16px;padding:12px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.05)}
+.trust svg{width:19px;height:19px;fill:none;stroke:currentColor}
+.trust b{font-size:12px}
+.trust small{font-size:10px;color:var(--tenue)}
+.prod{position:fixed;inset:0;z-index:60;background:#fff;overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);transition:transform .35s var(--out)}
+.prod.on{transform:none}
+.velo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.velo.on{opacity:1;pointer-events:auto}
+.volver{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:14px;z-index:65;width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.galeria{background:var(--bg2);position:relative}
+.tira{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.tira::-webkit-scrollbar{display:none}
+.tira .pieza{flex:none;width:100%;scroll-snap-align:center;aspect-ratio:1;position:relative;display:grid;place-items:center}
+.fondo{position:absolute;inset:0;object-fit:cover;filter:blur(30px);opacity:.4}
+.real{max-width:100%;max-height:100%;object-fit:contain;opacity:0;transition:opacity .3s ease}
+.real.ok{opacity:1}
+.p-cuerpo{padding:20px}
+.p-eye{display:inline-block;font-size:11px;font-weight:700;background:var(--acc-bg);color:var(--acc-ink);padding:4px 10px;border-radius:999px}
+.p-nombre{font-family:var(--display);font-size:30px;margin:10px 0}
+.p-precio{display:flex;gap:10px;align-items:baseline}
+.p-precio b{font-size:32px}
+.p-ahorro{color:var(--rojo);font-weight:700;margin-top:6px}
+.p-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.p-chip{background:#f1f5f9;border-radius:999px;padding:6px 12px;font-size:12px}
+.p-filas{margin-top:16px;border-top:1px solid var(--linea)}
+.p-fila{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--linea)}
+.p-fila svg{width:19px;height:19px;fill:none;stroke:currentColor}
+.p-paquete{margin-top:16px;background:var(--acc-bg);color:var(--acc-ink);padding:14px;border-radius:14px}
+.p-cruz{margin-top:24px}
+.p-fin{height:110px}
+.p-barra{position:fixed;left:0;right:0;bottom:0;z-index:65;background:#fff;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--linea);display:flex;align-items:center;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.p-barra .pp small{font-size:10px;color:var(--tenue)}
+.p-barra .pp b{font-size:18px}
+.p-barra .cta{flex:1;background:var(--verde);color:#fff;border-radius:999px;padding:14px;text-align:center;font-weight:700}
+.p-barra .cta svg{width:18px;height:18px;fill:currentColor}
+.dock{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:6px;background:rgba(15,23,42,.9);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:999px;padding:8px}
+.dock button,.dock a{flex:1;color:#fff;font-size:11px;text-align:center}
+.dock svg{width:18px;height:18px;fill:none;stroke:currentColor}
+.dock .wa{flex:none;background:var(--verde);padding:10px 14px;border-radius:999px}
+.dock .wa svg{fill:currentColor;stroke:none}
+.dock .on{background:rgba(255,255,255,.15)}
+@media (hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-4px)}
+  .slide:hover{transform:scale(1.02)}
+}
+@media(min-width:720px){
+  .wrap{max-width:560px;margin:0 auto}
+  .grid{grid-template-columns:1fr 1fr 1fr}
+}
+
+</style>
+</head>
+<body>
+
+<div id="app"><div class="vacio">Cargando…</div></div>
+<div class="velo" id="velo"></div>
+<section class="prod" id="prod" role="dialog" aria-modal="true" aria-label="Producto"></section>
+
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+var API=(window.OC_CONFIG&&window.OC_CONFIG.API_URL)||"";
+var DIA=864e5,HOY=Date.now();
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function mx(n){return "$"+Math.round(Number(n)||0).toLocaleString("es-MX");}
+function pelar(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
+function slug(s){return pelar(s).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+function corto(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1).trim()+"…":s;}
+
+/* paleta: el verde queda para las acciones; cada categoría tiene su color */
+var PAL=[
+ {bg:"#EEF2FF",ink:"#4338CA",solid:"#4F46E5"},
+ {bg:"#FFF1F2",ink:"#BE123C",solid:"#E11D48"},
+ {bg:"#ECFEFF",ink:"#0E7490",solid:"#06B6D4"},
+ {bg:"#FEF3C7",ink:"#B45309",solid:"#F59E0B"},
+ {bg:"#F5F3FF",ink:"#6D28D9",solid:"#8B5CF6"},
+ {bg:"#FFF7ED",ink:"#C2410C",solid:"#F97316"},
+ {bg:"#F0F9FF",ink:"#0369A1",solid:"#0EA5E9"},
+ {bg:"#FDF2F8",ink:"#A21CAF",solid:"#D946EF"},
+ {bg:"#F0FDF4",ink:"#15803D",solid:"#16A34A"},
+ {bg:"#FEF2F2",ink:"#B91C1C",solid:"#EF4444"}
+];
+var MAPACOL=null;
+function color(cat){
+  if(!MAPACOL){
+    MAPACOL={};
+    var ks=[];TODO.forEach(function(p){if(ks.indexOf(p.categoria)<0)ks.push(p.categoria);});
+    ks.sort(function(x,y){return x.localeCompare(y,"es");}).forEach(function(k,i){MAPACOL[pelar(k)]=PAL[i%PAL.length];});
+  }
+  return MAPACOL[pelar(cat)]||PAL[0];
+}
+function vars(cat){var c=color(cat);return "--c:"+c.solid+";--c-bg:"+c.bg+";--acc:"+c.solid+";--acc-bg:"+c.bg+";--acc-ink:"+c.ink;}
+
+var TODO=[],tope=12,vista={t:"inicio"},q="",abierto=null,tmr;
+
+function pedir(a){return fetch(API+"?accion="+a,{redirect:"follow"}).then(function(r){return r.text();})
+  .then(function(t){var j=JSON.parse(t);if(!j.ok)throw new Error(j.error||"error");return j.data;});}
+(API?pedir("catalogoTienda").catch(function(){return pedir("catalogoPublico");}):Promise.reject(new Error("Falta config.js")))
+ .then(function(d){
+   if(!d||!d.length)throw new Error("El catálogo vino vacío");
+   TODO=d.map(function(p){
+     p.antes=Number(p.antes)||0;p.precio=Number(p.precio)||0;
+     p.baja=p.antes>p.precio?Math.round((1-p.precio/p.antes)*100):0;
+     p.nuevo=p.agregado&&(HOY-Number(p.agregado))<30*DIA;
+     p.ultima=p.piezas===1||p.ultima===true;
+     p.fotos=[p.imagen].concat(p.extras||[]).filter(Boolean);
+     p.slug=slug(p.descripcion);p.busq=pelar(p.descripcion+" "+p.categoria);
+     return p;
+   });
+   MAPACOL=null;
+   pintar();desdeURL();
+ })
+ .catch(function(e){
+   document.getElementById("app").innerHTML='<div class="vacio"><b>No pudimos cargar el catálogo</b>'+esc(e.message)+
+     '<br><button class="mas press" style="max-width:220px" onclick="location.reload()">Reintentar</button></div>';
+ });
+
+function cuentas(){var c={};TODO.forEach(function(p){c[p.categoria]=(c[p.categoria]||0)+1;});return c;}
+function cats(){var c=cuentas();return Object.keys(c).sort(function(a,b){return c[b]-c[a];});}
+function banner(p){return p?(p.fotos[1]||p.fotos[0]||""):"";}
+function rebajas(){return TODO.filter(function(p){return p.baja;}).sort(function(a,b){return b.baja-a.baja;});}
+function nuevos(){return TODO.filter(function(p){return p.nuevo;});}
+function porSlug(s){for(var i=0;i<TODO.length;i++)if(TODO[i].slug===s)return TODO[i];return null;}
+function destacados(){
+  var r=rebajas(),b=TODO.filter(function(p){return p.fotos.length>1&&!p.baja;});
+  var caros=TODO.slice().sort(function(a,z){return z.precio-a.precio;});
+  var out=r.slice(0,2).concat(b.slice(0,2),caros.slice(0,2)),vis={},u=[];
+  out.forEach(function(p){if(p&&!vis[p.slug]){vis[p.slug]=1;u.push(p);}});
+  return u.slice(0,4);
+}
+function img(u,eager){
+  if(!u)return '<div class="ph"></div>';
+  return '<div class="ph"><img src="'+esc(u)+'" alt="" loading="'+(eager?"eager":"lazy")+'" decoding="async" onload="this.classList.add(\'ok\')" onerror="this.remove()"></div>';
+}
+function tag(p){
+  if(p.baja)return '<span class="tag rebaja">−'+p.baja+'%</span>';
+  if(p.nuevo)return '<span class="tag nuevo">Nuevo</span>';
+  if(p.ultima)return '<span class="tag ultima">Última pieza</span>';
+  return "";
+}
+function conTag(u,p,eager){return img(u,eager).replace('<div class="ph">','<div class="ph">'+tag(p));}
+function precio(p){return '<div class="pr"><span'+(p.baja?' class="off"':'')+'>'+mx(p.precio)+'</span>'+(p.baja?'<s>'+mx(p.antes)+'</s>':"")+'</div>';}
+function tarjeta(p,cls){return '<button class="'+(cls||"card")+' press" data-s="'+p.slug+'">'+conTag(p.imagen,p)+
+  '<div class="nm">'+esc(p.descripcion)+'</div>'+precio(p)+'</button>';}
+function tr(d,t,s){return '<div><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg><b>'+t+'</b><small>'+s+'</small></div>';}
+function fila(d,t,s){return '<div class="p-fila"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg><div><b>'+t+'</b><small>'+s+'</small></div></div>';}
+var I_ENTREGA="M5 13l4 4L19 7",I_PAGO="M3 10h18M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",I_CAJA="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8";
+var SVG_WA='<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2z"/><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1s-.7 1-.9 1.2c-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5S9.4 7.4 9.2 7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 1.9.8 2.6.9 3.5.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>';
+
+/* ---------- pantallas ---------- */
+function pintar(){
+  var h=vista.t==="cats"?pCategorias():vista.t==="lista"?pLista():pInicio();
+  document.getElementById("app").innerHTML='<div class="wrap">'+h+'</div>'+dock();
+  cablear();
+}
+function dock(){
+  return '<nav class="dock">'+
+    '<button data-ir="inicio" class="'+(vista.t==="inicio"?"on":"")+'"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>'+
+    '<button data-ir="cats" class="'+(vista.t!=="inicio"?"on":"")+'"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Categorías</button>'+
+    '<a class="wa" href="'+esc(waGeneral())+'" target="_blank" rel="noopener">'+SVG_WA+'Escríbenos</a></nav>';
+}
+function cabeza(){
+  return '<header class="head"><div class="fila"><div class="logo">K</div><div class="logo-tx"><b>Kiosko</b><small>Ocosingo</small></div>'+
+    '<label class="busca"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>'+
+    '<input id="q" type="search" placeholder="Buscar audífonos, relojes…" value="'+esc(q)+'" autocomplete="off" enterkeyhint="search">'+
+    (q?'<button class="x" id="qx" aria-label="Limpiar">&times;</button>':"")+'</label></div></header>';
+}
+function pInicio(){
+  var dest=destacados(),of=rebajas()[0],nv=nuevos().slice(0,10),cs=cats(),c=cuentas();
+  var h=cabeza();
+  h+='<div class="hero ent"><div class="slides" id="slides">'+dest.map(function(p,i){
+    return '<button class="slide" data-s="'+p.slug+'">'+img(banner(p),i===0)+'<span class="capa"></span><span class="tx">'+
+      '<span class="eyebrow">'+esc(p.baja?"Rebaja":p.nuevo?"Recién llegado":p.categoria)+'</span>'+
+      '<h3>'+esc(corto(p.descripcion,46))+'</h3><span class="pie">'+precio(p)+'<span class="cta">Ver</span></span></span></button>';}).join("")+
+    '</div><div class="dots" id="dots">'+dest.map(function(_,i){return '<i'+(i?"":' class="on"')+'></i>';}).join("")+'</div></div>';
+
+  h+='<div class="circulos ent" style="animation-delay:60ms">'+cs.map(function(k){
+    var p=TODO.filter(function(x){return x.categoria===k;})[0];
+    return '<button class="circ press" style="'+vars(k)+'" data-cat="'+esc(k)+'">'+img(p&&p.imagen)+'<span>'+esc(corto(k,18))+'</span></button>';}).join("")+'</div>';
+
+  if(of)h+='<button class="oferta press ent" style="animation-delay:110ms" data-s="'+of.slug+'"><span class="tx">'+
+    '<span class="kicker">Oferta</span><h3>'+esc(corto(of.descripcion,44))+'</h3>'+
+    '<span class="pr">'+mx(of.precio)+'<s>'+mx(of.antes)+'</s></span>'+
+    '<span class="ahorro">Te ahorras '+mx(of.antes-of.precio)+'</span></span>'+img(of.imagen)+'</button>';
+
+  if(nv.length)h+=bloque("Recién llegado",nuevos().length+" nuevos",nv,"recien-llegado",160);
+  cs.slice(0,3).forEach(function(k,i){
+    h+=bloque(k,c[k]+" en existencia",TODO.filter(function(x){return x.categoria===k;}).slice(0,10),k,210+i*40);
+  });
+
+  h+='<section class="bloque ent" style="animation-delay:330ms"><div class="bh"><h2>Todo el catálogo</h2><span class="cuantos">'+TODO.length+'</span></div>'+
+    '<div class="grid">'+TODO.slice(0,tope).map(function(p){return tarjeta(p);}).join("")+'</div>'+
+    (TODO.length>tope?'<button class="mas press" id="vermas">Ver '+(TODO.length-tope)+' más</button>':"")+'</section>';
+
+  h+='<div class="trust ent" style="animation-delay:360ms">'+tr(I_ENTREGA,"Mismo día","entrega en Ocosingo")+
+    tr(I_PAGO,"Pagas al recibir","efectivo o transferencia")+tr(I_CAJA,"Ya está aquí","no es por encargo")+'</div>';
+  return h;
+}
+function bloque(titulo,sub,l,cat,delay){
+  return '<section class="bloque ent" style="animation-delay:'+delay+'ms;'+vars(cat)+'"><div class="bh"><h2>'+esc(titulo)+'</h2><span class="cuantos">'+esc(sub)+'</span></div>'+
+    '<div class="rail">'+l.map(function(p){return tarjeta(p,"mini");}).join("")+'</div></section>';
+}
+function pCategorias(){
+  var c=cuentas();
+  return cabeza()+'<div class="titulo"><h1>Categorías</h1><p>'+TODO.length+' productos en existencia hoy</p></div>'+
+    '<div class="cgrid">'+cats().map(function(k,i){
+      var l=TODO.filter(function(x){return x.categoria===k;}),p=l.filter(function(x){return x.fotos.length>1;})[0]||l[0];
+      return '<button class="ccard press ent" style="animation-delay:'+Math.min(i*45,300)+'ms;'+vars(k)+'" data-cat="'+esc(k)+'">'+
+        img(banner(p),i<4)+'<span class="capa"></span><span class="tx"><b>'+esc(k)+'</b><small>'+c[k]+(c[k]===1?" producto":" productos")+
+        ' · desde '+mx(Math.min.apply(null,l.map(function(x){return x.precio;})))+'</small></span></button>';}).join("")+'</div>';
+}
+function filtrada(){
+  var l=vista.cat?TODO.filter(function(p){return p.categoria===vista.cat;}):TODO;
+  if(q){var k=pelar(q);l=l.filter(function(p){return p.busq.indexOf(k)>-1;});}
+  return l;
+}
+function pLista(){
+  var l=filtrada(),cat=vista.cat||"";
+  var h=cabeza()+'<div class="titulo" style="'+vars(cat||"todo")+'"><h1>'+esc(q?'"'+q+'"':cat||"Todo")+'</h1>'+
+    '<p>'+l.length+(l.length===1?" producto":" productos")+(cat&&!q&&l.length?' · desde '+mx(Math.min.apply(null,l.map(function(x){return x.precio;}))):"")+'</p></div>';
+  if(!l.length)return h+'<div class="vacio"><b>Nada con esa búsqueda</b>Escríbenos y lo conseguimos.</div>';
+  return h+'<div class="grid" style="margin-top:18px">'+l.slice(0,tope*4).map(function(p,i){
+    return tarjeta(p).replace('class="card press"','class="card press ent" style="animation-delay:'+Math.min(i*35,320)+'ms"');}).join("")+'</div>';
+}
+
+/* ---------- producto ---------- */
+function relacionados(p){
+  var mismos=TODO.filter(function(x){return x.slug!==p.slug&&x.categoria===p.categoria;});
+  var cerca=mismos.filter(function(x){return Math.abs(x.precio-p.precio)<=Math.max(150,p.precio*.6);});
+  var l=(cerca.length>=4?cerca:mismos).slice(0,10);
+  if(l.length<4)l=l.concat(rebajas().filter(function(x){return x.slug!==p.slug&&l.indexOf(x)<0;}).slice(0,6));
+  if(l.length<4)l=l.concat(nuevos().filter(function(x){return x.slug!==p.slug&&l.indexOf(x)<0;}).slice(0,6));
+  var vis={},u=[];l.forEach(function(x){if(!vis[x.slug]){vis[x.slug]=1;u.push(x);}});
+  return u.slice(0,10);
+}
+function wa(p){
+  var url=location.origin+location.pathname+"#"+p.slug;
+  return "https://wa.me/"+(p.wa||"")+"?text="+encodeURIComponent("Hola, me interesa "+p.descripcion+" de "+mx(p.precio)+".\n"+url);
+}
+function waGeneral(){
+  var p=TODO[0]||{};
+  return "https://wa.me/"+(p.wa||"")+"?text="+encodeURIComponent("Hola, tengo una duda sobre el catálogo.");
+}
+function abrirProd(p,sinHash){
+  abierto=p;
+  var fotos=p.fotos.length?p.fotos:[""],rel=relacionados(p);
+  var el=document.getElementById("prod");
+  el.setAttribute("style",vars(p.categoria));
+  el.innerHTML='<button class="volver press" id="volver" aria-label="Volver"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg></button>'+
+    '<div class="galeria"><div class="tira" id="tira">'+fotos.map(function(u,i){
+      return '<div class="pieza">'+(u?'<img class="fondo" src="'+esc(u)+'" alt="" aria-hidden="true"><img class="real" src="'+esc(u)+'" alt="'+esc(p.descripcion)+'" loading="'+(i?"lazy":"eager")+'" onload="this.classList.add(\'ok\')">':"")+'</div>';}).join("")+'</div>'+
+      (fotos.length>1?'<div class="dots" id="gdots">'+fotos.map(function(_,i){return '<i'+(i?"":' class="on"')+'></i>';}).join("")+'</div>':"")+'</div>'+
+    '<div class="p-cuerpo"><span class="p-eye">'+esc(p.categoria)+'</span>'+
+      '<h1 class="p-nombre">'+esc(p.descripcion)+'</h1>'+
+      '<div class="p-precio"><b>'+mx(p.precio)+'</b>'+(p.baja?'<s>'+mx(p.antes)+'</s><span class="off">−'+p.baja+'%</span>':"")+'</div>'+
+      (p.baja?'<div class="p-ahorro">Te ahorras '+mx(p.antes-p.precio)+'</div>':"")+
+      '<div class="p-chips">'+
+        (p.ultima?'<span class="p-chip"><b>Última pieza</b></span>':(p.piezas>1?'<span class="p-chip"><b>'+p.piezas+'</b> disponibles</span>':""))+
+        (p.nuevo?'<span class="p-chip"><b>Recién llegado</b></span>':"")+
+        '<span class="p-chip">Entrega hoy</span></div>'+
+      '<div class="p-filas">'+
+        fila(I_ENTREGA,"Entrega el mismo día","En Ocosingo, hasta tu puerta.")+
+        fila(I_PAGO,"Pagas cuando lo recibes","Efectivo o transferencia, como prefieras.")+
+        fila(I_CAJA,"Ya está en existencia","No es por encargo: sale hoy mismo.")+'</div>'+
+      (rel.length?'<div class="p-paquete">Agrega otro y el envío sigue siendo <b>uno solo</b>. El motomandado cuesta lo mismo lleve una pieza o tres.</div>':"")+
+    '</div>'+
+    (rel.length?'<section class="p-cruz"><div class="bh"><h2>'+(rel[0].categoria===p.categoria?"Más de "+esc(p.categoria):"También te puede servir")+'</h2></div>'+
+      '<div class="rail">'+rel.map(function(x){return tarjeta(x,"mini");}).join("")+'</div></section>':"")+
+    '<div class="p-fin"></div>'+
+    '<div class="p-barra"><div class="pp"><small>Precio</small><b>'+mx(p.precio)+'</b></div>'+
+      '<a class="cta press" href="'+esc(wa(p))+'" target="_blank" rel="noopener">'+SVG_WA+'Pedirlo por WhatsApp</a></div>';
+  el.scrollTop=0;
+  el.classList.add("on");document.getElementById("velo").classList.add("on");document.body.classList.add("abierto");
+  document.title=p.descripcion+" · Kiosko Ocosingo";
+  if(!sinHash&&location.hash!=="#"+p.slug)history.pushState({s:p.slug},"","#"+p.slug);
+  var tira=document.getElementById("tira"),gd=document.getElementById("gdots");
+  if(gd)tira.addEventListener("scroll",function(){
+    var i=Math.round(tira.scrollLeft/tira.clientWidth);
+    Array.prototype.forEach.call(gd.children,function(d,j){d.classList.toggle("on",j===i);});},{passive:true});
+  document.getElementById("volver").addEventListener("click",function(){history.back();});
+}
+function cerrarProd(){
+  abierto=null;
+  document.getElementById("prod").classList.remove("on");
+  document.getElementById("velo").classList.remove("on");
+  document.body.classList.remove("abierto");
+  document.title="Kiosko · Ocosingo";
+}
+function desdeURL(){
+  var s=decodeURIComponent((location.hash||"").replace("#",""));
+  if(!s){if(abierto)cerrarProd();return;}
+  if(abierto&&abierto.slug===s)return;
+  var p=porSlug(s);
+  if(p)abrirProd(p,true);else if(abierto)cerrarProd();
+}
+document.getElementById("velo").addEventListener("click",function(){history.back();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&abierto)history.back();});
+window.addEventListener("popstate",desdeURL);
+
+/* ---------- eventos ---------- */
+document.addEventListener("click",function(e){
+  if(e.target.closest("#qx")){q="";vista=vista.cat?{t:"lista",cat:vista.cat}:{t:"inicio"};pintar();return;}
+  if(e.target.closest("#vermas")){tope+=12;pintar();return;}
+  var pr=e.target.closest("[data-s]");
+  if(pr){var p=porSlug(pr.dataset.s);if(p)abrirProd(p);return;}
+  var c=e.target.closest("[data-cat]");
+  if(c){var cat=c.dataset.cat;if(abierto){history.back();}vista={t:"lista",cat:cat};q="";pintar();window.scrollTo(0,0);return;}
+  var ir=e.target.closest("[data-ir]");
+  if(ir){vista={t:ir.dataset.ir};q="";pintar();window.scrollTo(0,0);return;}
+});
+function cablear(){
+  var sl=document.getElementById("slides"),dots=document.getElementById("dots");
+  if(sl&&dots)sl.addEventListener("scroll",function(){
+    var i=Math.round(sl.scrollLeft/sl.clientWidth);
+    Array.prototype.forEach.call(dots.children,function(d,j){d.classList.toggle("on",j===i);});},{passive:true});
+  var inp=document.getElementById("q");
+  if(inp)inp.addEventListener("input",function(){
+    clearTimeout(tmr);var v=this.value,foco=document.activeElement===inp;
+    tmr=setTimeout(function(){
+      q=v.trim();
+      vista=q?{t:"lista",cat:vista.cat}:(vista.cat?{t:"lista",cat:vista.cat}:{t:"inicio"});
+      pintar();
+      if(foco){var n=document.getElementById("q");if(n){n.focus();try{n.setSelectionRange(v.length,v.length);}catch(err){}}}
+    },240);
+  });
+}
+})();
+</script>
+</body>
+</html>
