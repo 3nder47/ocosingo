@@ -264,6 +264,18 @@ var L_BLANCO=1, L_OSCURO=brillo(0,0,5.5);
    No usa un umbral fijo: prueba blanco y oscuro y se queda con el que más
    contraste dé. Si el color cae en tierra de nadie —un gris medio donde
    ninguno alcanza el mínimo legible— aclara u oscurece el fondo hasta que sí. */
+/* #RRGGBB -> tono de fondo. Respeta el color de la foto; solo lo mete en un
+   rango donde sirva de fondo: ni negro puro ni blanco puro. */
+function hexATono(hex){
+  var m=/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex||""));
+  if(!m)return null;
+  var c=rgb2hsl(parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16));
+  return {h:c.h,s:Math.max(8,Math.min(70,c.s)),l:Math.max(18,Math.min(92,c.l))};
+}
+/* El color guardado de la foto manda; si ese producto no tiene, su categoría. */
+function tonoDe(p){
+  return hexATono(COLORES[p.descripcion])||porCategoria(p.categoria);
+}
 function pintarTono(c){
   var r=document.documentElement.style,h=c.h.toFixed(0),sa=c.s.toFixed(0);
   var L=c.l,b,cB,cO,i=0;
@@ -307,7 +319,7 @@ function pintarTono(c){
 }
 
 /* ---------- datos ---------- */
-var TODO=[],actual=null;
+var TODO=[],actual=null,COLORES={};
 function pedir(a){return fetch(API+"?accion="+a,{redirect:"follow"}).then(function(r){return r.text();})
   .then(function(t){var j=JSON.parse(t);if(!j.ok)throw new Error(j.error||"error");return j.data;});}
 (API?pedir("catalogoTienda").catch(function(){return pedir("catalogoPublico");}):Promise.reject(new Error("Falta config.js")))
@@ -323,6 +335,12 @@ function pedir(a){return fetch(API+"?accion="+a,{redirect:"follow"}).then(functi
      return p;
    });
    arrancar();
+   // Los colores de las fotos llegan aparte. Si tardan o fallan, la pantalla
+   // ya se pintó con el color de la categoría y luego se actualiza sola.
+   if(API)pedir("colores").then(function(m){
+     COLORES=m||{};
+     if(actual)pintarTono(tonoDe(actual));
+   }).catch(function(){});
  })
  .catch(function(e){
    document.getElementById("app").innerHTML='<div class="cargando"><div><b style="display:block;font-size:17px;color:#fff;margin-bottom:6px">No cargó el catálogo</b>'+esc(e.message)+'</div></div>';
@@ -394,11 +412,8 @@ function ver(p,sinHash){
   actual=p;
   var fotos=p.fotos.length?p.fotos:[""],vs=vecinos(p),sug=vs[0],antes=vistosAntes(p);
   guardarVisto(p.slug);
-  // el tono: primero el de la categoría para que nunca haya blanco, luego el de la foto
-  pintarTono(porCategoria(p.categoria));
-  // Si algún día Drive deja leer las fotos, el color de la foto gana.
-  // Mientras no, manda el color de la categoría de arriba.
-  if(fotos[0])delaFoto(fotos[0]).then(pintarTono).catch(function(){});
+  // El color guardado de la foto manda; si no lo tiene, el de su categoría.
+  pintarTono(tonoDe(p));
 
   document.getElementById("app").innerHTML=
   '<div class="hoja"><div class="foto">'+
