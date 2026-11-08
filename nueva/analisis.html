@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1D9E75">
+<title>Kiosko · Resumen · prueba</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui.css?v=6">
+<script>(function(){try{var t=localStorage.getItem("kn-kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+</head>
+<body>
+
+<div class="pin" id="pin"><div class="pin-c">
+  <div class="logo">Ki</div>
+  <h1>Kiosko</h1>
+  <p>Escribe tu PIN para ver tus números.</p>
+  <input id="pin-in" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autofocus aria-label="PIN">
+  <div class="pin-e" id="pin-e"></div>
+</div></div>
+
+<div id="app" class="app oculto">
+<aside class="side">
+  <div class="marca"><div class="logo">Ki</div><div><b>Kiosko</b><small>Ocosingo</small></div></div>
+  <button class="nav on" data-p="resumen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Resumen</button>
+  <button class="nav" data-p="ventas"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Ventas</button>
+  <button class="nav" data-p="inventario"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>Inventario <span class="n" id="nav-n"></span></button>
+  <div class="sep"></div>
+  <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>¿Me conviene?</button>
+  <button class="nav" data-p="alta"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
+  <div class="fin"><span>Sesión de Alex</span><button class="tema" id="tema" title="Cambiar apariencia">Tema: auto</button></div>
+</aside>
+
+<main class="main">
+  <div id="carga" class="cargando"><div class="spin"></div>Leyendo tu hoja…</div>
+  <div class="nota warn" id="aviso-global" style="display:none;margin:0 0 16px"></div>
+
+  <!-- ===== RESUMEN ===== -->
+  <section class="pant" id="p-resumen">
+    <div class="top">
+      <div><h1>Resumen</h1><p>Dónde está tu dinero y qué hacer con él hoy.</p></div>
+      <div class="seg"><button id="r-todo" class="on">Todo el tiempo</button><button id="r-12m">Últimos 12 meses</button></div>
+    </div>
+    <div class="grid" id="rej"></div>
+  </section>
+
+  <!-- ===== VENTAS ===== -->
+  <section class="pant" id="p-ventas">
+    <div class="top">
+      <div><h1>Ventas</h1><p id="v-sub"></p></div>
+      <div class="seg"><button class="on" data-vista="mes">Por mes</button><button data-vista="producto">Por producto</button></div>
+    </div>
+    <div id="v-score" class="score"></div>
+    <div class="card">
+      <div class="filtros">
+        <div class="buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="v-q" placeholder="Buscar producto"></div>
+        <span class="chip"><select id="v-cat"><option value="">Todas las categorías</option></select></span>
+        <span class="chip"><select id="v-vend"><option value="">Todos los vendedores</option></select></span>
+        <span class="chip"><select id="v-merc"><option value="Alex">Mi mercancía</option><option value="">Mía + la de Irene</option></select></span>
+        <span class="chip"><select id="v-per"><option value="12m">Últimos 12 meses</option><option value="anio">Este año</option><option value="todo">Todo</option></select></span>
+        <span class="chip"><select id="v-est"><option value="">Todas</option><option value="pend">Pendientes de transferir</option><option value="ok">Ya transferidas</option></select></span>
+      </div>
+      <div class="tabla-wrap" id="v-tabla"></div>
+    </div>
+  </section>
+
+  <!-- ===== INVENTARIO ===== -->
+  <section class="pant" id="p-inventario">
+    <div class="top">
+      <div><h1>Inventario</h1><p id="i-sub"></p></div>
+      <div class="seg"><button class="on" data-merc="Alex">Solo lo mío</button><button data-merc="">Mío + Irene</button></div>
+    </div>
+    <div class="card">
+      <div class="tabs" id="i-tabs">
+        <button class="on" data-tab="todo">Todo<span class="n"></span></button>
+        <button data-tab="reciente">Recién llegado<span class="n"></span></button>
+        <button data-tab="reponer">Se acaba<span class="n"></span></button>
+        <button data-tab="parado">Parado +6 meses<span class="n"></span></button>
+        <button data-tab="nocomprar">No volver a comprar<span class="n"></span></button>
+      </div>
+      <div class="filtros">
+        <div class="buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="i-q" placeholder="Buscar por nombre o modelo"></div>
+        <span class="chip"><select id="i-cat"><option value="">Todas las categorías</option></select></span>
+        <span class="chip"><select id="i-fecha"><option value="">Comprado: cualquier fecha</option><option value="30">Últimos 30 días</option><option value="90">Últimos 3 meses</option><option value="anio">Este año</option><option value="viejo">Hace más de un año</option></select></span>
+        <span class="chip"><select id="i-vista"><option value="producto">Ver por producto</option><option value="categoria">Ver por categoría</option></select></span>
+        <span class="espaciador"></span>
+        <span class="chip" title="Lo que pagas de motomandado en cada entrega; ya viene restado en 'Te queda'">Moto que absorbes <input id="moto" type="number" min="0" step="5" value="25"> $</span>
+      </div>
+      <div class="nota" id="i-nota" style="display:none"></div>
+      <div class="tabla-wrap" id="i-tabla"></div>
+    </div>
+  </section>
+
+  <!-- ===== ALTA DE PEDIDO ===== -->
+  <section class="pant" id="p-alta">
+    <div class="top">
+      <div><h1>Alta de pedido</h1><p>Lo que pagaste afuera, traducido a lo que te cuesta aquí.</p></div>
+      <label class="chip fecha-chip">Comprado el <input id="fecha" type="date"></label>
+    </div>
+    <div id="alta-cuerpo">
+      <div class="hero" style="margin-bottom:16px">
+        <div><div class="lb">Lo que pagó tu tarjeta</div>
+          <div class="pagado"><i>$</i><input id="pagado" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+          <div class="sub" id="hero-lb">Escribe el total del cargo y reparto los costos</div></div>
+        <div class="pastillas"><span class="pill blanca">Suma de la plataforma <b class="mono" id="suma">$0</b></span><span class="pill blanca" id="dif-pill">Sin cargo todavía</span><span class="pill lima" id="factor-pill">×1.00</span></div>
+      </div>
+      <h2>Productos del pedido</h2>
+      <p class="tenue" style="margin:0 0 12px">Un renglón por modelo, no por pieza. La diferencia entre lo que dice la plataforma y lo que pagó tu tarjeta (impuestos, envío, cupones) se reparte sola entre las piezas.</p>
+      <div id="renglones" style="display:grid;gap:14px"></div>
+      <button class="mas-btn" id="agregar">+ Otro producto</button>
+    </div>
+    <div id="alta-fin" class="oculto"></div>
+  </section>
+
+  <!-- ===== ¿ME CONVIENE? ===== -->
+  <section class="pant" id="p-conviene">
+    <div class="top"><div><h1>¿Me conviene comprarlo?</h1><p>Escribe lo que ves en la plataforma antes de pagar. Te digo cuánto te cuesta puesto en Ocosingo y a cuánto venderlo.</p></div></div>
+    <div class="card">
+      <div class="form">
+        <label class="campo"><span>Precio en la plataforma, por pieza</span><span class="money"><i>$</i><input id="sim-precio" type="number" min="0" step="1" placeholder="200" inputmode="decimal"></span></label>
+        <label class="campo"><span>Piezas</span><input id="sim-piezas" type="number" min="1" step="1" value="2"></label>
+        <label class="campo"><span>¿Dónde lo compras?</span><select id="sim-tienda">
+          <option value="1.33">Temu / AliExpress / TikTok / Shopee — viene de China</option>
+          <option value="1.00">Temu con etiqueta "Local" — ya está en México</option>
+          <option value="1.00">Mercado Libre — compra nacional</option>
+          <option value="">Otro · pongo el factor a mano</option></select></label>
+        <label class="campo"><span>Factor <button class="ayuda" type="button" data-t="Lo que viene de China paga 33.5% de impuesto de paquetería: por eso 1.33. Lo que ya está en México no paga nada: 1.00. A veces el que se ve más caro sale más barato.">?</button></span><span class="money"><i>×</i><input id="sim-factor" type="number" min="1" step=".01" value="1.33"></span></label>
+        <label class="campo"><span>Precio en Marketplace (opcional)</span><span class="money"><i>$</i><input id="sim-mercado" type="number" min="0" step="10" placeholder="360" inputmode="decimal"></span></label>
+        <label class="campo"><span>Categoría</span><select id="sim-cat"><option value="">— elige —</option></select></label>
+      </div>
+      <div id="sim-out"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="flot" id="flot">
+  <div><small>Seleccionado para rematar</small><b id="flot-v">$0</b></div>
+  <div class="tenue" id="flot-n" style="color:var(--oscuro-tx)"></div>
+  <span class="esp"></span>
+  <button class="btn gh" id="b-limpiar">Limpiar</button>
+  <button class="btn pri" id="b-plan">Armar plan de remate</button>
+</div>
+
+<div class="flot" id="aflot">
+  <div><small id="abot-s">Captura un producto con su costo</small><b id="abot-v">0 piezas</b></div>
+  <span class="esp"></span>
+  <button class="btn gh" id="b-ajustes">Ajustes</button>
+  <button class="btn pri" id="b-alta" disabled>Dar de alta</button>
+</div>
+<datalist id="dl-prods"></datalist>
+
+<div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+/* ============ API (misma lógica de reintentos que antes) ============ */
+var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN="";
+function apiUnaVez(a,p,b,ms){ms=ms||30000;
+  if(!API_URL)return Promise.reject(new Error("Falta la configuración de config.js"));
+  var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
+  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},b));}
+  else u.search=new URLSearchParams(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},p||{})).toString();
+  return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok){if(j.codigo==="sin_sesion"){try{localStorage.removeItem("kn:sesion");}catch(e){}}throw new Error(j.error||"Error del servidor");}return j.data;})
+   .catch(function(e){clearTimeout(t);
+     if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
+     if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
+     throw e;});}
+var REINTENTABLES={verificarPin:1},TRANSITORIOS=[404,429,500,502,503,504];
+function api(a,p,b,ms){
+  var esperas=[400,1200],puede=!b||REINTENTABLES[a]===1;
+  function intento(i){
+    return apiUnaVez(a,p,b,ms).catch(function(e){
+      var tr=(e.tipo==="http"&&TRANSITORIOS.indexOf(e.status)>-1)||(e.tipo==="red"&&navigator.onLine!==false);
+      if(!puede||!tr||i>=esperas.length)throw e;
+      return new Promise(function(ok){setTimeout(ok,esperas[i]);}).then(function(){return intento(i+1);});
+    });
+  }
+  return intento(0);
+}
+
+/* ============ utilidades ============ */
+var $=function(i){return document.getElementById(i);};
+var DIA=864e5,HOY=Date.now();
+function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
+function mx(n){var v=Math.round(Number(n)||0);return (v<0?"−":"")+"$"+Math.abs(v).toLocaleString("es-MX");}
+function r2(n){return Math.round((Number(n)||0)*100)/100;}
+function a10(n){return Math.ceil(n/10)*10;}
+function pct(a,b){return b>0?Math.round(a/b*100):0;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
+function dias(d){if(d==null||!isFinite(d))return"—";d=Math.round(d);if(d<1)return"hoy";if(d<45)return d+" días";var m=Math.round(d/30.4);return m<24?m+" meses":(Math.round(d/365*10)/10)+" años";}
+var MESN=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+var MESL=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+function fCorta(ts){if(!ts)return"—";var d=new Date(ts);return d.getDate()+" "+MESN[d.getMonth()]+" "+d.getFullYear();}
+function fMes(ts){var d=new Date(ts);return MESN[d.getMonth()]+" "+d.getFullYear();}
+function pz(n){return n+(n===1?" pieza":" piezas");}
+function ayuda(t){return '<button class="ayuda" type="button" data-t="'+esc(t)+'">?</button>';}
+function foto(x){return x.imagen?'<img class="foto" src="'+esc(x.imagen)+'" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'foto\'}))">':'<span class="foto"></span>';}
+
+/* ============ estado ============ */
+var D=null,CAT=[],VEN=[],INV=[],rango="todo",MOTO=25,COBRO=10,VEN_ERR="";
+function avisar(t){var a=$("aviso-global");a.textContent=t;a.style.display="block";}
+var sel={};                       // clave -> precio de remate
+var vVista="mes",vAbiertos={};    // ventas
+var iTab="todo",iMerc="Alex";     // inventario
+var vOrden={campo:"utilidad",dir:-1};
+
+/* ============ sesión ============ */
+var SES_KEY="kn-kiosko:sesion:alex";
+function sesionViva(){try{return !!localStorage.getItem("kn:sesion")&&localStorage.getItem("kn:usuario")==="Alex";}catch(e){return false;}}
+function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
+var pi=$("pin-in");
+pi.addEventListener("input",function(){
+  if(pi.value.length<4)return;
+  var v=pi.value;pi.disabled=true;$("pin-e").style.color="";$("pin-e").textContent="Conectando… la primera vez tarda unos segundos";
+  api("verificarPin",null,{pin:v},60000).then(function(d){
+    if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
+    if(d.vendedor!=="Alex")throw new Error("Esta pantalla es solo de Alex");
+    try{localStorage.setItem("kn:sesion",d.sesion||"");localStorage.setItem("kn:usuario",d.vendedor);}catch(e){}
+    abrirSesion();entrar();
+  }).catch(function(e){$("pin-e").style.color="var(--rojo)";$("pin-e").textContent=e.message+" · vuelve a escribirlo";pi.value="";pi.disabled=false;pi.focus();});
+});
+function entrar(){$("pin").classList.add("oculto");$("app").classList.remove("oculto");cargar();}
+
+/* ============ tema ============ */
+var TEMAS=["auto","dark","light"],TEMAN={auto:"auto",dark:"oscuro",light:"claro"};
+function tema(){var t;try{t=localStorage.getItem("kn-kiosko:tema");}catch(e){}return TEMAS.indexOf(t)>-1?t:"auto";}
+function pintarTema(){var t=tema();if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);$("tema").textContent="Tema: "+TEMAN[t];}
+$("tema").addEventListener("click",function(){var n=TEMAS[(TEMAS.indexOf(tema())+1)%3];try{if(n==="auto")localStorage.removeItem("kn-kiosko:tema");else localStorage.setItem("kn-kiosko:tema",n);}catch(e){}pintarTema();});
+pintarTema();
+
+/* ============ carga ============ */
+function cargar(){
+  $("carga").classList.remove("oculto");
+  Promise.all([
+    api("analisis",{rango:rango},null,45000),
+    api("catalogo",null,null,30000).catch(function(){return[];}),
+    api("ventasAnalisis",null,null,45000).catch(function(){return api("ventas",{limite:3000},null,45000);}).catch(function(e){VEN_ERR=e.message;return[];})
+  ]).then(function(r){
+    D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];
+    if(VEN_ERR||!VEN.length)avisar(VEN_ERR?"No pude leer tus ventas ("+VEN_ERR+"). Ventas, gastos y 'Se acaba' salen vacíos.":"Tu hoja no devolvió ventas: Ventas, gastos y 'Se acaba' salen vacíos.");
+    armarInventario();llenarSelects();
+    $("carga").classList.add("oculto");
+    pintarTodo();ir(pantalla||"resumen");
+  }).catch(function(e){$("carga").innerHTML='<b>'+esc(e.message)+'</b><br><button class="btn claro" style="margin-top:12px" onclick="location.reload()">Volver a intentar</button>';});
+}
+function recargarAnalisis(){
+  api("analisis",{rango:rango},null,45000).then(function(d){D=d||{};pintarResumen();pintarConviene();}).catch(function(){});
+}
+$("r-todo").addEventListener("click",function(){if(rango==="todo")return;rango="todo";marcaR();recargarAnalisis();});
+$("r-12m").addEventListener("click",function(){if(rango==="12m")return;rango="12m";marcaR();recargarAnalisis();});
+function marcaR(){$("r-todo").classList.toggle("on",rango==="todo");$("r-12m").classList.toggle("on",rango==="12m");}
+function meses(){if(rango==="12m")return 12;var d=D.resumen&&D.resumen.desde;if(!d)return 12;return Math.max(1,Math.round((HOY-Number(d))/(30.4*DIA)));}
+
+/* ============ inventario: un renglón por producto, con su historia de ventas ============
+   Junta lo que hay en cajas (catalogo) con lo que ya se vendió (ventas). Así un producto
+   agotado que se vendía rápido también aparece: es el candidato a reponer. */
+var CATMAP={};
+function claveDe(desc,origen){return norm(desc)+"|"+(origen||"Alex");}
+function armarInventario(){
+  var m={},v12=HOY-365*DIA;
+  CATMAP={};
+  (D.productos||[]).concat(D.viejos||[],D.costos||[],D.productosFlojos||[]).forEach(function(p){if(p&&p.descripcion&&p.categoria)CATMAP[norm(p.descripcion)]=p.categoria;});
+  CAT.forEach(function(x){
+    if(!x||!x.descripcion)return;
+    CATMAP[norm(x.descripcion)]=x.categoria||CATMAP[norm(x.descripcion)];
+    var k=claveDe(x.descripcion,x.origen);
+    m[k]={clave:k,descripcion:x.descripcion,categoria:x.categoria||"Sin categoría",origen:x.origen||"Alex",stock:Number(x.stock)||0,
+      costo:Number(x.costoFinal)||0,precio:Number(x.precio)||0,agregado:Number(x.agregado)||0,imagen:x.imagen||"",
+      dias:x.agregado?Math.round((HOY-Number(x.agregado))/DIA):0,ventas12:0,ventasTot:0,primera12:0,ultima:0};
+  });
+  // la pieza más vieja en cajas (solo mercancía de Alex; viene de análisis)
+  (D.viejos||[]).forEach(function(v){var k=claveDe(v.descripcion,"Alex"),x=m[k];if(x&&v.dias>x.dias)x.dias=v.dias;});
+  VEN.forEach(function(v){if(v&&v.descripcion&&v.categoria)CATMAP[norm(v.descripcion)]=v.categoria;});
+  VEN.forEach(function(v){
+    if(!v||!v.descripcion||!v.fechaTimestamp)return;
+    var k=claveDe(v.descripcion,v.origen),x=m[k];
+    if(!x){x=m[k]={clave:k,descripcion:v.descripcion,categoria:CATMAP[norm(v.descripcion)]||"Sin categoría",origen:v.origen||"Alex",stock:0,
+      costo:Number(v.costoFinal)||0,precio:Number(v.precio)||0,agregado:0,imagen:v.imagen||"",dias:0,ventas12:0,ventasTot:0,primera12:0,ultima:0};}
+    x.ventasTot++;
+    if(v.fechaTimestamp>x.ultima)x.ultima=v.fechaTimestamp;
+    if(v.fechaTimestamp>=v12){x.ventas12++;if(!x.primera12||v.fechaTimestamp<x.primera12)x.primera12=v.fechaTimestamp;}
+  });
+  INV=Object.keys(m).map(function(k){
+    var x=m[k];
+    x.capital=x.stock*x.costo;
+    x.cada=x.ventas12>=2?Math.max(1,Math.round((HOY-x.primera12)/DIA/x.ventas12)):null;   // se vende uno cada N días
+    x.reciente=x.stock>0&&x.agregado>=HOY-30*DIA;
+    x.reponer=x.ventas12>=3&&x.cada!=null&&x.cada<=45&&x.stock<=1;
+    x.parado=x.stock>0&&x.dias>180;
+    x.nocomprar=x.stock>0&&x.dias>365&&x.ventas12===0;
+    x.todo=x.stock>0;
+    return x;
+  }).sort(function(a,b){return b.capital-a.capital;});
+}
+function invFiltrado(){
+  var q=norm($("i-q").value),cat=$("i-cat").value,f=$("i-fecha").value,a0=new Date(new Date().getFullYear(),0,1).getTime();
+  return INV.filter(function(x){
+    if(iMerc&&x.origen!==iMerc)return false;
+    if(!x[iTab])return false;
+    if(cat&&x.categoria!==cat)return false;
+    if(q&&norm(x.descripcion).indexOf(q)<0&&norm(x.categoria).indexOf(q)<0)return false;
+    if(f==="30"&&!(x.agregado>=HOY-30*DIA))return false;
+    if(f==="90"&&!(x.agregado>=HOY-90*DIA))return false;
+    if(f==="anio"&&!(x.agregado>=a0))return false;
+    if(f==="viejo"&&!(x.dias>365))return false;
+    return true;
+  });
+}
+function llenarSelects(){
+  var cats={},vend={};
+  INV.forEach(function(x){cats[x.categoria]=1;});
+  VEN.forEach(function(v){if(v.vendedor)vend[v.vendedor]=1;});
+  var oc=Object.keys(cats).sort().map(function(c){return '<option>'+esc(c)+"</option>";}).join("");
+  $("i-cat").innerHTML='<option value="">Todas las categorías</option>'+oc;
+  $("v-cat").innerHTML='<option value="">Todas las categorías</option>'+oc;
+  $("sim-cat").innerHTML='<option value="">— elige —</option>'+(D.rotacion||[]).map(function(x){return '<option>'+esc(x.categoria)+"</option>";}).join("");
+  $("v-vend").innerHTML='<option value="">Todos los vendedores</option>'+Object.keys(vend).sort().map(function(c){return '<option>'+esc(c)+"</option>";}).join("");
+}
+
+/* ============ navegación ============ */
+var pantalla="resumen";
+var sucio=false;
+function ir(p,tab,est){
+  if(pantalla==="alta"&&p!=="alta"&&sucio){sucio=false;cargar();}
+  pantalla=p;
+  if(p==="alta"&&window.KIOSKO.alta)window.KIOSKO.alta.iniciar();
+  $("aflot").classList.toggle("on",p==="alta"&&$("alta-fin").classList.contains("oculto"));
+  if(est!=null){$("v-est").value=est;$("v-per").value="todo";vAbiertos={};pintarVentas();}
+  document.querySelectorAll(".pant").forEach(function(s){s.classList.toggle("on",s.id==="p-"+p);});
+  document.querySelectorAll(".nav[data-p]").forEach(function(b){b.classList.toggle("on",b.dataset.p===p);});
+  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido"}[p];
+  if(tab){iTab=tab;pintarInventario();}
+  barra();window.scrollTo(0,0);
+}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-p]");if(b&&b.classList.contains("nav")){if(pantalla==="alta"&&b.dataset.p!=="alta"&&window.KIOSKO.alta&&window.KIOSKO.alta.activa()&&!confirm("Tienes un pedido a medias. ¿Salir sin darlo de alta?"))return;ir(b.dataset.p);return;}
+  var g=e.target.closest("[data-ir]");if(g){ir(g.dataset.ir,g.dataset.tab,g.dataset.est);return;}
+});
+
+/* ============ RESUMEN ============ */
+function pintarTodo(){pintarResumen();pintarVentas();pintarInventario();pintarConviene();}
+function mias(){return VEN.filter(function(v){return v.origen==="Alex";});}
+function pintarResumen(){
+  var R=D.resumen||{},T=Number(D.capitalTotal)||0,pzT=Number(D.piezasTotal)||0;
+  var porMes=R.utilidad/meses(),cong=porMes>0?T/porMes:0;
+  var mio=INV.filter(function(x){return x.origen==="Alex";});
+  var par=mio.filter(function(x){return x.parado;}).sort(function(a,b){return b.capital-a.capital;});
+  var capPar=par.reduce(function(s,x){return s+x.capital;},0),pzPar=par.reduce(function(s,x){return s+x.stock;},0);
+  var rep=mio.filter(function(x){return x.reponer;}).sort(function(a,b){return a.cada-b.cada;});
+  var top=(D.productos||[]).slice(0,3);
+  var VM=mias(),compras=VM.reduce(function(s,v){return s+(Number(v.costoFinal)||0);},0)+T;
+  var motoAbs=VM.reduce(function(s,v){return s+(Number(v.gastoExt)||0);},0),motoCob=VM.reduce(function(s,v){return s+(Number(v.cobroExtra)||0);},0);
+  $("nav-n").textContent=par.length||"";
+
+  var h='<div class="c12 hero"><div><div class="lb">Dinero parado en mercancía</div><div class="big">'+mx(T)+'</div>'+
+    '<div class="sub">'+pzT+' piezas pagadas que siguen en cajas. Al ritmo actual tardas <b>'+(cong?cong.toFixed(1)+" meses":"—")+'</b> en ganarlo de vuelta.</div></div>'+
+    '<div class="pastillas"><span class="pill lima">Ganas '+mx(porMes)+' al mes</span><span class="pill blanca">'+mx(capPar)+' llevan más de 6 meses</span></div></div>';
+
+  h+='<div class="c3 card kpi"><div class="lb">Parado más de 6 meses '+ayuda("Mercancía comprada hace más de medio año que nadie ha comprado. Ese dinero no está perdido, pero tampoco trabaja.")+'</div>'+
+    '<div class="v">'+mx(capPar)+'</div><ul class="mini">'+
+    (par.length?par.slice(0,3).map(function(x){return '<li><span>'+esc(x.descripcion)+' · '+pz(x.stock)+'</span><span class="m mal">'+mx(x.capital)+'</span></li>';}).join(""):'<li><span class="tenue">Nada lleva más de 6 meses. Vas bien.</span></li>')+
+    '</ul><button class="ir" data-ir="inventario" data-tab="parado">'+(par.length===1?"Ver el producto y armar remate":par.length?"Ver los "+par.length+" productos y armar remate":"Ver inventario")+'</button></div>';
+
+  h+='<div class="c3 card kpi"><div class="lb">Qué te deja más dinero '+ayuda("Ganancia acumulada por producto: precio de venta más lo que cobraste de envío, menos lo que te costó y el moto. Es historia, no promesa.")+'</div>'+
+    '<div class="v">'+mx(R.utilidad)+'</div><ul class="mini">'+
+    (top.length?top.map(function(x){return '<li><span>'+esc(x.descripcion)+' · '+x.ventas+' ventas</span><span class="m ok">'+mx(x.utilidad)+'</span></li>';}).join(""):'<li><span class="tenue">Aún no hay ventas en este periodo.</span></li>')+
+    '</ul><button class="ir" data-ir="ventas">Ver ganancia por producto</button></div>';
+
+  h+='<div class="c3 card kpi"><div class="lb">Se te está acabando '+ayuda("Productos que vendes seguido (uno cada 45 días o menos, con al menos 3 ventas en el año) y de los que te queda una pieza o ninguna. Son los primeros a reponer.")+'</div>'+
+    '<div class="v">'+rep.length+' <small>'+(rep.length===1?"producto":"productos")+'</small></div><ul class="mini">'+
+    (rep.length?rep.slice(0,3).map(function(x){return '<li><span>'+esc(x.descripcion)+' · '+(x.stock?"queda "+x.stock:"agotado")+'</span><span class="m ok">cada '+x.cada+' días</span></li>';}).join(""):'<li><span class="tenue">Nada que vendas seguido se está acabando.</span></li>')+
+    '</ul><button class="ir" data-ir="inventario" data-tab="reponer">Ver qué reponer</button></div>';
+
+  var deb=VEN.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0),porV={};
+  deb.forEach(function(v){var k="Ventas de "+nomV(v.vendedor);porV[k]=(porV[k]||0)+(Number(v.aporte)||0);});
+  var masVieja=deb.reduce(function(s,v){return !s||v.fechaTimestamp<s?v.fechaTimestamp:s;},0);
+  h+='<div class="c3 card kpi"><div class="lb">Pendiente de transferir '+ayuda("Dinero de ventas de tu mercancía que todavía está en Ocosingo. Si vendió Irene o Mamá te deben el costo (la ganancia es de ellas); si vendiste tú y cobraron en efectivo, te deben la venta completa.")+'</div>'+
+    '<div class="v">'+mx(debe)+'</div><ul class="mini">'+
+    (deb.length?Object.keys(porV).sort(function(a,b){return porV[b]-porV[a];}).slice(0,2).map(function(k){return '<li><span>'+esc(k)+'</span><span class="m mal">'+mx(porV[k])+'</span></li>';}).join("")+'<li><span class="tenue">'+deb.length+(deb.length===1?" venta":" ventas")+(masVieja?', la más vieja del '+fCorta(masVieja):'')+'</span></li>':'<li><span class="tenue">Todo transferido. Nadie te debe.</span></li>')+
+    '</ul><button class="ir" data-ir="ventas" data-est="pend">Ver qué ventas son</button></div>';
+  h+='<div class="c8 card graf"><h2>Ventas por mes</h2>'+grafica()+'</div>';
+
+  h+='<div class="c4 card kpi"><div class="lb">A dónde se fue el dinero '+ayuda("Todo lo que has pagado por tu mercancía desde el inicio (vendida y en cajas), más lo que pagaste de motomandado y lo que sí cobraste de envío.")+'</div>'+
+    '<div class="v">'+mx(compras+motoAbs)+'</div><ul class="mini">'+
+    '<li><span>Compras de mercancía</span><span class="m">'+mx(compras)+'</span></li>'+
+    '<li><span>Motomandados que pagaste</span><span class="m mal">'+mx(motoAbs)+'</span></li>'+
+    '<li><span>Envíos que cobraste</span><span class="m ok">'+mx(motoCob)+'</span></li></ul>'+
+    '<div class="lee">De cada $100 que entran te quedan <b>$'+Math.round(R.margen||0)+'</b>.</div><div class="barra"><i style="width:'+Math.min(100,Math.round(R.margen||0))+'%"></i></div></div>';
+  $("rej").innerHTML=h;
+  cablearGrafica();
+}
+function mesesSerie(n){
+  var VM=mias(),m={},hoy=new Date();
+  for(var i=n-1;i>=0;i--){var d=new Date(hoy.getFullYear(),hoy.getMonth()-i,1),k=d.getFullYear()+"-"+d.getMonth();m[k]={k:k,t:d.getTime(),label:MESN[d.getMonth()]+" "+d.getFullYear(),total:0,n:0,gan:0};}
+  VM.forEach(function(v){if(!v.fechaTimestamp)return;var d=new Date(v.fechaTimestamp),k=d.getFullYear()+"-"+d.getMonth();if(!m[k])return;m[k].total+=(Number(v.precio)||0)+(Number(v.cobroExtra)||0);m[k].n++;m[k].gan+=Number(v.ganancia)||0;});
+  return Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return a.t-b.t;});
+}
+var SERIE=[];
+function grafica(){
+  SERIE=mesesSerie(12);
+  var n=SERIE.length,vals=SERIE.map(function(x){return x.total;}),comp=vals.slice(0,n-1);
+  var prom=comp.reduce(function(a,b){return a+b;},0)/Math.max(1,comp.length),max=Math.max.apply(null,vals.concat([1]));
+  var W=680,H=170,P={t:14,b:8};
+  var px=function(i){return i*(W/Math.max(1,n-1));},py=function(v){return P.t+(H-P.t-P.b)*(1-v/max);};
+  var pts=vals.map(function(v,i){return [px(i),py(v)];});
+  var linea=pts.slice(0,n-1).map(function(q,i){return (i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1);}).join(" ");
+  var area=linea+" L"+pts[n-2][0].toFixed(1)+","+H+" L0,"+H+" Z";
+  var ult=SERIE[n-2],ant=SERIE[n-3],dif=ult&&ant?ult.total-ant.total:0;
+  var mejor=comp.slice().sort(function(a,b){return b-a;});var pos=ult?mejor.indexOf(ult.total)+1:0;
+  var txt=ult?'Tu promedio es <b class="mono">'+mx(prom)+'</b>. '+MESL[new Date(ult.t).getMonth()]+' cerró en <b class="mono">'+mx(ult.total)+'</b>'+
+    (ant?' ('+(dif>=0?'<b class="mas">+'+mx(dif)+'</b>':'<b class="menos">'+mx(dif)+'</b>')+' contra '+MESN[new Date(ant.t).getMonth()]+')':'')+(pos===1?', tu mejor mes':pos===2?', tu segundo mejor mes':'')+'. '+MESL[new Date().getMonth()]+' va a la mitad.':'Aún no hay meses completos.';
+  return '<p>'+txt+'</p><div class="lienzo"><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" id="chart">'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D9E75" stop-opacity=".22"/><stop offset="1" stop-color="#1D9E75" stop-opacity="0"/></linearGradient></defs>'+
+    '<line x1="0" y1="'+py(prom).toFixed(1)+'" x2="'+W+'" y2="'+py(prom).toFixed(1)+'" stroke="#94A3B8" stroke-dasharray="4 4"/>'+
+    '<path d="'+area+'" fill="url(#g)"/><path d="'+linea+'" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'+
+    (n>1?'<path d="M'+pts[n-2][0].toFixed(1)+','+pts[n-2][1].toFixed(1)+' L'+pts[n-1][0].toFixed(1)+','+pts[n-1][1].toFixed(1)+'" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>':'')+
+    pts.map(function(q,i){return '<circle class="pt" data-i="'+i+'" cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="9" fill="transparent"/>'+(i===n-2?'<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="5" fill="#fff" stroke="#1D9E75" stroke-width="2.5" vector-effect="non-scaling-stroke"/>':'');}).join("")+
+    '</svg><div class="tip" id="tip"></div></div><div class="ejes"><span>'+(SERIE[0]?SERIE[0].label:"")+'</span><span>'+(SERIE[n-1]?SERIE[n-1].label+" · en curso":"")+'</span></div>';
+}
+function cablearGrafica(){
+  var ch=$("chart");if(!ch)return;
+  ch.addEventListener("mousemove",function(e){var p=e.target.closest(".pt");var tip=$("tip");if(!p){tip.classList.remove("on");return;}
+    var m=SERIE[Number(p.dataset.i)],r=ch.getBoundingClientRect(),pr=p.getBoundingClientRect();
+    tip.textContent=m.label+" · "+mx(m.total)+" · "+m.n+(m.n===1?" venta":" ventas")+" · ganaste "+mx(m.gan);
+    tip.style.left=(pr.left-r.left+pr.width/2)+"px";tip.style.top=(pr.top-r.top)+"px";tip.classList.add("on");});
+  ch.addEventListener("mouseleave",function(){$("tip").classList.remove("on");});
+}
+
+/* ============ VENTAS ============ */
+function ventasFiltradas(){
+  var q=norm($("v-q").value),cat=$("v-cat").value,vend=$("v-vend").value,merc=$("v-merc").value,per=$("v-per").value,est=$("v-est").value;
+  var a0=new Date(new Date().getFullYear(),0,1).getTime(),d12=HOY-365*DIA;
+  return VEN.filter(function(v){
+    if(!v.fechaTimestamp)return false;
+    if(merc&&v.origen!==merc)return false;
+    if(vend&&v.vendedor!==vend)return false;
+    if(cat&&catDe(v)!==cat)return false;
+    if(q&&norm(v.descripcion).indexOf(q)<0)return false;
+    if(per==="12m"&&v.fechaTimestamp<d12)return false;
+    if(per==="anio"&&v.fechaTimestamp<a0)return false;
+    if(est==="pend"&&!pendiente(v))return false;
+    if(est==="ok"&&(v.origen!=="Alex"||pendiente(v)))return false;
+    return true;
+  });
+}
+function entra(v){return (Number(v.precio)||0)+(Number(v.cobroExtra)||0);}
+function catDe(v){return v.categoria||CATMAP[norm(v.descripcion)]||"Sin categoría";}
+function pendiente(v){return v.origen==="Alex"&&/no transferido/i.test(String(v.estatusTransferencia||""));}
+function etTransfer(v){
+  if(v.origen!=="Alex")return '<span class="et azul">De Irene</span>';
+  var s=String(v.estatusTransferencia||"");
+  if(/^transferido/i.test(s))return '<span class="et ok">Transferido</span>';
+  if(/no transferido/i.test(s))return '<span class="et alto">Pendiente</span>';
+  return s?'<span class="et gris">'+esc(s)+'</span>':'';
+}
+function pintarVentas(){
+  var L=ventasFiltradas(),tot=L.reduce(function(s,v){return s+entra(v);},0),gan=L.reduce(function(s,v){return s+(Number(v.ganancia)||0);},0);
+  var deb=L.filter(pendiente),debe=deb.reduce(function(s,v){return s+(Number(v.aporte)||0);},0);
+  $("v-sub").textContent="Abre un mes para ver qué se vendió. Las tarjetas y la tabla siguen los filtros.";
+  pintarScore(L);
+  if(!L.length){$("v-tabla").innerHTML='<div class="vacio">No hay ventas con estos filtros.</div>';return;}
+  if(vVista==="producto"){pintarVentasProducto(L);return;}
+  var m={};
+  L.forEach(function(v){var d=new Date(v.fechaTimestamp),k=d.getFullYear()+"-"+String(d.getMonth()).padStart(2,"0");
+    if(!m[k])m[k]={k:k,t:new Date(d.getFullYear(),d.getMonth(),1).getTime(),n:0,tot:0,gan:0,v:[]};
+    m[k].n++;m[k].tot+=entra(v);m[k].gan+=Number(v.ganancia)||0;m[k].v.push(v);});
+  var Ms=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.t-a.t;});
+  var hoy=new Date(),kHoy=hoy.getFullYear()+"-"+String(hoy.getMonth()).padStart(2,"0");
+  if(!Object.keys(vAbiertos).length&&Ms[0])vAbiertos[Ms[0].k]=1;
+  var h='<table><thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Precio de venta</th><th class="num">Ganancia neta</th><th class="num">Margen</th><th class="num">vs mes anterior</th></tr></thead><tbody>';
+  Ms.forEach(function(x,i){
+    var ant=Ms[i+1],dif=(ant&&x.k!==kHoy)?x.tot-ant.tot:null,ab=vAbiertos[x.k];
+    var d=new Date(x.t);
+    h+='<tr class="fila-mes'+(ab?" abierto":"")+'" data-k="'+x.k+'"><td><span class="flecha">▶</span>'+MESL[d.getMonth()]+' '+d.getFullYear()+(x.k===kHoy?' <span class="et gris">en curso</span>':'')+'</td>'+
+      '<td class="num">'+x.n+'</td><td class="num">'+mx(x.tot)+'</td><td class="num">'+mx(x.gan)+'</td><td class="num">'+pct(x.gan,x.tot)+'%</td>'+
+      '<td class="num '+(dif==null?"tenue":dif>=0?"mas":"menos")+'">'+(dif==null?"—":(dif>=0?"+":"")+mx(dif))+'</td></tr>';
+    h+='<tr class="fila-det'+(ab?" show":"")+'"><td colspan="6"><table class="sub-t"><tbody>'+
+      x.v.sort(function(a,b){return b.fechaTimestamp-a.fechaTimestamp;}).map(function(v){
+        return '<tr><td>'+fCorta(v.fechaTimestamp)+' · '+esc(nomV(v.vendedor))+'</td><td>'+esc(v.descripcion)+'</td><td class="num">'+mx(entra(v))+'</td><td class="num '+(Number(v.ganancia)>=0?"mas":"menos")+'">'+mx(v.ganancia)+'</td><td>'+etTransfer(v)+(pendiente(v)?' <span class="tenue">por transferir '+mx(v.aporte)+(v.corte?' · corte '+esc(v.corte):'')+'</span>':'')+'</td></tr>';}).join("")+
+      '</tbody></table></td></tr>';
+  });
+  $("v-tabla").innerHTML=h+'</tbody></table>';
+}
+/* Tarjetas que responden a los filtros: en qué se convirtió cada peso que entró */
+function nomV(v){var n=String(v||"").trim();if(!n)return "Sin vendedor";return n.charAt(0).toUpperCase()+n.slice(1).toLowerCase();}
+function pintarScore(L){
+  var S=function(f){return L.reduce(function(a,v){return a+(f(v)||0);},0);};
+  var venta=S(entra),costo=S(function(v){return Number(v.costoFinal);}),moto=S(function(v){return Number(v.gastoExt);});
+  var bruta=venta-costo,neta=bruta-moto;
+  var porV={};L.forEach(function(v){var k=nomV(v.vendedor);porV[k]=(porV[k]||0)+(Number(v.ganancia)||0);});
+  var mia=porV.Alex||0,otras=Object.keys(porV).filter(function(k){return k!=="Alex";}).sort(function(a,b){return porV[b]-porV[a];});
+  var deb=L.filter(pendiente),debe=deb.reduce(function(a,v){return a+(Number(v.aporte)||0);},0);
+  var colores={Irene:"var(--azul)",Mamá:"#8B5CF6","Sin vendedor":"var(--linea)"};
+  var seg=[["Costo",costo,"var(--tenue)"],["Motomandado",moto,"var(--naranja)"],["Ganancia neta tuya",mia,"var(--verde)"]].concat(otras.map(function(k){return ["Ganancia neta de "+k,porV[k],colores[k]||"#8B5CF6"];}));
+  var barra=venta>0?'<div class="reparto"><div class="rep-bar">'+seg.map(function(x){return x[1]>0?'<i style="width:'+(x[1]/venta*100).toFixed(1)+'%;background:'+x[2]+'" title="'+esc(x[0])+' '+mx(x[1])+'"></i>':"";}).join("")+'</div>'+
+    '<div class="rep-leg">'+seg.map(function(x){return x[1]>0?'<span><i style="background:'+x[2]+'"></i>'+esc(x[0])+' <b class="mono">'+pct(x[1],venta)+'%</b></span>':"";}).join("")+'</div></div>':"";
+  var c=function(lb,v,cls,sub,t){return '<div class="card sc"><div class="lb">'+lb+(t?' '+ayuda(t):'')+'</div><div class="v '+(cls||"")+'">'+mx(v)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';};
+  var per={"12m":"últimos 12 meses",anio:"este año",todo:"todo el historial"}[$("v-per").value],est={"":"todas",pend:"solo pendientes de transferir",ok:"solo ya transferidas"}[$("v-est").value];
+  $("v-score").innerHTML=
+    '<div class="sc-cab">Con los filtros de abajo: <b>'+per+'</b> · <b>'+est+'</b> · '+L.length+(L.length===1?" venta":" ventas")+'</div>'+
+    c("Precio de venta",venta,"","precio + envío cobrado","Lo que pagaron los clientes en estas ventas: precio más lo que se cobró de envío.")+
+    c("Costo",costo,"","de esa mercancía, puesta aquí","Lo que te costó, puesto en Ocosingo, la mercancía de estas ventas. Es dinero tuyo que regresa, no ganancia.")+
+    c("Ganancia bruta",bruta,"mas","precio de venta − costo","Antes de pagar envíos.")+
+    c("Motomandado",moto,"menos","gasto, ya se le pagó al repartidor","Todo lo pagado de envíos en estas ventas. Es un gasto.")+
+    c("Ganancia neta",neta,"mas",'tuya <b class="mono">'+mx(mia)+'</b>'+otras.filter(function(k){return porV[k]>0;}).map(function(k){return ' · '+k+' <b class="mono">'+mx(porV[k])+'</b>';}).join(""),"Ganancia bruta − motomandado. Si vendió Irene o Mamá, esa parte es de ellas y a ti te transfieren el costo. Las ventas viejas sin vendedor registrado salen aparte.")+
+    (deb.length?c("Por transferir",debe,"alto",deb.length+(deb.length===1?" venta pendiente":" ventas pendientes"),"Lo que aún está en Ocosingo y te toca: el costo si vendió Irene o Mamá; la venta completa menos el moto si vendiste tú y cobraron en efectivo."):"")+
+    barra;
+}
+function pintarVentasProducto(L){
+  var m={};
+  L.forEach(function(v){var k=claveDe(v.descripcion,v.origen);if(!m[k])m[k]={descripcion:v.descripcion,categoria:catDe(v),imagen:v.imagen,n:0,tot:0,utilidad:0,ultima:0};
+    m[k].n++;m[k].tot+=entra(v);m[k].utilidad+=Number(v.ganancia)||0;if(v.fechaTimestamp>m[k].ultima)m[k].ultima=v.fechaTimestamp;});
+  var P=Object.keys(m).map(function(k){var x=m[k];x.margen=pct(x.utilidad,x.tot);x.porVenta=x.n?x.utilidad/x.n:0;return x;});
+  var c=vOrden.campo,dir=vOrden.dir;P.sort(function(a,b){return (a[c]>b[c]?1:a[c]<b[c]?-1:0)*dir;});
+  var th=function(campo,txt){return '<th class="num orden'+(c===campo?" on":"")+'" data-ord="'+campo+'">'+txt+(c===campo?(dir<0?" ↓":" ↑"):"")+'</th>';};
+  var h='<table><thead><tr><th>Producto</th>'+th("n","Ventas")+th("tot","Precio de venta")+th("utilidad","Ganancia neta")+th("porVenta","Neta por venta")+th("margen","Margen")+th("ultima","Última venta")+'</tr></thead><tbody>'+
+    P.map(function(x){return '<tr><td><div class="prod">'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+'</small></div></div></td>'+
+      '<td class="num">'+x.n+'</td><td class="num">'+mx(x.tot)+'</td><td class="num mas">'+mx(x.utilidad)+'</td><td class="num">'+mx(x.porVenta)+'</td><td class="num">'+x.margen+'%</td><td class="num tenue">'+fCorta(x.ultima)+'</td></tr>';}).join("")+
+    '</tbody></table><div class="pie"><span>'+P.length+(P.length===1?' producto':' productos')+'</span><span>Clic en una columna para ordenar</span></div>';
+  $("v-tabla").innerHTML=h;
+}
+["v-q","v-cat","v-vend","v-merc","v-per","v-est"].forEach(function(id){$(id).addEventListener("input",pintarVentas);$(id).addEventListener("change",pintarVentas);});
+document.querySelectorAll("[data-vista]").forEach(function(b){b.addEventListener("click",function(){vVista=b.dataset.vista;document.querySelectorAll("[data-vista]").forEach(function(o){o.classList.toggle("on",o===b);});pintarVentas();});});
+$("v-tabla").addEventListener("click",function(e){
+  var th=e.target.closest("[data-ord]");if(th){var c=th.dataset.ord;if(vOrden.campo===c)vOrden.dir*=-1;else vOrden={campo:c,dir:-1};pintarVentas();return;}
+  var r=e.target.closest(".fila-mes");if(!r)return;
+  if(vAbiertos[r.dataset.k])delete vAbiertos[r.dataset.k];else vAbiertos[r.dataset.k]=1;
+  r.classList.toggle("abierto");r.nextElementSibling.classList.toggle("show");
+});
+
+/* ============ INVENTARIO ============ */
+var NOTAS={reponer:"Los vendes seguido y te queda una pieza o ninguna. Lo que más rápido regresa el dinero: repón estos primero.",
+  parado:"Más de 6 meses sin venderse. Marca los que quieras mover y arma el remate.",
+  nocomprar:"Llevan más de un año en cajas y no vendiste ni uno en los últimos 12 meses. No los vuelvas a pedir.",
+  reciente:"Dado de alta en los últimos 30 días. 'Te queda' ya trae descontado el moto que absorbes."};
+function estado(x){
+  if(x.reponer)return '<span class="et alto">'+(x.stock?"Queda "+x.stock:"Agotado")+' · uno cada '+x.cada+' días</span>';
+  if(x.nocomprar)return '<span class="et mal">Parado '+dias(x.dias)+' · sin ventas en el año</span>';
+  if(x.parado)return '<span class="et mal">Parado '+dias(x.dias)+'</span>';
+  if(x.reciente)return '<span class="et ok">Nuevo</span>';
+  if(x.cada)return '<span class="et ok">Uno cada '+x.cada+' días</span>';
+  if(x.ventas12===1)return '<span class="et gris">1 venta en el año</span>';
+  return '<span class="et gris">Sin ventas en el año</span>';
+}
+function pintarInventario(){
+  var mio=INV.filter(function(x){return !iMerc||x.origen===iMerc;});
+  ["todo","reciente","reponer","parado","nocomprar"].forEach(function(t){var b=document.querySelector('#i-tabs [data-tab="'+t+'"]');var n=mio.filter(function(x){return x[t];}).length;b.querySelector(".n").textContent=n;b.classList.toggle("on",t===iTab);});
+  var L=invFiltrado(),cap=L.reduce(function(s,x){return s+x.capital;},0),pzs=L.reduce(function(s,x){return s+x.stock;},0);
+  var capT=mio.reduce(function(s,x){return s+x.capital;},0),pzT=mio.reduce(function(s,x){return s+x.stock;},0);
+  $("i-sub").textContent=pzT+" piezas · "+mx(capT)+" pagados. Marca lo que quieras rematar.";
+  var n=$("i-nota");if(NOTAS[iTab]){n.textContent=NOTAS[iTab];n.style.display="block";n.classList.toggle("warn",iTab==="nocomprar"||iTab==="parado");}else n.style.display="none";
+  if(!L.length){$("i-tabla").innerHTML='<div class="vacio">Nada aquí con estos filtros.</div>';barra();return;}
+  var h;
+  if($("i-vista").value==="categoria"){
+    var m={};L.forEach(function(x){var c=x.categoria;if(!m[c])m[c]={categoria:c,prod:0,stock:0,capital:0,vale:0,v12:0};m[c].prod++;m[c].stock+=x.stock;m[c].capital+=x.capital;m[c].vale+=x.stock*x.precio;m[c].v12+=x.ventas12;});
+    var C=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.capital-a.capital;});
+    h='<table><thead><tr><th>Categoría</th><th class="num">Productos</th><th class="num">Piezas</th><th class="num">Pagado</th><th class="num">Si se vende todo</th><th class="num">Ventas en el año</th></tr></thead><tbody>'+
+      C.map(function(c){return '<tr><td><b>'+esc(c.categoria)+'</b></td><td class="num">'+c.prod+'</td><td class="num">'+c.stock+'</td><td class="num">'+mx(c.capital)+'</td><td class="num">'+mx(c.vale)+'</td><td class="num">'+c.v12+'</td></tr>';}).join("")+'</tbody></table>';
+  }else{
+    h='<table><thead><tr><th style="width:36px"></th><th>Producto</th><th class="num">Piezas</th><th>Comprado</th><th class="num">Te costó por pieza</th><th class="num">Precio</th><th class="num">Te queda por pieza '+ayuda("Precio menos lo que te costó menos el moto que absorbes.")+'</th><th>Cómo va</th></tr></thead><tbody>'+
+      L.map(function(x){var q=x.precio-x.costo-MOTO,rem=x.origen==="Alex"&&x.stock>0;
+        return '<tr><td>'+(rem?'<input class="chk" type="checkbox" data-k="'+esc(x.clave)+'"'+(sel[x.clave]?" checked":"")+'>':'')+'</td>'+
+          '<td><div class="prod">'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+(x.origen!=="Alex"?' · de '+esc(x.origen):'')+'</small></div></div></td>'+
+          '<td class="num">'+x.stock+'</td><td>'+(x.stock?(x.dias?'hace '+dias(x.dias)+' <span class="tenue">· '+fCorta(HOY-x.dias*DIA)+'</span>':'—'):'<span class="tenue">última venta '+fCorta(x.ultima)+'</span>')+'</td>'+
+          '<td class="num">'+mx(x.costo)+'</td><td class="num">'+mx(x.precio)+'</td><td class="num '+(q>=0?"mas":"menos")+'">'+mx(q)+'</td><td>'+estado(x)+'</td></tr>';}).join("")+'</tbody></table>';
+  }
+  $("i-tabla").innerHTML=h+'<div class="pie"><span>'+L.length+' de '+mio.filter(function(x){return x.todo;}).length+' productos · '+pz(pzs)+'</span><span class="mono">Pagado en lo que ves: '+mx(cap)+'</span></div>';
+  barra();
+}
+["i-q","i-cat","i-fecha","i-vista"].forEach(function(id){$(id).addEventListener("input",pintarInventario);$(id).addEventListener("change",pintarInventario);});
+$("i-tabs").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(!b)return;iTab=b.dataset.tab;pintarInventario();});
+document.querySelectorAll("[data-merc]").forEach(function(b){b.addEventListener("click",function(){iMerc=b.dataset.merc;document.querySelectorAll("[data-merc]").forEach(function(o){o.classList.toggle("on",o===b);});pintarInventario();});});
+$("moto").addEventListener("input",function(){MOTO=num(this.value);pintarInventario();});
+$("i-tabla").addEventListener("change",function(e){var c=e.target.closest(".chk");if(!c)return;var k=c.dataset.k;
+  if(c.checked){var x=porClave(k);sel[k]=a10(x.costo+MOTO);}else delete sel[k];barra();});
+function porClave(k){for(var i=0;i<INV.length;i++)if(INV[i].clave===k)return INV[i];return null;}
+
+/* ============ REMATE ============ */
+function seleccion(){return Object.keys(sel).map(porClave).filter(function(x){return x&&x.stock>0;});}
+function barra(){
+  var S=seleccion(),lib=0,pzs=0,cost=0;
+  S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;cost+=x.capital;});
+  $("flot").classList.toggle("on",S.length>0&&pantalla==="inventario");
+  $("flot-v").textContent=mx(lib);
+  $("flot-n").textContent=S.length?pzs+" piezas · "+S.length+(S.length===1?" producto":" productos")+" · pagaste "+mx(cost):"";
+}
+$("b-limpiar").addEventListener("click",function(){sel={};pintarInventario();});
+function pillas(x){
+  var cu=x.costo,op=[["Sin perder",a10(cu+MOTO)],["Ganas $50",a10(cu+MOTO+50)],["Mitad",a10(x.precio/2)]],vis={},u=[];
+  op.forEach(function(o){if(vis[o[1]])return;vis[o[1]]=1;u.push(o);});
+  return u.map(function(o){return '<button class="po'+(sel[x.clave]===o[1]?" on":"")+'" data-po="'+o[1]+'"><span>'+o[0]+'</span><b>'+mx(o[1])+'</b></button>';}).join("");
+}
+function cuentaRem(x){
+  var p=sel[x.clave]||0,porPza=p-MOTO-x.costo,neto=(p-MOTO)*x.stock,dif=neto-x.capital;
+  return 'Cada una: '+mx(p)+' − moto '+mx(MOTO)+' − costo '+mx(x.costo)+' = <b class="'+(porPza>=0?"mas":"menos")+'">'+mx(porPza)+'</b>. '+
+    'Las '+x.stock+': recuperas <b>'+mx(neto)+'</b> de '+mx(x.capital)+(dif>=0?' <b class="mas">(+'+mx(dif)+')</b>':' <b class="menos">(faltan '+mx(-dif)+')</b>');
+}
+function renglonRem(x){
+  return '<div class="rem" data-k="'+esc(x.clave)+'"><div class="nom"><b>'+esc(x.descripcion)+'</b><small>'+pz(x.stock)+' · te costó '+mx(x.costo)+' por pieza · parado '+dias(x.dias)+' · hoy a '+mx(x.precio)+'</small></div>'+
+    '<div class="ops">'+pillas(x)+'<span class="chip">$<input class="mono" data-libre="1" type="number" step="10" min="0" value="'+(sel[x.clave]||0)+'"></span></div>'+
+    '<div class="cuenta">'+cuentaRem(x)+'</div></div>';
+}
+function planTexto(S){
+  var lib=0,pzs=0;S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;});
+  return "REMATE KIOSKO\n"+pzs+" piezas · recuperas "+mx(lib)+" ya con el envío descontado\n\n"+S.map(function(x){return "• "+x.descripcion+" — "+x.stock+" pza · REMATE "+mx(sel[x.clave])+" (antes "+mx(x.precio)+")";}).join("\n");
+}
+function resumenRem(S){
+  var lib=0,pzs=0,cost=0;S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;cost+=x.capital;});
+  return 'Mueves <b>'+pzs+' piezas</b> y recuperas <b>'+mx(lib)+'</b> limpios, ya sin el moto de '+mx(MOTO)+' por pieza. Te costaron '+mx(cost)+'.'+
+    (lib<cost?' Recuperas menos de lo que pagaste: <b>está bien</b> si llevan meses sin moverse, un billete dormido no vale más por esperar.':'')+
+    ' Ofrécelas en paquete: el moto cuesta lo mismo lleve una o tres.';
+}
+$("b-plan").addEventListener("click",function(){
+  var S=seleccion();if(!S.length)return;
+  abrirHTML('<h3>Tu plan de remate</h3><p id="rem-res">'+resumenRem(S)+'</p>'+
+    '<div id="rem-lista">'+S.map(renglonRem).join("")+'</div>'+
+    '<p style="margin-top:14px">Los tres precios: <b>Sin perder</b> es costo + moto, tu piso. <b>Ganas $50</b> es el piso más $50 limpios. <b>Mitad</b> es la mitad de lo que pides hoy: "50% de descuento" se entiende sin pensar.</p>'+
+    '<textarea readonly id="plan-txt">'+esc(planTexto(S))+'</textarea>'+
+    '<p>Aplicar el remate cambia el precio en tu hoja en todas las piezas sin vender de esos productos y se refleja en la app y el catálogo. El precio anterior queda guardado: se puede deshacer.</p>'+
+    '<div class="acciones"><button class="btn pri" id="aplicar">Aplicar remate a mi hoja</button><button class="btn claro" id="cp">Copiar lista</button><button class="btn claro" data-cerrar="1">Cerrar</button></div>'+
+    '<div id="res-remate" style="margin-top:12px"></div>');
+  $("aplicar").addEventListener("click",function(){
+    var b=this;b.disabled=true;b.textContent="Aplicando…";
+    var items=seleccion().map(function(x){return {descripcion:x.descripcion,categoria:x.categoria,precio:sel[x.clave]};});
+    api("aplicarRemate",null,{remate:{usuario:"Alex",items:items}},45000).then(function(r){
+      if(!r||!r.success)throw new Error((r&&r.error)||"No se pudo aplicar");
+      $("res-remate").innerHTML="<b>Listo: "+r.piezas+(r.piezas===1?" pieza":" piezas")+" con precio nuevo.</b><br>"+
+        (r.productos||[]).map(function(p){return esc(p.descripcion)+" · "+p.piezas+" pza · "+mx(p.antes)+" → <b>"+mx(p.ahora)+"</b>";}).join("<br>")+(r.verificado?"":"<br>"+esc(r.aviso||""));
+      b.textContent="Aplicado";
+      seleccion().forEach(function(x){x.precio=sel[x.clave];});sel={};pintarInventario();
+    }).catch(function(e){$("res-remate").innerHTML='<b class="menos">'+esc(e.message)+"</b>";b.disabled=false;b.textContent="Aplicar remate a mi hoja";});
+  });
+  $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
+});
+$("mo-in").addEventListener("click",function(e){
+  var b=e.target.closest("[data-po]");if(!b)return;
+  var r=b.closest(".rem"),x=porClave(r.dataset.k);sel[x.clave]=num(b.dataset.po);
+  r.querySelector("[data-libre]").value=sel[x.clave];refrescarRem(r,x);
+});
+$("mo-in").addEventListener("input",function(e){
+  var i=e.target.closest("[data-libre]");if(!i)return;
+  var r=i.closest(".rem"),x=porClave(r.dataset.k);sel[x.clave]=num(i.value);refrescarRem(r,x);
+});
+function refrescarRem(r,x){
+  r.querySelectorAll(".po").forEach(function(o){o.classList.toggle("on",num(o.dataset.po)===sel[x.clave]);});
+  r.querySelector(".cuenta").innerHTML=cuentaRem(x);
+  var S=seleccion();$("rem-res").innerHTML=resumenRem(S);$("plan-txt").value=planTexto(S);barra();
+}
+
+/* ============ ¿ME CONVIENE? ============ */
+function desglose(titulo,filas,res,nota){
+  var max=Math.max.apply(null,filas.concat([res]).map(function(f){return Math.abs(f.v);}).concat([1]));
+  var f=function(x,cls){return '<div class="dg-fila '+cls+'"><div class="et2">'+esc(x.et)+(x.sub?'<small>'+esc(x.sub)+'</small>':'')+'</div><div class="pista"><i style="width:'+Math.max(4,Math.abs(x.v)/max*100).toFixed(1)+'%"></i></div><div class="val">'+(x.signo?(x.signo==="-"?"−":"+"):"")+mx(Math.abs(x.v))+'</div></div>';};
+  return '<div class="desglose"><div class="dg-t">'+esc(titulo)+'</div>'+filas.map(function(x){return f(x,x.signo==="-"?"dg-menos":"dg-mas");}).join("")+f(res,"dg-res")+(nota?'<div class="dg-nota">'+nota+'</div>':'')+'</div>';
+}
+function pintarConviene(){
+  var out=$("sim-out");
+  var pr=num($("sim-precio").value),pzs=Math.max(1,Math.round(num($("sim-piezas").value))||1),fa=num($("sim-factor").value)||1.33,cat=$("sim-cat").value;
+  if(!(pr>0)){out.innerHTML='<p class="tenue" style="padding:0 20px 20px;margin:0">Escribe el precio que ves en la plataforma y te hago la cuenta.</p>';return;}
+  var cf=r2(pr*fa),inv=r2(cf*pzs),piso=r2(cf+MOTO),sug=a10(cf*2),gana=r2(sug+COBRO-cf-MOTO);
+  var c=null;(D.rotacion||[]).forEach(function(x){if(x.categoria===cat)c=x;});
+  var alerta="";
+  if(c){var mal=c.piezas>0&&c.ventas>=3&&c.diasStock>c.diasVenta*2;
+    alerta='<div class="aviso '+(mal?"warn":"ok")+'"><div><b>'+esc(cat)+'</b>: se vende en <b>'+dias(c.diasVenta)+'</b>'+(c.piezas?', y hoy tienes <b>'+c.piezas+' piezas</b> que llevan <b>'+dias(c.diasStock)+'</b> paradas':', y hoy no tienes existencia')+'. '+
+      (mal?'<b>Piénsalo dos veces:</b> lo que ya tienes de esta categoría no se mueve. Meter más dinero aquí lo congela.':'Categoría sana: tu stock está dentro de sus tiempos.')+'</div></div>';}
+  var mer=num($("sim-mercado").value),ver;
+  if(!(mer>0))ver='<div class="aviso info"><div><b>Búscalo en Marketplace y anota el precio arriba.</b> El mercado manda: si allá está más barato que tu sugerido, el sugerido no sirve.</div></div>';
+  else{var g=r2(mer+COBRO-cf-MOTO),mg=pct(g,mer+COBRO);
+    if(mer<=piso)ver='<div class="aviso warn"><div><b>No lo compres.</b> La competencia lo vende en '+mx(mer)+' y a ti te costaría '+mx(piso)+' puesto y entregado.</div></div>';
+    else if(mer<sug)ver='<div class="aviso warn"><div><b>Se puede, con menos margen.</b> Tu sugerido era '+mx(sug)+' y el mercado está en '+mx(mer)+'. Alineado al mercado te quedan <b>'+mx(g)+'</b> por pieza ('+mg+'%).</div></div>';
+    else ver='<div class="aviso ok"><div><b>Buena oportunidad.</b> El mercado está en '+mx(mer)+', arriba de tu sugerido de '+mx(sug)+'. Puedes ponerte abajo de la competencia y aun así ganar <b>'+mx(g)+'</b> por pieza.</div></div>';}
+  out.innerHTML='<div style="padding:0 20px">'+desglose("Lo que de verdad te va a costar",
+      [{et:"Precio en la plataforma",sub:pzs+(pzs===1?" pieza":" piezas")+" × "+mx(pr),v:pr*pzs,signo:"+"},{et:"Impuestos y envío",sub:"factor ×"+fa.toFixed(2),v:r2(inv-pr*pzs),signo:"+"}],
+      {et:"Te costará",sub:mx(cf)+" cada pieza",v:inv},"Ese dinero sale de tu bolsa y se queda dormido hasta que vendas.")+'</div>'+
+    '<div class="dos"><div class="cifra"><div class="lb">Tu precio piso</div><div class="v">'+mx(piso)+'</div><small class="tenue">costo + moto. Debajo de aquí pierdes.</small></div>'+
+    '<div class="cifra ok"><div class="lb">Véndelo en</div><div class="v">'+mx(sug)+'</div><small class="tenue">te dejaría '+mx(gana)+' por pieza cobrando el envío</small></div></div>'+ver+alerta;
+}
+["sim-precio","sim-piezas","sim-factor","sim-mercado"].forEach(function(id){$(id).addEventListener("input",pintarConviene);});
+$("sim-cat").addEventListener("change",pintarConviene);
+$("sim-tienda").addEventListener("change",function(){if(this.value)$("sim-factor").value=this.value;pintarConviene();});
+
+/* ============ modal ============ */
+function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
+$("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")$("mo").classList.remove("on");});
+
+window.KIOSKO={api:api,abrirHTML:abrirHTML,desglose:desglose,catalogo:function(){return CAT;},ventas:function(){return VEN;},recargarDespues:function(){sucio=true;}};
+if(sesionViva())entrar();
+})();
+</script>
+<script>
+/* =====================================================================
+   ALTA DE PEDIDO · portado de alta.html. Misma lógica, misma acción POST
+   `altaPedido` y `subirFoto`. Usa el catálogo y las ventas que ya cargó
+   la pantalla (puente window.KIOSKO), así no vuelve a pedirlos.
+   ===================================================================== */
+(function(){
+"use strict";
+var K=window.KIOSKO;
+var $=function(i){return document.getElementById(i);};
+function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""));return isFinite(n)?n:0;}
+function r2(n){return Math.round(n*100)/100;}
+function mx(n){var v=r2(n),e=Math.abs(v%1)<.005;return "$"+v.toLocaleString("es-MX",{minimumFractionDigits:e?0:2,maximumFractionDigits:e?0:2});}
+function a10(n){return Math.ceil(n/10)*10;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();}
+function uuid(){return "ap-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);}
+var MAX_FOTOS=4;
+
+var filas=[],seq=0,catalogo=[],IMGS=[],CATS=[],pedidoID=uuid(),enviando=false,iniciado=false;
+var MOTO=35,EXTRA=10,MULT=2,PISO=80,INCLUIDO=false;
+
+function lev(a,b){var m=a.length,n=b.length,i,j,d=[];
+  for(i=0;i<=m;i++)d[i]=[i];for(j=1;j<=n;j++)d[0][j]=j;
+  for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];}
+function ajustarCat(t0){
+  var t=norm(t0);if(!t)return{tipo:"vacia"};
+  for(var i=0;i<CATS.length;i++)if(norm(CATS[i])===t)return{tipo:"exacta",valor:CATS[i]};
+  var mejor=null,md=99;
+  for(var k=0;k<CATS.length;k++){var c=norm(CATS[k]),dd=lev(t,c);
+    if(c.indexOf(t)===0&&t.length>=3)dd=Math.min(dd,1);
+    if(dd<md){md=dd;mejor=CATS[k];}}
+  if(mejor&&md<=Math.max(1,Math.floor(t.length/4)))return{tipo:"parecida",valor:mejor};
+  return{tipo:"nueva",valor:t0.trim()};
+}
+var REGLAS=[
+  [/audifon|auricular|earbud|\btws\b|headset|diadema/,"Audífonos"],
+  [/bocina|altavoz|altavoces|speaker|parlante|barra de sonido/,"Bocinas y altavoces"],
+  [/reloj|smartwatch|\bwatch\b|pulsera intelig/,"Smartwatch y relojes"],
+  [/cortadora|cortapelo|corta pelo|afeitadora|rasuradora|barber|depilad|secadora de (pelo|cabello)|masajead|cepillo dental/,"Cuidado personal"],
+  [/funda|mica|protector de pantalla|cargador|cable|power ?bank|bateria externa|soporte para (celular|telefono)|selfie/,"Accesorios de celular"],
+  [/incubadora/,"Incubadoras"],
+  [/\bmesa\b|\bsilla\b|plegable/,"Mesas y sillas plegables"],
+  [/desarmador|destornillador|herramienta|taladro|pinza|llave inglesa|multiherramienta|kit de/,"Herramientas"],
+  [/\btv\b|pantalla|televis|tv ?stick|proyector|roku|chromecast/,"TV y electrónica"],
+  [/licuadora|olla|sarten|termo|taza|cocina|lampara|foco|ventilador|organizador|bascula/,"Hogar"]
+];
+function catPorNombre(desc){
+  var t=norm(desc);if(!t)return null;
+  for(var i=0;i<REGLAS.length;i++)if(REGLAS[i][0].test(t))for(var k=0;k<CATS.length;k++)if(norm(CATS[k])===norm(REGLAS[i][1]))return CATS[k];
+  return null;
+}
+function modelos(desc){
+  var t=norm(desc).replace(/[-_/]/g,""),out=[];
+  t.split(/[^a-z0-9]+/).forEach(function(tk){if(/^[a-z]{1,6}\d{1,5}[a-z]{0,6}$/.test(tk)&&/\d/.test(tk))out.push(tk);});
+  return out;
+}
+function compartenModelo(a,b){var ma=modelos(a),mb=modelos(b);if(!ma.length||!mb.length)return false;for(var i=0;i<ma.length;i++)if(mb.indexOf(ma[i])>-1)return true;return false;}
+function parecido(desc){
+  var t=norm(desc);if(t.length<4)return null;var i;
+  for(i=0;i<catalogo.length;i++)if(compartenModelo(desc,catalogo[i].descripcion))return catalogo[i];
+  var mejor=null,md=99;
+  for(i=0;i<catalogo.length;i++){var c=norm(catalogo[i].descripcion);if(c===t)return catalogo[i];var d=lev(t,c);
+    if(c.indexOf(t)===0||t.indexOf(c)===0)d=Math.min(d,2);if(d<md){md=d;mejor=catalogo[i];}}
+  return (mejor&&md<=Math.max(2,Math.floor(t.length/6)))?mejor:null;
+}
+function fotosDe(desc){var t=norm(desc);for(var i=0;i<IMGS.length;i++){var d=IMGS[i].descripcion;if(norm(d)===t||compartenModelo(desc,d))return [IMGS[i].url].concat(IMGS[i].extras||[]).filter(Boolean);}return [];}
+function existente(desc,cat){var k=norm(desc)+"|"+norm(cat);for(var i=0;i<catalogo.length;i++)if(norm(catalogo[i].descripcion)+"|"+norm(catalogo[i].categoria)===k)return catalogo[i];return null;}
+function comprimir(archivo){
+  return new Promise(function(res,rej){
+    var lec=new FileReader();
+    lec.onerror=function(){rej(new Error("No se pudo leer la foto"));};
+    lec.onload=function(e){var img=new Image();img.onerror=function(){rej(new Error("La imagen no es válida"));};
+      img.onload=function(){var max=1280,k=Math.min(1,max/Math.max(img.width,img.height));var c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.82).split(",")[1]);};img.src=e.target.result;};
+    lec.readAsDataURL(archivo);});
+}
+
+/* ---- datos: del puente, no del servidor ---- */
+function tomarDatos(){
+  catalogo=(K.catalogo()||[]).filter(function(x){return x.origen==="Alex";});
+  var visto={};IMGS=[];
+  (K.ventas()||[]).forEach(function(v){if(!v||!v.descripcion||!v.imagen)return;var k=norm(v.descripcion);if(visto[k])return;visto[k]=1;IMGS.push({descripcion:v.descripcion,url:v.imagen,extras:[]});});
+  var cs={},ds={};
+  catalogo.forEach(function(x){if(x.categoria)cs[x.categoria]=1;if(x.descripcion)ds[x.descripcion]=1;});
+  CATS=Object.keys(cs).sort(function(a,b){return a.localeCompare(b,"es");});
+  $("dl-prods").innerHTML=Object.keys(ds).sort().map(function(d){return '<option value="'+esc(d)+'">';}).join("");
+  filas.forEach(function(f){if(f.pintarChips)f.pintarChips();if(f.detectar)f.detectar();});
+}
+function iniciar(){
+  if(iniciado){tomarDatos();calcular();return;}
+  iniciado=true;
+  var hoy=new Date();$("fecha").value=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+  tomarDatos();nuevaFila();calcular();
+}
+function reiniciar(){
+  filas=[];seq=0;pedidoID=uuid();enviando=false;altaOK=false;ultimoR=null;PENDIENTES=[];
+  $("renglones").innerHTML="";$("pagado").value="";$("alta-cuerpo").classList.remove("oculto");$("alta-fin").classList.add("oculto");$("aflot").classList.add("on");
+  var hoy=new Date();$("fecha").value=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+  nuevaFila();calcular();
+}
+K.alta={iniciar:iniciar,activa:function(){return enviando||filas.some(function(f){return f.desc.value.trim()||num(f.costo.value)>0;});}};
+
+function mostrarX(){filas.forEach(function(o){if(o.x)o.x.style.display=filas.length>1?"":"none";});}
+function nuevaFila(){
+  var id=seq++,el=document.createElement("article");
+  el.className="card reng";
+  el.innerHTML=
+    '<button class="quitar" data-k="x" title="Quitar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>'+
+    '<div class="lado-foto"><div class="galeria" data-k="galeria"></div><input type="file" accept="image/*" data-k="file" multiple style="display:none"></div>'+
+    '<div class="cuerpo">'+
+    '<label class="campo"><span>Nombre del producto</span><input data-k="desc" list="dl-prods" placeholder="Ej. Kemei KM-1419 Cortadora de pelo" autocomplete="off"></label>'+
+    '<div class="campo"><span>Categoría</span><div class="chips" data-k="chips"></div><input type="hidden" data-k="cat">'+
+      '<div class="oculto" data-k="catNueva" style="margin-top:6px"><input data-k="catTxt" placeholder="Nombre de la categoría nueva" autocomplete="off"><small class="cat-estado" data-k="catEstado"></small></div></div>'+
+    '<div class="campos">'+
+      '<div class="campo"><span>Piezas que compraste</span><span class="step"><button type="button" data-k="menos">−</button><input data-k="q" type="number" min="1" step="1" value="1"><button type="button" data-k="mas">+</button></span></div>'+
+      '<label class="campo"><span>Precio después de promociones, por pieza</span><span class="money"><i>$</i><input data-k="costo" type="number" min="0" step="0.01" placeholder="105.00" inputmode="decimal"></span>'+
+        '<small>En Temu es el renglón chico "Después de aplicadas las promociones": el más bajo de los dos.</small></label>'+
+      '<details class="opc ancho"><summary>¿Tenía descuento? Anota el precio antes de la promoción</summary>'+
+        '<label class="campo" style="margin-top:6px"><span>Precio antes de promociones (el número grande)</span><span class="money"><i>$</i><input data-k="lista" type="number" min="0" step="0.01" placeholder="149.99" inputmode="decimal"></span>'+
+        '<small>Solo de referencia: no cambia tu costo.</small><small class="cat-estado" data-k="avisoPrecios"></small></label></details>'+
+    '</div>'+
+    '<div class="calculo vacio" data-k="calculo">Cuando captures el precio y el cargo de tu tarjeta, aquí verás tu costo real y el precio sugerido.</div>'+
+    '</div>';
+  var f={id:id,el:el,fotos:[],fotosDrive:[],parcial:false,gemelo:null,catManual:false,tocado:false,precioVal:0};
+  ["galeria","file","desc","chips","cat","catNueva","catTxt","catEstado","avisoPrecios","menos","q","mas","costo","lista","calculo","x"].forEach(function(k){f[k]=el.querySelector('[data-k="'+k+'"]');});
+
+  f.pintarGaleria=function(){
+    var h="";
+    if(f.fotosDrive&&f.fotosDrive.length){
+      h+='<div class="gal-slot llena principal"><img src="'+esc(f.fotosDrive[0])+'" alt=""><span class="et">'+(f.parcial?"Ya en Drive · puede tener más":"Ya en Drive")+'</span>'+
+        '<button type="button" class="quita-foto" data-k="quitadrive" title="No es este producto: quitar estas fotos">×</button></div>';
+      for(var j=1;j<Math.min(f.fotosDrive.length,3)+1&&j<4;j++){
+        if(f.fotosDrive[j])h+='<div class="gal-slot llena"><img src="'+esc(f.fotosDrive[j])+'" alt=""></div>';
+        else if(j===f.fotosDrive.length)h+='<div class="gal-slot" data-k="pick">+</div>';
+        else h+='<div class="gal-slot" style="opacity:.45"></div>';
+      }
+      f.galeria.innerHTML=h;return;
+    }
+    for(var i=0;i<MAX_FOTOS;i++){
+      var ft=f.fotos[i];
+      if(ft)h+='<div class="gal-slot llena'+(i===0?" principal":"")+'"><img src="'+ft.url+'" alt=""><button class="quita-foto" data-k="quitafoto" data-i="'+i+'">×</button>'+(i===0?'<span class="et">Principal</span>':"")+'</div>';
+      else if(i===f.fotos.length)h+='<div class="gal-slot'+(i===0?" principal":"")+'" data-k="pick"><div style="text-align:center">'+
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:block;margin:0 auto 4px"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'+(i===0?"Agregar foto":"+")+'</div></div>';
+      else h+='<div class="gal-slot" style="opacity:.45"></div>';
+    }
+    f.galeria.innerHTML=h;
+  };
+  f.galeria.addEventListener("click",function(e){
+    var q=e.target.closest("[data-k=quitafoto]");
+    if(q){f.fotos.splice(Number(q.getAttribute("data-i")),1);f.pintarGaleria();return;}
+    if(e.target.closest("[data-k=quitadrive]")){f.fotosDrive=[];f.parcial=false;f.noHeredar=true;f.pintarGaleria();return;}
+    if(e.target.closest("[data-k=pick]"))f.file.click();
+  });
+  f.file.addEventListener("change",function(){
+    Array.prototype.slice.call(f.file.files||[]).slice(0,MAX_FOTOS-f.fotos.length).forEach(function(a){
+      var lec=new FileReader();lec.onload=function(e){f.fotos.push({archivo:a,url:e.target.result});f.pintarGaleria();};lec.readAsDataURL(a);});
+    f.file.value="";
+  });
+  f.pintarGaleria();
+
+  f.pintarChips=function(){
+    var s=f.cat.value,esNueva=s&&CATS.indexOf(s)===-1;
+    f.chips.innerHTML=CATS.map(function(c){return '<button type="button" class="chip'+(c===s?" on":"")+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join("")+
+      '<button type="button" class="chip'+(esNueva||!f.catNueva.classList.contains("oculto")?" on":"")+'" data-c="__otra">+ Otra</button>';
+  };
+  f.chips.addEventListener("click",function(e){
+    var b=e.target.closest(".chip");if(!b)return;var c=b.getAttribute("data-c");
+    if(c==="__otra"){f.catManual=true;f.catNueva.classList.remove("oculto");f.cat.value=f.catTxt.value.trim();f.pintarChips();revisarCat();f.catTxt.focus();calcular();return;}
+    f.cat.value=c;f.catManual=true;f.catTxt.value="";f.catNueva.classList.add("oculto");f.catEstado.textContent="";f.pintarChips();calcular();
+  });
+  function revisarCat(){
+    var r=ajustarCat(f.catTxt.value),e=f.catEstado;
+    if(r.tipo==="vacia"){e.className="cat-estado";e.textContent="Escribe el nombre, o elige una de arriba";f.cat.value="";return;}
+    if(r.tipo==="exacta"){f.cat.value=r.valor;f.catTxt.value="";f.catNueva.classList.add("oculto");e.textContent="";f.pintarChips();return;}
+    if(r.tipo==="parecida"){f.cat.value="";e.className="cat-estado dudo";
+      e.innerHTML='¿Quisiste decir <button type="button" class="sug">'+esc(r.valor)+'</button>? Si no, sigue escribiendo.';
+      e.querySelector(".sug").addEventListener("click",function(){f.cat.value=r.valor;f.catTxt.value="";f.catNueva.classList.add("oculto");e.textContent="";f.pintarChips();calcular();});return;}
+    f.cat.value=r.valor;e.className="cat-estado nueva";e.textContent="Categoría nueva: se crea al dar de alta";
+  }
+  f.catTxt.addEventListener("input",function(){revisarCat();calcular();});
+  f.pintarChips();
+
+  f.detectar=function(){
+    var d=f.desc.value.trim();f.gemelo=null;f.fotosDrive=[];
+    if(!d){f.noHeredar=false;f.pintarGaleria();f.pintarChips();return;}
+    var g=parecido(d);f.parcial=false;
+    if(f.noHeredar){}
+    else if(g&&(g.imagen||(g.extras&&g.extras.length)))f.fotosDrive=[g.imagen].concat(g.extras||[]).filter(Boolean);
+    else{f.fotosDrive=fotosDe(d);f.parcial=f.fotosDrive.length>0;}
+    if(g){f.gemelo=g;if(!f.catManual&&g.categoria){f.cat.value=g.categoria;f.catNueva.classList.add("oculto");f.catTxt.value="";}}
+    else if(!f.catManual){var c=catPorNombre(d);if(c)f.cat.value=c;}
+    f.pintarChips();f.pintarGaleria();
+  };
+  var _t;
+  f.desc.addEventListener("input",function(){clearTimeout(_t);_t=setTimeout(function(){f.detectar();calcular();},350);});
+  f.desc.addEventListener("change",function(){f.detectar();calcular();});
+  [f.desc,f.q,f.costo,f.lista].forEach(function(c){c.addEventListener("input",calcular);c.addEventListener("change",calcular);});
+  f.menos.addEventListener("click",function(){f.q.value=Math.max(1,Math.round(num(f.q.value))-1);calcular();});
+  f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
+  f.x.addEventListener("click",function(){if(filas.length===1)return;filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();mostrarX();});
+  filas.push(f);$("renglones").appendChild(el);mostrarX();
+  return f;
+}
+
+function calcular(){
+  var pagado=num($("pagado").value),suma=0,piezas=0;
+  filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
+  var hay=suma>0&&pagado>0,factor=hay?pagado/suma:1;
+  filas.forEach(function(f){
+    var costo=num(f.costo.value),lst=num(f.lista.value);
+    if(lst>0&&costo>0&&lst<costo){f.avisoPrecios.className="cat-estado nueva";
+      f.avisoPrecios.innerHTML='Parece que están invertidos: el precio antes debería ser el más alto. <button type="button" class="sug" data-k="voltear">Intercambiar</button>';
+      f.avisoPrecios.querySelector("[data-k=voltear]").addEventListener("click",function(){var a=f.costo.value;f.costo.value=f.lista.value;f.lista.value=a;calcular();});
+    } else f.avisoPrecios.textContent="";
+    if(!(costo>0)||!hay){f.calculo.className="calculo vacio";f.calculo.textContent=costo>0?"Falta el cargo de tu tarjeta, arriba en la tarjeta oscura":"Falta el precio que te cobró la plataforma";return;}
+    var cf=r2(costo*factor),sug=a10(cf*MULT+(INCLUIDO?MOTO:0));
+    if(!f.tocado)f.precioVal=sug;
+    var precio=f.tocado?num(f.precioVal):sug,gana=r2(precio+EXTRA-cf-MOTO),flojo=gana<PISO;
+    var ex=(f.desc.value.trim()&&f.cat.value.trim())?existente(f.desc.value,f.cat.value):null;
+    f.calculo.className="calculo";
+    f.calculo.innerHTML=
+      '<div><div class="cal-k">Te cuesta, ya puesto aquí</div><div class="cal-v mono">'+mx(cf)+'</div></div>'+
+      '<div class="precio-row"><span class="cal-k">Véndelo en</span><span class="precio-pill">$<input data-k="precio" type="number" step="10" min="0" value="'+precio+'"></span>'+
+      '<span class="queda'+(flojo?" flojo":"")+'">te quedan '+mx(gana)+(flojo?" · poco":"")+'</span>'+
+      '<button type="button" class="liga" data-k="porque">¿Cómo salió?</button></div>'+
+      ((ex||(f.fotosDrive&&f.fotosDrive.length))?'<div class="tags">'+
+        (ex?'<span class="et azul">Ya lo tienes: '+esc(ex.pid||"")+' · se le suman piezas</span>':"")+
+        ((f.fotosDrive&&f.fotosDrive.length)?'<span class="et ok">'+(f.parcial?"Ya tiene fotos en Drive":f.fotosDrive.length+(f.fotosDrive.length===1?" foto":" fotos")+" en Drive")+' · no hace falta resubir</span>':"")+'</div>':"");
+    f.calculo.querySelector("[data-k=porque]").addEventListener("click",function(){explicarFila(f);});
+    var inp=f.calculo.querySelector("[data-k=precio]");
+    inp.addEventListener("input",function(){f.tocado=true;f.precioVal=num(inp.value);var g=r2(num(inp.value)+EXTRA-cf-MOTO),q2=f.calculo.querySelector(".queda");
+      q2.textContent="te quedan "+mx(g)+(g<PISO?" · poco":"");q2.className="queda"+(g<PISO?" flojo":"");});
+  });
+  $("suma").textContent=mx(suma);
+  var dif=r2(pagado-suma),dp=$("dif-pill"),fp=$("factor-pill");
+  if(!hay){dp.className="pill blanca";dp.textContent="Sin cargo todavía";fp.textContent="×1.00";$("hero-lb").textContent="Escribe el total del cargo y reparto los costos";}
+  else{dp.className="pill "+(dif>=0?"lima":"mango");dp.textContent=(dif>=0?"+":"−")+mx(Math.abs(dif))+(dif>=0?" de más":" de descuento");fp.textContent="×"+factor.toFixed(4);
+    $("hero-lb").textContent=(dif>=0?"Los "+mx(Math.abs(dif))+" de más":"Los "+mx(Math.abs(dif))+" de descuento")+" se reparten entre las "+piezas+" piezas, en proporción a lo que costó cada una"+((factor<.6||factor>2.2)?" — ese reparto se ve raro, revisa los datos":"");}
+  estado();
+}
+function completas(){return filas.filter(function(f){return f.desc.value.trim()&&f.cat.value.trim()&&num(f.costo.value)>0&&Math.round(num(f.q.value))>0;});}
+function estado(){
+  var pagado=num($("pagado").value),suma=0,piezas=0;
+  filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
+  var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0;
+  $("b-alta").disabled=!listo||enviando;
+  $("abot-v").textContent=piezas+(piezas===1?" pieza":" piezas");
+  $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":"Falta nombre o categoría en alguno");
+}
+function armar(){
+  var pagado=num($("pagado").value),suma=0;
+  filas.forEach(function(f){suma+=num(f.costo.value)*Math.max(0,Math.round(num(f.q.value)));});
+  var factor=suma>0?pagado/suma:1;
+  return {pedidoID:pedidoID,fecha:$("fecha").value||"",pagado:pagado,
+    productos:filas.map(function(f){var cf=r2(num(f.costo.value)*factor);
+      return {descripcion:f.desc.value.trim(),categoria:f.cat.value.trim(),cantidad:Math.round(num(f.q.value)),costo:num(f.costo.value),lista:num(f.lista.value),precio:f.tocado?num(f.precioVal):a10(cf*MULT)};})};
+}
+var altaOK=false,ultimoR=null,PENDIENTES=[];
+function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function subirUna(p,intento){
+  return comprimir(p.archivo).then(function(b64){return K.api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
+    .then(function(rf){if(rf&&rf.success)return true;throw new Error((rf&&rf.error)||"el servidor no la aceptó");})
+    .catch(function(e){if(intento<2)return espera(2500).then(function(){return subirUna(p,intento+1);});p.error=e.message||"error desconocido";return false;});
+}
+function subirFotos(){
+  var pend=[];filas.forEach(function(f){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo});});});
+  PENDIENTES=[];var ok=0,mal=[],cad=Promise.resolve(),i=0;
+  pend.forEach(function(p){cad=cad.then(function(){i++;$("abot-s").textContent="Subiendo foto "+i+" de "+pend.length+"…";
+    return subirUna(p,1).then(function(bien){if(bien)ok++;else{mal.push(p);PENDIENTES.push(p);}return espera(700);});});});
+  return cad.then(function(){return {total:pend.length,ok:ok,mal:mal};});
+}
+$("b-alta").addEventListener("click",function(){
+  if(enviando)return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
+  var pedido=armar();altaOK=false;
+  K.api("altaPedido",null,{pedido:pedido},45000).then(function(r){
+    if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
+    altaOK=true;ultimoR=r;K.recargarDespues();
+    return subirFotos().then(function(fot){resultado(r,fot);});
+  }).catch(function(e){enviando=false;estado();$("abot-s").textContent=e.message;
+    K.abrirHTML(altaOK
+      ?"<h3>El pedido sí entró</h3><p>Tus filas ya están en la hoja. Falló lo de después: <b>"+esc(e.message)+"</b></p><div class=\"acciones\"><button class=\"btn pri\" id=\"solo-fotos\" data-cerrar=\"1\">Subir las fotos ahora</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>"
+      :"<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p><p>Puede que sí haya entrado y solo se perdió la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un número único y si ya está en la hoja el servidor no lo duplica.</p><div class=\"acciones\"><button class=\"btn pri\" id=\"reintentar-alta\" data-cerrar=\"1\">Volver a intentar</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>");
+    var ba=$("reintentar-alta");if(ba)ba.addEventListener("click",function(){setTimeout(function(){$("b-alta").disabled=false;$("b-alta").click();},50);});
+    var bf=$("solo-fotos");if(bf)bf.addEventListener("click",function(){enviando=true;estado();subirFotos().then(function(fot){resultado(ultimoR,fot);}).catch(function(e2){enviando=false;estado();$("abot-s").textContent=e2.message;});});
+  });
+});
+function resultado(r,fot){
+  enviando=false;
+  var sub="Filas "+r.desde+" a "+r.hasta+" de ALEX_NUEVO · reparto ×"+r.factor;
+  if(fot.total)sub+=" · "+fot.ok+" de "+fot.total+(fot.total===1?" foto subida":" fotos subidas");
+  if(!r.verificado)sub+=" · "+(r.aviso||"revisa la hoja");
+  $("alta-cuerpo").classList.add("oculto");$("aflot").classList.remove("on");
+  var fin=$("alta-fin");fin.classList.remove("oculto");
+  fin.innerHTML='<div class="card" style="text-align:center;padding:36px 28px">'+
+    '<div class="check-ok"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>'+
+    '<h2 style="font-size:20px">'+r.filas+(r.filas===1?" pieza":" piezas")+' en tu inventario</h2><p class="tenue">'+esc(sub)+'</p>'+
+    (fot.mal.length?'<div class="nota warn" style="max-width:660px;margin:12px auto;text-align:left"><b>'+fot.mal.length+(fot.mal.length===1?" foto no subió":" fotos no subieron")+'.</b> Los productos ya quedaron en tu hoja; solo faltan estas imágenes.<br>'+
+      fot.mal.map(function(p){return "· "+esc(p.desc)+" — <b>"+esc(p.error||"motivo desconocido")+"</b>";}).join("<br>")+
+      '<br><button class="btn pri chico" id="reintentar" style="margin-top:8px">Reintentar estas fotos</button> <span id="reintento-msg"></span></div>':"")+
+    '<ul class="resumen-lista">'+r.productos.map(function(p){return "<li><span>"+esc(p.descripcion)+"<small>× "+p.cantidad+" · te cuesta "+mx(p.costoFinal)+" · lo vendes en "+mx(p.precio)+'</small></span><span class="pid'+(p.nuevo?" nuevo":"")+'">'+esc(p.pid)+(p.nuevo?" · nuevo":"")+"</span></li>";}).join("")+'</ul>'+
+    '<div class="acciones" style="justify-content:center"><button class="btn pri" id="otro-pedido">Registrar otro pedido</button><button class="btn claro" data-ir="inventario" data-tab="reciente">Ver en inventario</button></div></div>';
+  $("otro-pedido").addEventListener("click",reiniciar);
+  var br=$("reintentar");
+  if(br)br.addEventListener("click",function(){var b=this;b.disabled=true;b.textContent="Reintentando…";
+    var lista=PENDIENTES.slice(),ok=0,fall=[],cad=Promise.resolve(),i=0;
+    lista.forEach(function(p){cad=cad.then(function(){i++;$("reintento-msg").textContent="foto "+i+" de "+lista.length+"…";return subirUna(p,1).then(function(bien){if(bien)ok++;else fall.push(p);return espera(1500);});});});
+    cad.then(function(){PENDIENTES=fall;$("reintento-msg").innerHTML=fall.length?"<b>Subieron "+ok+", faltan "+fall.length+".</b>":"<b>Listo, ya subieron todas.</b>";b.disabled=fall.length===0;b.textContent=fall.length?"Reintentar otra vez":"Completo";});});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("b-ajustes").addEventListener("click",function(){
+  K.abrirHTML("<h3>Cómo calculo tu ganancia</h3><p>Estos valores solo afectan el precio sugerido y la ganancia estimada. No se guardan en tu hoja.</p>"+
+    '<div class="campos">'+
+    '<label class="campo"><span>Motomandado</span><span class="money"><i>$</i><input id="a-moto" type="number" value="'+MOTO+'" min="0" step="5"></span></label>'+
+    '<label class="campo"><span>Cobro a domicilio</span><span class="money"><i>$</i><input id="a-extra" type="number" value="'+EXTRA+'" min="0" step="5"></span></label>'+
+    '<label class="campo ancho" style="flex-direction:row;align-items:center;gap:10px;background:var(--bg);padding:10px 14px;border-radius:var(--r-sm)"><input id="a-incluido" type="checkbox" class="chk"'+(INCLUIDO?" checked":"")+'><span style="font-weight:600">Envío incluido en el precio<small style="display:block">El precio sugerido ya cubre el moto y el cobro a domicilio se pone en cero. Así puedes anunciar "envío gratis".</small></span></label>'+
+    '<label class="campo"><span>Multiplicar el costo por</span><input id="a-mult" type="number" value="'+MULT+'" min="1" step=".1"></label>'+
+    '<label class="campo"><span>Ganancia mínima</span><span class="money"><i>$</i><input id="a-piso" type="number" value="'+PISO+'" min="0" step="10"></span></label></div>'+
+    '<div class="acciones"><button class="btn pri" id="a-ok">Aplicar</button><button class="btn claro" data-cerrar="1">Cancelar</button></div>');
+  $("a-ok").addEventListener("click",function(){INCLUIDO=$("a-incluido").checked;MOTO=num($("a-moto").value);EXTRA=INCLUIDO?0:num($("a-extra").value);MULT=num($("a-mult").value)||2;PISO=num($("a-piso").value);
+    filas.forEach(function(f){f.tocado=false;});$("mo").classList.remove("on");calcular();});
+});
+$("agregar").addEventListener("click",function(){var f=nuevaFila();calcular();f.desc.focus();f.el.scrollIntoView({behavior:"smooth",block:"center"});});
+$("pagado").addEventListener("input",calcular);
+function explicarFila(f){
+  var costo=num(f.costo.value),pagado=num($("pagado").value),suma=0;
+  filas.forEach(function(g){suma+=num(g.costo.value)*Math.max(0,Math.round(num(g.q.value)));});
+  var factor=(suma>0&&pagado>0)?pagado/suma:1,cf=r2(costo*factor),precio=f.tocado?num(f.precioVal):a10(cf*MULT),gana=r2(precio+EXTRA-cf-MOTO),entra=precio+EXTRA;
+  K.abrirHTML("<h3>"+esc(f.desc.value.trim()||"Este producto")+"</h3><p>Así salen los dos números, con tus cifras de este pedido.</p>"+
+    K.desglose("1 · Cuánto te cuesta de verdad",[{et:"Precio en la plataforma",sub:"ya con promociones",v:costo,signo:"+"},{et:"Su parte de impuestos y envío",sub:"repartida entre las piezas",v:r2(cf-costo),signo:"+"}],{et:"Costo real",sub:"puesto aquí en Ocosingo",v:cf},
+      "Cada peso de mercancía de este pedido te costó <b>"+factor.toFixed(4)+"</b> puesto aquí. Por eso el precio de la plataforma nunca es tu costo.")+
+    K.desglose("2 · Cuánto te queda si lo vendes",[{et:"Precio de venta",sub:"lo que te paga el cliente",v:precio,signo:"+"},{et:"Cobro a domicilio",sub:"lo que le cobras por el envío",v:EXTRA,signo:"+"},{et:"Costo del producto",sub:"el de arriba",v:cf,signo:"-"},{et:"Motomandado",sub:"lo que le pagas al repartidor",v:MOTO,signo:"-"}],{et:"Tu ganancia",sub:"esto sí es tuyo",v:gana},
+      "Tu <b>precio piso</b> es "+mx(cf+MOTO)+": debajo de ahí pagas por regalar mercancía."+(entra>0?"<br>Margen = "+mx(gana)+" entre "+mx(entra)+" = "+Math.round(gana/entra*100)+"%":""))+
+    '<div class="acciones"><button class="btn pri" data-cerrar="1">Entendido</button></div>');
+}
+})();
+</script>
+</body>
+</html>
