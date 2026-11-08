@@ -525,12 +525,24 @@ function refrescar(done){
 function listo(){if(_refrescando){const f=_refrescando;_refrescando=null;setTimeout(f,350);}}
 
 /* ---------- DINERO (fusión del dashboard y Mis ventas) ---------- */
+/* VERSIÓN NUEVA: gráfica por mes, sugerencias, racha y operación de Irene llegan en una segunda llamada
+   (inicioExtras) para que ninguna pase del límite de CPU del plan gratis. Lo esencial para vender llega primero. */
+function cargarExtras(despues){
+  apiCached('inicioExtras',{usuario:state.usuario},x=>{
+    if(Array.isArray(x.recientes))state.recientes=x.recientes;
+    if(Array.isArray(x.ofrecer))state.ofrecer=x.ofrecer;
+    if(x.operacionIrene)state.operacion=x.operacionIrene;
+    if(x.impulso)state.impulso=x.impulso;
+    if(Array.isArray(x.ventasMes))state._meses=x.ventasMes;
+    try{if(despues)despues();}catch(e){}
+  },()=>{});
+}
 function cargarDinero(){
   const hero=document.getElementById('dinero-hero');
   if(!hero.innerHTML)hero.innerHTML='<div class="sk" style="height:180px"></div>';
   if(!document.getElementById('ventas-list').innerHTML)document.getElementById('ventas-list').innerHTML='<div class="sk" style="height:200px;margin-top:8px"></div>';
   let pendientes=2;const fin=st=>{if(!st)pendientes--;if(pendientes<=0)listo();};
-  apiCached('inicio',{usuario:state.usuario},(d,m)=>{
+  apiCached('inicio',{usuario:state.usuario,partes:'base'},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
     if(Array.isArray(d.catalogo))state.catalogo=aplicarOutbox(d.catalogo);
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
@@ -539,8 +551,9 @@ function cargarDinero(){
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
     if(Array.isArray(d.cortes))state.cortes=d.cortes;
-    renderDinero(d.dashboard,d.ventasMes||[],m);fin(m.stale);
+    state._dash=d.dashboard;renderDinero(d.dashboard,state._meses||[],m);fin(m.stale);
   },()=>{hero.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');fin(false);});
+  cargarExtras(()=>{if(state._dash)renderDinero(state._dash,state._meses||[],{stale:false});});
   apiCached('misVentas',{vendedor:state.usuario},(d,m)=>{
     if(d.logros)renderLogros(d.logros);
     if(Array.isArray(d.ventas)){const firma=JSON.stringify(d.ventas);if(firma!==state.ventFirma){state.ventFirma=firma;state.ventas=d.ventas;renderVentas();}}
@@ -884,7 +897,7 @@ function cargarCatalogo(){
   const l=document.getElementById('catalogo-list');
   if(state.catalogo.length){renderCats();renderCatalogo();}
   else l.innerHTML='<div class="sk" style="height:60px;margin-top:16px"></div><div class="sk" style="height:180px;margin-top:10px"></div>';
-  apiCached('inicio',{usuario:state.usuario},(d,m)=>{
+  apiCached('inicio',{usuario:state.usuario,partes:'base'},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
     if(Array.isArray(d.detalle))state.detalle=d.detalle;
@@ -892,10 +905,11 @@ function cargarCatalogo(){
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
     if(Array.isArray(d.cortes))state.cortes=d.cortes;
-    state._dash=d.dashboard;state._meses=d.ventasMes||[];
+    state._dash=d.dashboard;if(Array.isArray(d.ventasMes))state._meses=d.ventasMes;
     if(Array.isArray(d.catalogo)){const firma=JSON.stringify(d.catalogo)+outboxFirma();if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=aplicarOutbox(d.catalogo);renderCats();renderCatalogo();}else renderStrips(document.getElementById('search').value.trim().toLowerCase());}
     if(!m.stale)listo();
   },()=>{l.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');listo();});
+  cargarExtras(()=>{if(state.catalogo.length)renderStrips(document.getElementById('search').value.trim().toLowerCase());});
 }
 function renderDuenos(){
   const w=document.getElementById('duenos');if(!w)return;
