@@ -576,7 +576,7 @@ $("b-alta").addEventListener("click",function(){
   var pedido=armar();
   altaOK=false;
   api("altaPedido",null,{pedido:pedido},45000).then(function(r){
-    if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
+    if(!r||!r.success){var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
     altaOK=true;ultimoR=r;
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("bot-s").textContent=e.message;
@@ -586,8 +586,9 @@ $("b-alta").addEventListener("click",function(){
       ? "<h3>El pedido si entro</h3><p>Tus filas ya estan en la hoja. Fallo lo de despues: <b>"+esc(e.message)+"</b></p>"+
         '<button class="btn-action pri" id="solo-fotos" data-cerrar="1">Subir las fotos ahora</button> '+
         '<button class="btn-action gh" data-cerrar="1">Cerrar</button>'
+      : e.rechazo ? "<h3>El servidor no acepto el pedido</h3><p><b>"+esc(e.message)+"</b></p><p>No se dio de alta nada. Corrige ese dato y vuelve a tocar Dar de alta.</p>"+'<button class="btn-action gh" data-cerrar="1">Cerrar</button>'
       : "<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p>"+
-        "<p>Puede que si haya entrado y solo se perdio la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un numero unico y si ya esta en la hoja, el servidor no lo duplica; solo devuelve el resultado y sube las fotos.</p>"+
+        "<p>Puede que si haya entrado y solo se perdio la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un numero unico y si ya esta en la base, el servidor no lo duplica; solo devuelve el resultado y sube las fotos.</p>"+
         (e.raw?'<p class="sub" style="font-size:.75rem;opacity:.7">Respuesta del servidor: '+esc(e.raw)+"</p>":"")+
         '<button class="btn-action pri" id="reintentar-alta" data-cerrar="1">Volver a intentar</button> '+
         '<button class="btn-action gh" data-cerrar="1">Cerrar</button>');

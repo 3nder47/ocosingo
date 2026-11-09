@@ -90,14 +90,14 @@
 <script>
 (function(){
 "use strict";
-var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
+var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN="";
 function apiUnaVez(a,p,b,ms){ms=ms||30000;
-  if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta config.js"));
+  if(!API_URL)return Promise.reject(new Error("Falta config.js"));
   var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
-  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
-  else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
+  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},b));}
+  else u.search=new URLSearchParams(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},p||{})).toString();
   return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("El servidor respondió "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
-   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Datos no válidos");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Datos no válidos");}if(!j.ok){if(j.codigo==="sin_sesion"){try{localStorage.removeItem("kn:sesion");}catch(e){}}throw new Error(j.error||"Error del servidor");}return j.data;})
    .catch(function(e){clearTimeout(t);
      if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
      if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
@@ -309,7 +309,7 @@ document.addEventListener("click",function(e){
    misma pestaña, y se borra sola al cerrar el navegador. No guarda el PIN: solo
    la marca de que ya lo validaste. Si abres una pestaña NUEVA, pide PIN otra vez. */
 var SES_KEY="kn-kiosko:sesion:alex";
-function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
+function sesionViva(){try{return !!localStorage.getItem("kn:sesion")&&localStorage.getItem("kn:usuario")==="Alex";}catch(e){return false;}}
 function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
 function entrar(){
   $("pin").classList.add("oculto");$("app").classList.remove("oculto");
@@ -325,6 +325,7 @@ pi.addEventListener("input",function(){
   api("verificarPin",null,{pin:v}).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
     if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
+    try{localStorage.setItem("kn:sesion",d.sesion||"");localStorage.setItem("kn:usuario",d.vendedor);}catch(e){}
     abrirSesion();entrar();
   }).catch(function(e){$("pin-e").textContent=e.message;pi.value="";pi.disabled=false;pi.focus();});
 });

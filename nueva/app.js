@@ -534,8 +534,8 @@ function cargarExtras(despues){
     if(x.operacionIrene)state.operacion=x.operacionIrene;
     if(x.impulso)state.impulso=x.impulso;
     if(Array.isArray(x.ventasMes))state._meses=x.ventasMes;
-    try{if(despues)despues();}catch(e){}
-  },()=>{});
+    state._extrasFalla=false;try{if(despues)despues();}catch(e){}
+  },()=>{state._extrasFalla=true;try{if(despues)despues();}catch(e){}});
 }
 function cargarDinero(){
   const hero=document.getElementById('dinero-hero');
@@ -631,8 +631,8 @@ function renderDinero(d,meses,m){
   const $=id=>document.getElementById(id);state._dash=d;state._meses=meses;
   const esIrene=state.usuario==='Irene',o=state.operacion;
   if(esIrene){
-    tick($('h-val'),o?o.gMesTotal:0);
-    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')+rachaChip()||'<span class="chip">Aún sin ventas este mes</span>';
+    if(o)tick($('h-val'),o.gMesTotal);else $('h-val').textContent=state._extrasFalla?'—':'…';
+    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')+(o&&state._extrasFalla?'<span class="chip">Sin actualizar · desliza para reintentar</span>':'')+rachaChip()||(o?'<span class="chip">Aún sin ventas este mes</span>':(state._extrasFalla?'<span class="chip">No se pudo cargar tu ganancia · desliza para reintentar</span>':''));
     tick($('tc-val'),d.porTransferir);
     $('tc-sub').textContent=d.cortesAbiertos?`Corte abierto: faltan $${pesos(d.saldoCortes)}${d.sinCorte>0?` · nuevas $${pesos(d.sinCorte)}`:''}`:`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
     renderChipsCortes(d);
@@ -650,7 +650,7 @@ function renderDinero(d,meses,m){
   if(!esIrene){
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
   tick($('v-moto'),d.gastoMotomandado);
-  tick($('v-gmes'),(state.impulso||{}).gananciaMes||0);
+  if(state.impulso)tick($('v-gmes'),state.impulso.gananciaMes||0);else $('v-gmes').textContent=state._extrasFalla?'—':'…';
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
   }
   const c=$('chart');if(!c)return;
@@ -1074,7 +1074,7 @@ function pintarVenta(){
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
       <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto(this)">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">$${money(p.precio)}</span></div>
-      <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
+      <div class="field"><label>Vendedor</label><div class="opts">${[state.usuario].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>
         <button class="opt ${state.metodo===(esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex')?'on':''}" onclick="setMetodo('${esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex'}')">Transferencia</button>
@@ -1285,7 +1285,7 @@ async function enviarPendientes(){
       if(x.error)continue;                       // rechazada: espera a que la persona decida
       if(Date.now()-x.creada<12000)continue;      // respeta la ventana de "Deshacer"
       try{
-        const r=await apiPost('registrarVenta',{venta:x.venta});
+        const r=await apiPost('registrarVenta',{venta:Object.assign({},x.venta,{creada:x.creada})});
         if(r.success){outboxQuitar(x.ventaID);ok++;}
         else marcarError_(x.ventaID,r.error||'El servidor no aceptó la venta');
       }catch(err){
@@ -1808,24 +1808,33 @@ function pintarCorte(c){
     <button class="btn ghost" onclick="cerrarCorteSheet()">Cerrar</button>`;
 }
 function cerrarCorteSheet(){document.getElementById('sheet-corte').classList.add('hidden');}
+/* VERSIÓN NUEVA (Codex 2026-11-08): un abono cuya respuesta se perdió queda guardado en el teléfono con su clave
+   (kn:pagoPend:CORTE) hasta que el servidor conteste. Reintentar manda la MISMA clave: no se registra dos veces,
+   aunque se cierre la hoja. Mientras esté pendiente no se acepta otro monto para ese corte. */
+const pagoPendKey=id=>'kn:pagoPend:'+id;
+function pagoPendLeer(id){try{return JSON.parse(localStorage.getItem(pagoPendKey(id))||'null');}catch(e){return null;}}
+function pagoPendBorrar(id,pid){try{const pp=pagoPendLeer(id);if(pp&&pp.pid===pid)localStorage.removeItem(pagoPendKey(id));}catch(e){}}
+function pagoClave(id,monto){const pp=pagoPendLeer(id);if(pp&&pp.monto===monto)return pp.pid;const pid=uuid();try{localStorage.setItem(pagoPendKey(id),JSON.stringify({pid,monto}));}catch(e){}const ok=pagoPendLeer(id);return ok&&ok.pid===pid?pid:null;}
 function guardarPago(id){
+  {const pp=pagoPendLeer(id),mi=document.getElementById('pago-monto');if(pp&&mi&&Number(mi.value)!==pp.monto){mi.value=pp.monto;toast(`Quedó sin confirmar un abono de $${money(pp.monto)}. Tócalo otra vez con ese monto: si ya entró, no se repite`,'err');return;}const m0=Number(mi&&mi.value);if(m0>0&&!pagoClave(id,m0)){toast('El teléfono no dejó guardar el abono (¿modo incógnito?). No se mandó nada.','err');return;}}
   const monto=Number(document.getElementById('pago-monto').value),nota=(document.getElementById('pago-nota').value||'').trim();
   if(!(monto>0)){toast('Escribe el monto que recibiste','err');return;}
   const b=document.getElementById('pago-btn');b.disabled=true;b.textContent='Guardando…';
-  apiPost('registrarPago',{usuario:state.usuario,corteID:id,monto,nota}).then(r=>{
+  const pidEnv=(pagoPendLeer(id)||{}).pid;
+  apiPost('registrarPago',{usuario:state.usuario,corteID:id,monto,nota,pagoID:pidEnv}).then(r=>{pagoPendBorrar(id,pidEnv);
     if(!r.success){toast(r.error||'No se pudo registrar','err');b.disabled=false;b.textContent='Registrar pago';return;}
     buzz([20,30,20]);state.dirty=true;state.ventFirma='';
     toast(r.corte.estado==='Pagado'?`${id} pagado por completo · ${r.liquidadas} venta${r.liquidadas===1?'':'s'} liquidada${r.liquidadas===1?'':'s'}`:`Abono registrado · faltan $${pesos(r.corte.saldo)}`,'ok');
     state.cortes=(state.cortes||[]).map(c=>c.id===id?Object.assign({},c,r.corte):c);
     try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}
     cerrarCorteSheet();cerrarDetalle();cargarDinero();
-  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se guardó','err');b.disabled=false;b.textContent='Registrar pago';});
+  }).catch(err=>{if(err.tipo==='api'&&(err.codigo==='sin_sesion'||err.codigo==='sin_permiso'))pagoPendBorrar(id,pidEnv);toast(err.api?err.message:'No se sabe si se guardó. Toca otra vez: si ya entró, no se registra dos veces','err');b.disabled=false;b.textContent='Registrar pago';});
 }
 /* Hoja para cerrar el corte: resume lo que se va a congelar y pide mantener presionado. */
 function abrirCerrar(){
   buzz();const r=state._resumen;if(!r||!r.n){toast('No hay ventas nuevas que cortar','err');return;}
   document.getElementById('cerrar-body').innerHTML=`
-    <p class="exp-p">Se congelan <b>${r.n} venta${r.n===1?'':'s'}</b> bajo un número de corte. Lo que se venda después entra al siguiente. El bloque se escribe en tu hoja <b>Transferencias</b> como siempre.</p>
+    <p class="exp-p">Se congelan <b>${r.n} venta${r.n===1?'':'s'}</b> bajo un número de corte. Lo que se venda después entra al siguiente. Queda guardado con su número de corte.</p>
     <div class="review">
       ${r.A?`<div class="row"><div class="t"><b>Ventas de Alex en efectivo</b></div><div class="v num">$${money(r.A)}</div></div>`:''}
       ${r.B?`<div class="row"><div class="t"><b>Costo de lo de Irene y Mamá</b></div><div class="v num">$${money(r.B)}</div></div>`:''}

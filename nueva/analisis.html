@@ -972,13 +972,14 @@ $("b-alta").addEventListener("click",function(){
   if(enviando)return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
   var pedido=armar();altaOK=false;
   K.api("altaPedido",null,{pedido:pedido},45000).then(function(r){
-    if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
+    if(!r||!r.success){var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
     altaOK=true;ultimoR=r;K.recargarDespues();
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("abot-s").textContent=e.message;
     K.abrirHTML(altaOK
       ?"<h3>El pedido sí entró</h3><p>Tus filas ya están en la hoja. Falló lo de después: <b>"+esc(e.message)+"</b></p><div class=\"acciones\"><button class=\"btn pri\" id=\"solo-fotos\" data-cerrar=\"1\">Subir las fotos ahora</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>"
-      :"<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p><p>Puede que sí haya entrado y solo se perdió la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un número único y si ya está en la hoja el servidor no lo duplica.</p><div class=\"acciones\"><button class=\"btn pri\" id=\"reintentar-alta\" data-cerrar=\"1\">Volver a intentar</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>");
+      :e.rechazo?"<h3>El servidor no aceptó el pedido</h3><p><b>"+esc(e.message)+"</b></p><p>No se dio de alta nada. Corrige ese dato y vuelve a tocar Dar de alta.</p><div class=\"acciones\"><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>"
+      :"<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p><p>Puede que sí haya entrado y solo se perdió la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un número único y si ya está en la base el servidor no lo duplica.</p><div class=\"acciones\"><button class=\"btn pri\" id=\"reintentar-alta\" data-cerrar=\"1\">Volver a intentar</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>");
     var ba=$("reintentar-alta");if(ba)ba.addEventListener("click",function(){setTimeout(function(){$("b-alta").disabled=false;$("b-alta").click();},50);});
     var bf=$("solo-fotos");if(bf)bf.addEventListener("click",function(){enviando=true;estado();subirFotos().then(function(fot){resultado(ultimoR,fot);}).catch(function(e2){enviando=false;estado();$("abot-s").textContent=e2.message;});});
   });
