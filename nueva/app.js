@@ -1864,7 +1864,7 @@ function abrirUsuarios(){
   document.getElementById('user-list').innerHTML=u.map(([n,d])=>`
     <button class="user ${state.usuario===n?'on':''}" onclick="cambiarUsuario('${n}')" style="width:100%;text-align:left">
       <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('')+
-    `<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>
+    `${state.usuario==='Alex'?'<a class="btn ghost" style="margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="analisis.html">Panel de administración</a>':''}<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>
      <div class="ver">Kiosko v${APP_VERSION} · ${APP_BUILD}<button onclick="buscarActualizacion()">Buscar actualización</button></div>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }

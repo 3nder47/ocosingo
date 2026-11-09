@@ -27,14 +27,16 @@
   <button class="nav on" data-p="resumen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Resumen</button>
   <button class="nav" data-p="ventas"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Ventas</button>
   <button class="nav" data-p="inventario"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>Inventario <span class="n" id="nav-n"></span></button>
+  <button class="nav" data-p="cuenta"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/></svg> La cuenta <span class="n" id="nav-cuenta"></span></button>
   <div class="sep"></div>
   <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>¿Me conviene?</button>
   <button class="nav" data-p="alta"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
+  <a class="nav" href="./" style="text-decoration:none"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg> App de venta</a>
   <div class="fin"><span>Sesión de Alex</span><button class="tema" id="tema" title="Cambiar apariencia">Tema: auto</button></div>
 </aside>
 
 <main class="main">
-  <div id="carga" class="cargando"><div class="spin"></div>Leyendo tu hoja…</div>
+  <div id="carga" class="cargando"><div class="spin"></div>Cargando…</div>
   <div class="nota warn" id="aviso-global" style="display:none;margin:0 0 16px"></div>
 
   <!-- ===== RESUMEN ===== -->
@@ -94,6 +96,8 @@
   </section>
 
   <!-- ===== ALTA DE PEDIDO ===== -->
+  <section class="pant" id="p-cuenta"></section>
+
   <section class="pant" id="p-alta">
     <div class="top">
       <div><h1>Alta de pedido</h1><p>Lo que pagaste afuera, traducido a lo que te cuesta aquí.</p></div>
@@ -166,7 +170,7 @@ function apiUnaVez(a,p,b,ms){ms=ms||30000;
   if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},b));}
   else u.search=new URLSearchParams(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},p||{})).toString();
   return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
-   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok){if(j.codigo==="sin_sesion"){try{localStorage.removeItem("kn:sesion");}catch(e){}}throw new Error(j.error||"Error del servidor");}return j.data;})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok){if(j.codigo==="sin_sesion"){try{localStorage.removeItem("kn:sesion");}catch(e){}}var er=new Error(j.error||"Error del servidor");er.codigo=j.codigo;throw er;}return j.data;})
    .catch(function(e){clearTimeout(t);
      if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
      if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
@@ -244,7 +248,7 @@ function cargar(){
     api("catalogo",null,null,30000).catch(function(){return[];}),
     api("ventasAnalisis",null,null,45000).then(expandirVentas).catch(function(){return api("ventas",{limite:3000},null,45000);}).catch(function(e){VEN_ERR=e.message;return[];})
   ]).then(function(r){
-    D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];
+    D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];if(window.KIOSKO&&window.KIOSKO.cuenta){window.KIOSKO.cuenta.olvidar();window.KIOSKO.cuenta.badge();}
     if(VEN_ERR||!VEN.length)avisar(VEN_ERR?"No pude leer tus ventas ("+VEN_ERR+"). Ventas, gastos y 'Se acaba' salen vacíos.":"Tu hoja no devolvió ventas: Ventas, gastos y 'Se acaba' salen vacíos.");
     armarInventario();llenarSelects();
     $("carga").classList.add("oculto");
@@ -332,11 +336,12 @@ function ir(p,tab,est){
   if(pantalla==="alta"&&p!=="alta"&&sucio){sucio=false;cargar();}
   pantalla=p;
   if(p==="alta"&&window.KIOSKO.alta)window.KIOSKO.alta.iniciar();
+  if(p==="cuenta"&&window.KIOSKO.cuenta)window.KIOSKO.cuenta.abrir();
   $("aflot").classList.toggle("on",p==="alta"&&$("alta-fin").classList.contains("oculto"));
   if(est!=null){$("v-est").value=est;$("v-per").value="todo";vAbiertos={};pintarVentas();}
   document.querySelectorAll(".pant").forEach(function(s){s.classList.toggle("on",s.id==="p-"+p);});
   document.querySelectorAll(".nav[data-p]").forEach(function(b){b.classList.toggle("on",b.dataset.p===p);});
-  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido"}[p];
+  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido",cuenta:"La cuenta"}[p];
   if(tab){iTab=tab;pintarInventario();}
   barra();window.scrollTo(0,0);
 }
@@ -385,7 +390,7 @@ function pintarResumen(){
   h+='<div class="c3 card kpi"><div class="lb">Pendiente de transferir '+ayuda("Dinero de ventas de tu mercancía que todavía está en Ocosingo. Si vendió Irene o Mamá te deben el costo (la ganancia es de ellas); si vendiste tú y cobraron en efectivo, te deben la venta completa.")+'</div>'+
     '<div class="v">'+mx(debe)+'</div><ul class="mini">'+
     (deb.length?Object.keys(porV).sort(function(a,b){return porV[b]-porV[a];}).slice(0,2).map(function(k){return '<li><span>'+esc(k)+'</span><span class="m mal">'+mx(porV[k])+'</span></li>';}).join("")+'<li><span class="tenue">'+deb.length+(deb.length===1?" venta":" ventas")+(masVieja?', la más vieja del '+fCorta(masVieja):'')+'</span></li>':'<li><span class="tenue">Todo transferido. Nadie te debe.</span></li>')+
-    '</ul><button class="ir" data-ir="ventas" data-est="pend">Ver qué ventas son</button></div>';
+    '</ul><button class="ir" data-ir="cuenta">Ver la cuenta</button></div>';
   h+='<div class="c8 card graf"><h2>Ventas por mes</h2>'+grafica()+'</div>';
 
   h+='<div class="c4 card kpi"><div class="lb">A dónde se fue el dinero '+ayuda("Todo lo que has pagado por tu mercancía desde el inicio (vendida y en cajas), más lo que pagaste de motomandado y lo que sí cobraste de envío.")+'</div>'+
@@ -1035,5 +1040,6 @@ function explicarFila(f){
 }
 })();
 </script>
+<script src="cuenta.js?v=1"></script>
 </body>
 </html>
