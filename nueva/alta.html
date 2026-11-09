@@ -635,7 +635,7 @@ function subirFotos(){
 }
 function resultado(r,fot){
   enviando=false;$("bot").classList.remove("on");
-  var sub="Filas "+r.desde+" a "+r.hasta+" de ALEX_NUEVO · reparto ×"+r.factor;
+  var sub="Guardado en tu inventario · reparto ×"+(Math.round(r.factor*1000)/1000);
   if(fot.total)sub+=" · "+fot.ok+" de "+fot.total+(fot.total===1?" foto subida":" fotos subidas");
   if(!r.verificado)sub+=" · "+(r.aviso||"revisa la hoja");
   document.querySelector(".main").innerHTML=
