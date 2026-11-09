@@ -204,6 +204,7 @@ function ayuda(t){return '<button class="ayuda" type="button" data-t="'+esc(t)+'
 function foto(x){return x.imagen?'<img class="foto" src="'+esc(x.imagen)+'" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'foto\'}))">':'<span class="foto"></span>';}
 
 /* ============ estado ============ */
+function expandirVentas(r){if(!r||r.formato!=="ventas-v1"||!Array.isArray(r.filas))return r;var P=r.prod,T=r.txt;return r.filas.map(function(f){var p=P[f[0]];return{descripcion:p[0],origen:p[1],imagen:p[2],fechaTimestamp:f[1],precio:f[2]/100,costoFinal:f[3]/100,cobroExtra:f[4]/100,gastoExt:f[5]/100,aporte:f[6]/100,ganancia:f[7]/100,vendedor:T[f[8]],estatusTransferencia:T[f[9]],corte:f[10]};});}
 var D=null,CAT=[],VEN=[],INV=[],rango="todo",MOTO=25,COBRO=10,VEN_ERR="";
 function avisar(t){var a=$("aviso-global");a.textContent=t;a.style.display="block";}
 var sel={};                       // clave -> precio de remate
@@ -241,7 +242,7 @@ function cargar(){
   Promise.all([
     api("analisis",{rango:rango},null,45000),
     api("catalogo",null,null,30000).catch(function(){return[];}),
-    api("ventasAnalisis",null,null,45000).catch(function(){return api("ventas",{limite:3000},null,45000);}).catch(function(e){VEN_ERR=e.message;return[];})
+    api("ventasAnalisis",null,null,45000).then(expandirVentas).catch(function(){return api("ventas",{limite:3000},null,45000);}).catch(function(e){VEN_ERR=e.message;return[];})
   ]).then(function(r){
     D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];
     if(VEN_ERR||!VEN.length)avisar(VEN_ERR?"No pude leer tus ventas ("+VEN_ERR+"). Ventas, gastos y 'Se acaba' salen vacíos.":"Tu hoja no devolvió ventas: Ventas, gastos y 'Se acaba' salen vacíos.");

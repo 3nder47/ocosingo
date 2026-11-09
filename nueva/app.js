@@ -1791,7 +1791,7 @@ function abrirCorte(id){
   buzz();const body=document.getElementById('corte-body'),t=document.getElementById('corte-titulo');
   t.textContent='Corte '+id;body.innerHTML='<div class="sk" style="height:120px"></div><div class="sk" style="height:200px;margin-top:10px"></div>';
   document.getElementById('sheet-corte').classList.remove('hidden');document.querySelector('#sheet-corte .sheet').scrollTo({top:0});
-  apiCached('cortes',{},(L)=>{const c=(L||[]).find(x=>x.id===id);if(!c){body.innerHTML=vacio('search','No se encontró el corte');return;}pintarCorte(c);},()=>{body.innerHTML=vacio('wifi','No se pudo cargar','Revisa la conexión.');});
+  apiCached('cortes',{id},(L)=>{const c=(L||[]).find(x=>x.id===id);if(!c){body.innerHTML=vacio('search','No se encontró el corte');return;}pintarCorte(c);},()=>{body.innerHTML=vacio('wifi','No se pudo cargar','Revisa la conexión.');});
 }
 function pintarCorte(c){
   const body=document.getElementById('corte-body'),esAlex=state.usuario==='Alex';
@@ -1826,7 +1826,7 @@ function guardarPago(id){
     buzz([20,30,20]);state.dirty=true;state.ventFirma='';
     toast(r.corte.estado==='Pagado'?`${id} pagado por completo · ${r.liquidadas} venta${r.liquidadas===1?'':'s'} liquidada${r.liquidadas===1?'':'s'}`:`Abono registrado · faltan $${pesos(r.corte.saldo)}`,'ok');
     state.cortes=(state.cortes||[]).map(c=>c.id===id?Object.assign({},c,r.corte):c);
-    try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}
+    try{Object.keys(localStorage).filter(k=>k.startsWith('kn:cortes:')).forEach(k=>localStorage.removeItem(k));}catch(e){}
     cerrarCorteSheet();cerrarDetalle();cargarDinero();
   }).catch(err=>{if(err.tipo==='api'&&(err.codigo==='sin_sesion'||err.codigo==='sin_permiso'))pagoPendBorrar(id,pidEnv);toast(err.api?err.message:'No se sabe si se guardó. Toca otra vez: si ya entró, no se registra dos veces','err');b.disabled=false;b.textContent='Registrar pago';});
 }
@@ -1852,7 +1852,7 @@ function confirmarCerrar(){
     if(!r.success){toast(r.error||'No se pudo cerrar','err');b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para cerrar';return;}
     buzz([30,40,60]);state.dirty=true;state.ventFirma='';
     state.cortes=[r.corte].concat(state.cortes||[]);
-    try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}   // que abrirCorte no lea una lista vieja
+    try{Object.keys(localStorage).filter(k=>k.startsWith('kn:cortes:')).forEach(k=>localStorage.removeItem(k));}catch(e){}   // que abrirCorte no lea una lista vieja
     cerrarCerrar();cerrarDetalle();toast(`Corte ${r.corte.id} cerrado · $${pesos(r.corte.total)}`,'ok');cargarDinero();
     setTimeout(()=>abrirCorte(r.corte.id),400);
   }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se cerró el corte','err');b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para cerrar';});
