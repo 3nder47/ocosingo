@@ -407,7 +407,7 @@ function knDesgloseGanancia() {
   html += '<div class="kn-des-total num">' + knM(total) + '</div>';
   if (state._extrasFalla) html += '<div class="kn-des-txt">' + knSinActualizar('inicioExtras', { usuario: state.usuario }) + knReintentarBtn() + '</div>';
   if (esIrene) html += '<div class="kn-des-grupo">' + knFila('Mercancía propia', knM(dato.gMesPropio)) + knFila('Mercancía de Alex', knM(dato.gMesAjeno)) +
-    knFila('Ganancia del mes', knM(total), true) + '<div class="kn-des-txt">Incluye la ganancia de la mercancía de Irene y la ganancia de sus ventas de mercancía de Alex.</div></div>';
+    knFila('Ganancia del mes', knM(total), true) + '<div class="kn-des-txt">Incluye la ganancia de tu mercancía y de tus ventas de mercancía de Alex.</div></div>';
   // miMes (entrega 2): desglose agregado de Alex y la última venta exacta del alcance de la cifra. Solo si es del mes
   // en curso y su total cuadra con la cifra de la tarjeta (si no, se usa lo de antes).
   var mm = state.miMes, mesAct = knMesMty();
@@ -697,7 +697,7 @@ celebrar = function (id, p, ventaID, pendiente, resumen) {
   s.innerHTML = '<div class="kn-ok" role="dialog" aria-modal="true" aria-labelledby="kn-ok-t">' +
     '<div class="kn-ok-cab"><span class="kn-ok-ic" aria-hidden="true">' + (pendiente ? '!' : '✓') + '</span>' +
     '<div><b id="kn-ok-t">' + (pendiente ? 'Venta guardada en el teléfono' : 'Venta registrada') + '</b>' +
-    '<small>' + (pendiente ? 'Se enviará sola cuando haya señal' : knEsc(id || '')) + '</small></div></div>' +
+    '<small>' + (pendiente ? 'Se enviará automáticamente cuando haya conexión' : knEsc(id || '')) + '</small></div></div>' +
     (p ? '<div class="kn-ok-prod">' + thumb(p) + '<b>' + knEsc(p.descripcion) + '</b></div>' : '') +
     (resumen ? '<div class="kn-ok-cifras">' +
       '<div><span>Cobro</span><b class="num">$' + money(resumen.precio) + '</b></div>' +
@@ -705,8 +705,8 @@ celebrar = function (id, p, ventaID, pendiente, resumen) {
       '</div>' : '') +
     (resumen && resumen.hito ? '<p class="kn-ok-hito">' + knEsc(resumen.hito) + '</p>' : '') +
     '<p class="kn-ok-nota">' + (pendiente ? 'Al enviarse aparecerá en Mis ventas; ahí podrás deshacerla durante 30 minutos.' : 'Puedes deshacerla durante 30 minutos desde Mis ventas.') + '</p>' +
-    '<div class="kn-ok-acc"><button class="btn primary" onclick="cerrarExito()">Listo</button>' +
-    '<button class="btn kn-ok-otro" onclick="knVenderOtro()">Vender otro</button>' +
+    '<div class="kn-ok-acc"><button class="btn primary" onclick="cerrarExito()">Cerrar</button>' +
+    '<button class="btn kn-ok-otro" onclick="knVenderOtro()">Registrar otra venta</button>' +
     '<button class="btn ghost" id="btn-undo" onclick="deshacerVenta()">Deshacer venta</button></div></div>';
   s.classList.remove('hidden');
   buzz([30, 40, 60]);

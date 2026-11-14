@@ -92,7 +92,7 @@
   window.vcRender = function (q) {
     if (!state.catalogo.some(function (p) { return p.modeloId; })) return false;
     var ts = tarjetas(q), l = document.getElementById('catalogo-list');
-    if (!ts.length) { l.innerHTML = q ? vacio('search', 'Nada con ese nombre', 'Prueba con otra palabra.') : vacio('box', 'Sin stock', 'Todo está vendido.'); return true; }
+    if (!ts.length) { l.innerHTML = q ? vacio('search', 'No se encontraron productos', 'Prueba con otra palabra.') : vacio('box', 'Sin stock', 'No hay productos disponibles.'); return true; }
     if (state.grid) {
       l.innerHTML = '<div class="grid stagger">' + ts.map(function (t) {
         var p = t.tipo === 'm' ? t.rep : t.p, n = t.tipo === 'm' ? t.stock : Number(p.stock);

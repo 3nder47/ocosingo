@@ -1,4 +1,4 @@
-const APP_VERSION='14.0';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='14.1';const APP_BUILD='14/11/2026 17:37';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -375,7 +375,7 @@ function cFila(f,i){
   return `<article class="calc-card" data-i="${i}">
     <div class="calc-cab"><span>Producto ${i+1}</span>${cFilas.length>1?`<button class="calc-x" data-q="${i}" aria-label="Quitar">&times;</button>`:''}</div>
     <div class="calc-duo">
-      <label><span>Precio que ves</span><span class="money"><i>$</i><input data-c="p" type="text" inputmode="decimal" placeholder="120" value="${esc(f.p)}"></span></label>
+      <label><span>Precio de compra por pieza</span><span class="money"><i>$</i><input data-c="p" type="text" inputmode="decimal" placeholder="120" value="${esc(f.p)}"></span></label>
       <label><span>Piezas</span><input data-c="n" type="number" inputmode="numeric" min="1" step="1" value="${f.n}"></label>
     </div>
     <label><span>Precio de la competencia</span><span class="money"><i>$</i><input data-c="c" type="text" inputmode="decimal" placeholder="opcional" value="${esc(f.c)}"></span></label>
@@ -395,7 +395,7 @@ function cSoloVenta(el,i){
   const cuesta=Math.round(p*f),sug=Math.ceil(cuesta*2/10)*10,
         propio=cNum(d.v),vende=propio>0?propio:sug,gana=vende+cobro-cuesta-moto;
   const ay=el.querySelector('.calc-hero .ay');
-  if(ay)ay.innerHTML='Ganas <b>'+cMx(gana)+'</b> por pieza · toca para ver la cuenta';
+  if(ay)ay.innerHTML='Ganancia estimada: <b>'+cMx(gana)+'</b> por pieza · Ver desglose';
   const det=el.querySelector('.calc-det');
   if(det){
     const ls=det.querySelectorAll('.l b');
@@ -403,8 +403,8 @@ function cSoloVenta(el,i){
     if(ls[4])ls[4].textContent=cMx(gana);
   }
   const et=el.querySelector('.calc-hero .et');
-  if(et)et.innerHTML='Véndelo en <em>('+(propio>0&&propio!==sug?'tuyo':'sugerido')+')</em>'+
-    (propio>0&&propio!==sug?' <button class="calc-volver" data-sug="'+sug+'">volver al sugerido</button>':'');
+  if(et)et.innerHTML='Precio de venta <em>('+(propio>0&&propio!==sug?'tuyo':'sugerido')+')</em>'+
+    (propio>0&&propio!==sug?' <button class="calc-volver" data-sug="'+sug+'">Usar precio sugerido</button>':'');
 }
 
 function calcPinta(){
@@ -430,33 +430,33 @@ function calcPinta(){
        '<div class="calc-sub">Precio '+cMx(p)+(imp>0?' + impuestos '+cMx(imp):' · sin impuestos')+
        (pz>1?' · '+pz+' piezas: '+cMx(cuesta*pz):'')+'</div>';
 
-    h+='<div class="calc-hero"><div class="et">Véndelo en <em>('+(propio>0&&propio!==sug?'tuyo':'sugerido')+')</em>'+
-       (propio>0&&propio!==sug?' <button class="calc-volver" data-sug="'+sug+'">volver al sugerido</button>':'')+'</div>'+
+    h+='<div class="calc-hero"><div class="et">Precio de venta <em>('+(propio>0&&propio!==sug?'tuyo':'sugerido')+')</em>'+
+       (propio>0&&propio!==sug?' <button class="calc-volver" data-sug="'+sug+'">Usar precio sugerido</button>':'')+'</div>'+
        '<div class="calc-edit"><span>$</span><input data-c="v" type="text" inputmode="decimal" value="'+vende+'"></div>'+
-       '<div class="ay" data-ctap="1">Ganas <b>'+cMx(gana)+'</b> por pieza · toca para ver la cuenta</div></div>'+
+       '<div class="ay" data-ctap="1">Ganancia estimada: <b>'+cMx(gana)+'</b> por pieza · Ver desglose</div></div>'+
        '<div class="calc-det">'+
-         '<div class="l"><span>Te paga el cliente</span><b>'+cMx(vende)+'</b></div>'+
-         '<div class="l"><span>Te paga por el envío</span><b>+'+cMx(cobro)+'</b></div>'+
-         '<div class="l"><span>Te costó el producto</span><b>−'+cMx(cuesta)+'</b></div>'+
-         '<div class="l"><span>Le pagas al moto</span><b>−'+cMx(moto)+'</b></div>'+
-         '<div class="l tot"><span>Te queda</span><b>'+cMx(gana)+'</b></div></div>';
+         '<div class="l"><span>Precio de venta</span><b>'+cMx(vende)+'</b></div>'+
+         '<div class="l"><span>Cobro por envío</span><b>+'+cMx(cobro)+'</b></div>'+
+         '<div class="l"><span>Costo estimado del producto</span><b>−'+cMx(cuesta)+'</b></div>'+
+         '<div class="l"><span>Costo del motomandado</span><b>−'+cMx(moto)+'</b></div>'+
+         '<div class="l tot"><span>Ganancia estimada</span><b>'+cMx(gana)+'</b></div></div>';
 
-    h+='<div class="calc-row bajo"><span>No bajes de</span><b>'+cMx(piso)+'</b></div>'+
-       '<div class="calc-sub">'+cMx(cuesta)+' + '+cMx(moto)+' de moto − '+cMx(cobro)+' que te paga.</div>';
+    h+='<div class="calc-row bajo"><span>Precio mínimo para cubrir costos</span><b>'+cMx(piso)+'</b></div>'+
+       '<div class="calc-sub">'+cMx(cuesta)+' + '+cMx(moto)+' de motomandado − '+cMx(cobro)+' de cobro por envío.</div>';
 
     if(comp>0){
       const gc=comp+cobro-cuesta-moto;let cl='',t='';
-      if(comp<=piso){cl=' no';t='<b>No lo compres.</b> A ti te sale en '+cMx(piso)+'. Perderías dinero.';}
-      else if(comp<vende){t='<b>Se puede, pero ganas menos.</b> A ese precio te quedan '+cMx(gc)+' por pieza.';}
-      else{cl=' si';t='<b>Buena compra.</b> Está arriba de tu precio. Ganas '+cMx(gc)+' por pieza.';}
+      if(comp<=piso){cl=' no';t='<b>Ese precio no genera ganancia.</b> El precio mínimo para cubrir costos es '+cMx(piso)+'.';}
+      else if(comp<vende){t='A ese precio, la ganancia estimada es de '+cMx(gc)+' por pieza, menor que con tu precio de venta.';}
+      else{cl=' si';t='Ese precio es igual o mayor que tu precio de venta. La ganancia estimada sería de '+cMx(gc)+' por pieza.';}
       h+='<div class="calc-nota'+cl+'">Si otros lo venden en '+cMx(comp)+': '+t+'</div>';
     }
     caja.innerHTML=h;
   });
 
-  if(!hay){out.innerHTML='<p class="calc-vacio">Escribe el precio y te digo si conviene.</p>';return;}
+  if(!hay){out.innerHTML='<p class="calc-vacio">Ingresa el precio para estimar el costo y la ganancia.</p>';return;}
   const total=Math.round(gastas*f);
-  out.innerHTML='<div class="calc-total"><div class="et">Vas a gastar <em>(estimado)</em></div>'+
+  out.innerHTML='<div class="calc-total"><div class="et">Total estimado de compra <em>(estimado)</em></div>'+
     '<div class="n">'+cMx(total)+'</div>'+
     '<div class="ay">'+cMx(Math.round(gastas))+' en productos + '+cMx(total-Math.round(gastas))+' de impuestos.<br>'+
     'Considera posibles gastos de envío no incluidos.</div></div>';
@@ -793,7 +793,7 @@ function pintarToggle(){document.getElementById('toggle').innerHTML=state.grid?S
 function toggleVista(){buzz();state.grid=!state.grid;pintarToggle();renderCatalogo();}
 function abrirAlta(){
   state.editando=null;prepararAlta();
-  document.getElementById('np-titulo').innerHTML='Agregar producto <span class="tag-irene">tuyo</span>';
+  document.getElementById('np-titulo').innerHTML='Agregar producto <span class="tag-irene">de Irene</span>';
   document.getElementById('np-cant-lbl').textContent='Cantidad de piezas';
   document.getElementById('np-btn').textContent='Agregar a mi inventario';
   document.getElementById('np-del').classList.add('hidden');document.getElementById('np-del-conf').classList.add('hidden');
@@ -803,7 +803,7 @@ function abrirAlta(){
 /* Editar un producto de Irene: mismo formulario, relleno. Los cambios solo tocan las piezas sin vender. */
 function abrirEdicion(){
   const p=state.producto;if(!p||!esDeIrene(p))return;
-  if(!p.pid){toast('Falta correr asignarProductoIDs en la hoja para poder editar','err');return;}
+  if(!p.pid){toast('Este producto no tiene un identificador. Solicita a Alex que lo revise para poder editarlo.','err');return;}
   state.editando=p;cerrarVenta();prepararAlta();
   document.getElementById('np-titulo').textContent='Editar producto';
   document.getElementById('np-desc').value=p.descripcion;document.getElementById('np-cat').value=p.categoria||'';
@@ -817,7 +817,7 @@ function abrirEdicion(){
 }
 function prepararAlta(){
   buzz();state.npN=1;document.getElementById('np-n').textContent='1';npFotoData=null;npFotos=[];
-  const fb=document.getElementById('np-foto-btn');fb.classList.remove('ok');fb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir foto</span>';document.getElementById('np-foto').value='';
+  const fb=document.getElementById('np-foto-btn');fb.classList.remove('ok');fb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="np-foto-txt">Tomar o elegir fotos</span>';document.getElementById('np-foto').value='';
   ['np-desc','np-cat','np-costo','np-precio'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('cats-list').innerHTML=[...new Set(state.catalogo.map(p=>p.categoria))].sort().map(c=>`<option value="${esc(c)}">`).join('');
   document.getElementById('np-btn').disabled=false;
@@ -848,7 +848,7 @@ async function npFoto(inp){
   if(txt)txt.textContent='Preparando fotos…';
   npFotos=[];
   for(const f of fs){try{npFotos.push(await npEncoge(f));}catch(e){}}
-  if(!npFotos.length){if(txt)txt.textContent='No se pudieron leer, intenta otras';npFotoData=null;return;}
+  if(!npFotos.length){if(txt)txt.textContent='No se pudieron cargar las fotos. Selecciona otras imágenes.';npFotoData=null;return;}
   npFotoData=npFotos[0].b64;
   btn.classList.add('ok');
   btn.innerHTML=npFotos.map(x=>`<img src="${x.url}" alt="">`).join('')+
@@ -860,7 +860,7 @@ function guardarProducto(){
   const ed=state.editando;
   const producto={origen:'Irene',pid:ed?ed.pid:'',descripcion:v('np-desc'),categoria:v('np-cat'),costo:coma(v('np-costo')),precio:coma(v('np-precio')),cantidad:state.npN};
   const etiqueta=ed?'Guardar cambios':'Agregar a mi inventario';
-  if(!producto.descripcion||!producto.categoria||!(Number(producto.costo)>0)||!(Number(producto.precio)>0)){toast('Llena descripción, categoría, costo y precio','err');return;}
+  if(!producto.descripcion||!producto.categoria||!(Number(producto.costo)>0)||!(Number(producto.precio)>0)){toast('Completa la descripción y la categoría e ingresa un costo y un precio mayores que cero.','err');return;}
   const b=document.getElementById('np-btn');b.disabled=true;b.textContent='Guardando…';
   apiPost(ed?'editarProducto':'agregarProducto',{producto}).then(async r=>{
     if(!r.success){toast(r.error||'No se pudo guardar','err');b.disabled=false;b.textContent=etiqueta;return;}
@@ -994,7 +994,7 @@ function renderCatalogo(){
   state.filtrado=state.catalogo.filter(p=>filtroDueno(p)&&(state.cat==='Todas'||p.categoria===state.cat)&&(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)));
   if(typeof vcRender==='function'&&vcRender(q))return;
   const l=document.getElementById('catalogo-list');
-  if(!state.filtrado.length){l.innerHTML=q?vacio('search','Nada con ese nombre','Prueba con otra palabra.'):vacio('box','Sin stock','Todo está vendido.');return;}
+  if(!state.filtrado.length){l.innerHTML=q?vacio('search','No se encontraron productos','Prueba con otra palabra.'):vacio('box','Sin stock','No hay productos disponibles.');return;}
   if(state.grid){
     l.innerHTML=`<div class="grid stagger">${state.filtrado.map((p,i)=>`
       <button class="tile" onclick="elegir(${i})" style="text-align:left">
@@ -1030,13 +1030,13 @@ function renderQuick(){
       <div class="v pos num">$${precio(p.precio)}</div></div>`;
   if(q){
     quickLista=state.catalogo.filter(p=>(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q))).sort((a,b)=>b.stock-a.stock).slice(0,30);
-    if(!quickLista.length){l.innerHTML=vacio('search','Nada con ese nombre');return;}
+    if(!quickLista.length){l.innerHTML=vacio('search','No se encontraron productos');return;}
     l.innerHTML=`<div class="quick-hint">Resultados</div><div class="group stagger">${quickLista.map(fila).join('')}</div>`;return;
   }
   const rec=state.recientes.map(d=>state.catalogo.find(p=>p.pid===d||p.descripcion===d)).filter(Boolean);
   const masStock=[...state.catalogo].filter(p=>!rec.includes(p)).sort((a,b)=>b.stock-a.stock).slice(0,8);
   quickLista=[...rec,...masStock];
-  if(!quickLista.length){l.innerHTML=vacio('box','Sin stock','Todo está vendido.');return;}
+  if(!quickLista.length){l.innerHTML=vacio('box','Sin stock','No hay productos disponibles.');return;}
   l.innerHTML=(rec.length?`<div class="quick-hint">Vendidos recientemente</div><div class="group stagger">${rec.map((p,i)=>fila(p,i)).join('')}</div>`:'')+
     (masStock.length?`<div class="quick-hint" style="padding-top:14px">Con más stock</div><div class="group stagger">${masStock.map((p,i)=>fila(p,i+rec.length)).join('')}</div>`:'');
 }
@@ -1099,7 +1099,7 @@ function pintarVentaBase(){
     const r=(a,b,cls='')=>`<div class="row ${cls}"><div class="t"><b>${a}</b></div><div class="v num">${b}</div></div>`;
     body.innerHTML=`<div class="prod compact rev-head">${thumb(p,'lg')}<div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">${esc(p.categoria||'')}</small></div><span class="p num">$${money(precioVenta())}</span></div>
     <div class="review">
-      ${r('Precio','$'+money(precioVenta())+(state.precioTipo==='costo'?' <small style="font-weight:700;color:var(--mango)">al costo · familia</small>':''))}
+      ${r('Precio','$'+money(precioVenta())+(state.precioTipo==='costo'?' <small style="font-weight:700;color:var(--mango)">al costo</small>':''))}
       ${extra?r('Cobro extra','+$'+money(extra)):''}
       ${g?r('Motomandado','−$'+money(g)):''}
       ${r('Costo','$'+money(p.costoFinal))}
@@ -1108,7 +1108,7 @@ function pintarVentaBase(){
       ${transferEst()!=null?r('Irene te transfiere','$'+money(transferEst())+' <small style="font-weight:600;color:var(--muted)">incluye tu costo</small>'):''}
       ${r('Ganancia '+(esDeIrene(p)?'Irene':state.vendedor),'$'+money(gananciaEst()),'total')}
     </div>
-    <p style="font-size:0.8125rem;color:var(--muted);font-weight:600;text-align:center;margin-top:14px">${esDeIrene(p)?'Mercancía de Irene: la ganancia completa es suya y no entra a las cuentas con Alex. ':''}Se descuenta 1 pieza del inventario${Number(p.stock)===1?' (es la última)':''}. Tendrás 10 segundos para deshacer.</p>`;
+    <p style="font-size:0.8125rem;color:var(--muted);font-weight:600;text-align:center;margin-top:14px">${esDeIrene(p)?'La ganancia de este producto corresponde a Irene y no modifica el saldo con Alex. ':''}Se descuenta 1 pieza del inventario${Number(p.stock)===1?' (es la última)':''}. Tendrás 10 segundos para deshacer.</p>`;
     foot.innerHTML=`<button class="btn primary" id="hold"><span>Registrar venta</span></button><button class="btn ghost" onclick="state.paso=1;pintarVenta()">← Corregir</button>`;
     setupHold();
   }
@@ -1194,11 +1194,11 @@ function hitoVenta(g){
   const im=state.impulso;if(!im)return'';
   const mes=mesActualNombre(),antes=Number(im.gananciaMes)||0,ahora=antes+(Number(g)||0),n=(Number(im.ventasMes)||0)+1;
   const meta=Number(im.meta)||0,rec=Number(im.record)||0;
-  if(meta>0&&antes<meta&&ahora>=meta)return`Con esta cumples tu meta de ${mes}`;
-  if(rec>0&&antes<=rec&&ahora>rec)return`Con esta superas tu mejor mes`;
-  if(meta>0)return`Con esta llevas $${pesos(ahora)} de tu meta de $${pesos(meta)}`;
+  if(meta>0&&antes<meta&&ahora>=meta)return`Alcanzaste tu meta de ${mes}`;
+  if(rec>0&&antes<=rec&&ahora>rec)return`Superaste tu mayor ganancia mensual`;
+  if(meta>0)return`Ganancia acumulada: $${pesos(ahora)} · Meta: $${pesos(meta)}`;
   if(n===1)return`Primera venta de ${mes}`;
-  if(ahora>0)return`Con esta ya llevas $${pesos(ahora)} este mes`;
+  if(ahora>0)return`Ganancia acumulada del mes: $${pesos(ahora)}`;
   return'';
 }
 function celebrar(id,p,ventaID,pendiente,resumen){
@@ -1404,7 +1404,7 @@ function ejemploVenta(f){return(state.detalle||[]).find(f)||null;}
 const EXPLICA={
   tAlex:{t:'Ventas de Alex en efectivo',p:'Cuando <b>Alex</b> vende y el cliente paga en efectivo, Irene guarda ese dinero. Alex puso el costo del producto, así que <b>todo lo que queda después del moto se le transfiere</b> (su costo de vuelta + su ganancia).',
     f:()=>[ficha('precio','pagó el cliente'),op('+'),ficha('extra'),op('−'),ficha('moto','envío','neg'),op('='),ficha('a Alex','se transfiere','res')],ej:null},
-  tCosto:{t:'Costo de lo vendido por Irene y Mamá',p:'Cuando vende <b>Irene o Mamá</b>, ellas se quedan la ganancia. A Alex solo le regresan <b>el costo del producto</b>, que fue lo que él invirtió.',
+  tCosto:{t:'Costo de mercancía vendida por otras personas',p:'Cuando vende <b>Irene o Mamá</b>, la ganancia es de quien vendió. A Alex solo le regresan <b>el costo del producto</b>, que fue lo que él invirtió.',
     f:()=>[ficha('precio','pagó el cliente'),op('−'),ficha('ganancia','de ella','neg'),op('−'),ficha('moto','envío','neg'),op('='),ficha('costo','a Alex','res')],ej:v=>v.vendedor!=='Alex'},
   tMoto:{t:'Moto que puso Irene',p:'Si el cliente le pagó a <b>Alex por transferencia</b>, Irene pagó el envío de su bolsa. Ese monto <b>se le descuenta</b> a Alex en la siguiente transferencia.',
     f:()=>[ficha('$0','Irene ya no cobra nada'),op('−'),ficha('moto','lo puso Irene','neg'),op('='),ficha('−moto','se descuenta','res')],ej:v=>v.vendedor==='Alex'&&v.metodoPago!=='Efectivo a Irene'},
@@ -1448,8 +1448,8 @@ function filaVenta(v,monto,sub,fichas,gan){
 function fichasAporte(v){ // qué se transfiere de esta venta, en fichas
   const $=x=>'$'+pesos(x),p=[];
   if(v.vendedor==='Alex'&&v.metodoPago==='Efectivo a Irene'){p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
-  else if(v.vendedor==='Alex'){p.push(ficha('ya pagado a Alex'),op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
-  else{p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'),op('−'),ficha($(v.ganancia)+' suya','','neg'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
+  else if(v.vendedor==='Alex'){p.push(ficha('cobrado por Alex'),op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
+  else{p.push(ficha($(v.precio+v.cobroExtra)+' cobrado'),op('−'),ficha($(v.ganancia)+' ganancia','','neg'));if(v.gastoExt)p.push(op('−'),ficha($(v.gastoExt)+' moto','','neg'));}
   return`<div class="formula mini">${p.join('')}</div>`;
 }
 function donutHTML(A,B,C,T){
@@ -1457,8 +1457,8 @@ function donutHTML(A,B,C,T){
   const seg=(v,cls)=>{const len=Math.max(0,v/base*L-(v?2:0));const h=`<circle class="${cls}" cx="50" cy="50" r="40" stroke-dasharray="${len} ${L-len}" stroke-dashoffset="${-off}"/>`;off+=v/base*L;return h;};
   const it=(cls,t,sub,v,k,neg)=>`<div class="it ${neg?'neg':''}" onclick="explicar('${k}')"><span class="sw" style="background:var(${cls})"></span><div class="t">${t}<small>${sub}</small></div><div class="v num">${neg?'−':''}$${pesos(v)}</div></div>`;
   return`<div class="donut-card"><div class="donut"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="40"/>${seg(A,'s1')}${seg(B,'s2')}${seg(C,'s3')}</svg><div class="ctr"><b class="num">$${pesos(T)}</b><small>total</small></div></div>
-    <div class="dleg">${A?it('--selva','Ventas de Alex en efectivo','precio completo · el costo era suyo',A,'tAlex'):''}${B?it('--ink','Costo de lo de Irene y Mamá','ellas se quedan la ganancia',B,'tCosto'):''}${C?it('--mango','Moto que puso Irene','se descuenta',C,'tMoto',true):''}</div></div>
-    <div style="font-size:0.7188rem;font-weight:600;color:var(--muted);text-align:center;margin:8px 0 4px">Toca un renglón para ver cómo se calcula</div>`;
+    <div class="dleg">${A?it('--selva','Ventas de Alex en efectivo','cobro menos motomandado',A,'tAlex'):''}${B?it('--ink','Costo de mercancía vendida por otras personas','la ganancia es de quien vendió',B,'tCosto'):''}${C?it('--mango','Motomandados pagados por Irene','se descuentan',C,'tMoto',true):''}</div></div>
+    <div style="font-size:0.7188rem;font-weight:600;color:var(--muted);text-align:center;margin:8px 0 4px">Toca un concepto para ver cómo se calcula</div>`;
 }
 function abrirDetalle(tipo,copiar){
   buzz();const body=document.getElementById('detalle-body'),t=document.getElementById('detalle-titulo');
@@ -1480,8 +1480,8 @@ function abrirDetalle(tipo,copiar){
       ${pend.length?donutHTML(A,B,C,T):''}
       <div class="det-btn">${esAlex&&pend.length?`<button class="btn primary" onclick="abrirCerrar()">Cerrar corte</button>`:''}<button class="btn ${esAlex&&pend.length?'ghost':'primary'}" onclick="copiarResumen()">Copiar resumen</button></div>
       ${grupo('a','Ventas de Alex en efectivo','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
-      ${grupo('b','Costo de lo vendido por Irene y Mamá','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
-      ${grupo('c','Moto que puso Irene · se descuenta','',v=>`Alex · pagado por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
+      ${grupo('b','Costo de mercancía vendida por otras personas','',v=>`${v.vendedor} · ${diaLabel(v.fechaTimestamp)}`)}
+      ${grupo('c','Motomandados pagados por Irene · se descuentan','',v=>`Alex · pagado por transferencia · ${diaLabel(v.fechaTimestamp)}`)}
       ${pend.length||abiertos.length?'':vacio('leaf','Nada pendiente','Todo está liquidado.')}`;
     state._resumen={A,B,C,T,n:pend.length,g,abiertos};
     if(copiar){copiarResumen();return;}
@@ -1506,7 +1506,7 @@ function copiarResumen(){
   const r=state._resumen;if(!r)return;
   const lin=(k,tit)=>r.g[k].length?`\n${tit}:\n`+r.g[k].map(x=>`• ${x.v.descripcion} (${x.v.vendedor}) ${x.monto<0?'−':''}$${money(Math.abs(x.monto))}`).join('\n'):'';
   const cab=(r.abiertos||[]).map(c=>`• ${c.id} (${diaLabel(c.fecha)}): faltan $${money(c.saldo)} de $${money(c.total)}`).join('\n');
-  const txt=`Kiosko · ${formatDate(new Date())}`+(cab?`\nCortes abiertos:\n${cab}\n`:'')+`\n${cab?'Nuevas sin corte':'Por transferir a Alex'}: $${money(r.T)} (${r.n} ventas)`+lin('a','Ventas de Alex en efectivo')+lin('b','Costo de lo vendido por Irene y Mamá')+lin('c','Moto que puso Irene (se descuenta)');
+  const txt=`Kiosko · ${formatDate(new Date())}`+(cab?`\nCortes abiertos:\n${cab}\n`:'')+`\n${cab?'Nuevas sin corte':'Por transferir a Alex'}: $${money(r.T)} (${r.n} ventas)`+lin('a','Ventas de Alex en efectivo')+lin('b','Costo de mercancía vendida por otras personas')+lin('c','Moto que puso Irene (se descuenta)');
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{buzz(12);toast('Resumen copiado, pégalo en WhatsApp');}).catch(()=>toast('No se pudo copiar','err'));
 }
 
@@ -1845,7 +1845,7 @@ function abrirCerrar(){
     <p class="exp-p">Se congelan <b>${r.n} venta${r.n===1?'':'s'}</b> bajo un número de corte. Lo que se venda después entra al siguiente. Queda guardado con su número de corte.</p>
     <div class="review">
       ${r.A?`<div class="row"><div class="t"><b>Ventas de Alex en efectivo</b></div><div class="v num">$${money(r.A)}</div></div>`:''}
-      ${r.B?`<div class="row"><div class="t"><b>Costo de lo de Irene y Mamá</b></div><div class="v num">$${money(r.B)}</div></div>`:''}
+      ${r.B?`<div class="row"><div class="t"><b>Costo de mercancía vendida por otras personas</b></div><div class="v num">$${money(r.B)}</div></div>`:''}
       ${r.C?`<div class="row"><div class="t"><b>Moto que puso Irene</b></div><div class="v num neg">−$${money(r.C)}</div></div>`:''}
       <div class="row total"><div class="t"><b>Total del corte</b></div><div class="v num">$${money(r.T)}</div></div>
     </div>
