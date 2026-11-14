@@ -526,22 +526,52 @@ pintarCorte = function (c) {
    palabra sobre el tiempo: cuenta desde que la venta llegó, no desde la hora del teléfono. */
 var KN_DESHACER_MS = 30 * 60000;
 function knBuscarVenta(folio) { return (state.ventas || []).filter(function (x) { return x.id === folio; })[0] || null; }
+/* Detalle de la venta como recibo (Alex, 2026-11-14: "más gráfico y con jerarquía"; referencias: ticket y factura).
+   Arriba lo que identifica la venta (foto, producto, folio y estado); en medio los datos en cuadrícula; un corte de
+   ticket; las cuentas alineadas y, al final, la ganancia grande con los centavos más chicos. */
+function knMontoGrande(n) {
+  n = Number(n) || 0;
+  var s = money(Math.abs(n)), p = s.split('.');
+  return '<span class="kn-tk-signo">' + (n < 0 ? '−$' : '$') + '</span>' + p[0] + '<span class="kn-tk-cent">.' + (p[1] || '00') + '</span>';
+}
+function knEstadoVenta(v) {
+  if (v.estatusTransferencia === 'Transferido') return '<span class="kn-pill kn-pill-ok">' + knIcono('circle-check') + 'Liquidada</span>';
+  if (v.estatusTransferencia === 'No aplica') return '<span class="kn-pill">Mercancía propia</span>';
+  return '<span class="kn-pill kn-pill-pend">' + knIcono('clock') + 'Sin liquidar</span>';
+}
 function knVerVenta(folio) {
   var v = knBuscarVenta(folio);
   if (!v) return;
   var propia = state.usuario === 'Alex' || v.vendedor === state.usuario;
   var reciente = v.fechaTimestamp && Date.now() - v.fechaTimestamp < KN_DESHACER_MS;
-  var html = '<div class="kn-des-per">' + knEsc(v.id) + (v.fechaTimestamp ? ' · ' + knFecha(v.fechaTimestamp) + ' · ' + knHora(v.fechaTimestamp) : '') + '</div>' +
-    '<div class="kn-des-grupo"><div class="kn-des-txt">' + knEsc(v.descripcion) + '<br>Venta realizada por ' + knEsc(v.vendedor) +
-    '<br>Pago: ' + knEsc(v.metodoPago) + '<br>Mercancía de ' + knEsc(v.origen || 'Alex') + '</div>' +
-    knFila('Precio de venta', knM(v.precio)) + knFila('Cobro adicional', '+ ' + knM(v.cobroExtra)) +
-    knFila('Costo de la mercancía', '− ' + knM(v.costoFinal)) + knFila('Motomandado', '− ' + knM(v.gastoExt)) +
-    knFila('Ganancia', knM(v.ganancia), true) + '</div>';
+  var dato = function (et, val) { return '<div><span>' + et + '</span><b>' + val + '</b></div>'; };
+  var linea = function (et, val, cls) { return '<div class="kn-tk-l' + (cls ? ' ' + cls : '') + '"><span>' + et + '</span><b class="num">' + val + '</b></div>'; };
+  var g = Number(v.ganancia) || 0;
+  var html = '<div class="kn-ticket">' +
+    '<div class="kn-tk-cab">' + thumb({ imagen: v.imagen, categoria: '', descripcion: v.descripcion }) +
+      '<div class="kn-tk-prod"><b>' + knEsc(v.descripcion) + '</b><span class="kn-tk-folio">' + knEsc(v.id) + '</span></div></div>' +
+    '<div class="kn-tk-estado">' + knEstadoVenta(v) + (v.corte ? '<span class="kn-pill">Corte ' + knEsc(v.corte) + '</span>' : '') + '</div>' +
+    '<div class="kn-tk-meta">' +
+      dato('Fecha', v.fechaTimestamp ? knFecha(v.fechaTimestamp) : 'Sin fecha') +
+      dato('Hora', v.fechaTimestamp ? knHora(v.fechaTimestamp) : '—') +
+      dato('Vendió', knEsc(v.vendedor)) +
+      dato('Pago', knEsc(v.metodoPago)) +
+      dato('Mercancía de', knEsc(v.origen || 'Alex')) +
+    '</div>' +
+    '<div class="kn-tk-corte" aria-hidden="true"></div>' +
+    '<div class="kn-tk-lineas">' +
+      linea('Precio de venta', knM(v.precio)) +
+      (Number(v.cobroExtra) ? linea('Cobro adicional', '+ ' + knM(v.cobroExtra)) : '') +
+      linea('Costo de la mercancía', '− ' + knM(v.costoFinal), 'kn-tk-resta') +
+      (Number(v.gastoExt) ? linea('Motomandado', '− ' + knM(v.gastoExt), 'kn-tk-resta') : '') +
+    '</div>' +
+    '<div class="kn-tk-total' + (g < 0 ? ' kn-neg' : '') + '"><span>Ganancia</span><b class="num">' + knMontoGrande(g) + '</b></div>' +
+  '</div>';
   if (propia && reciente && !v.corte) {
-    html += '<button class="kn-des-ir" onclick="knDeshacerVenta(\'' + knEsc(v.id) + '\',this)"><span>Deshacer venta</span>›</button>' +
-      '<div class="kn-des-txt">Disponible durante los primeros 30 minutos. La pieza regresa al inventario.</div>';
+    html += '<button class="btn kn-tk-deshacer" onclick="knDeshacerVenta(\'' + knEsc(v.id) + '\',this)"><span>Deshacer venta</span></button>' +
+      '<div class="kn-des-txt kn-tk-nota">Disponible durante los primeros 30 minutos. La pieza regresa al inventario.</div>';
   } else if (propia) {
-    html += '<div class="kn-des-txt">' + (v.corte ? 'Esta venta ya está en el corte ' + knEsc(v.corte) + '.' : 'Pasaron más de 30 minutos desde la venta.') +
+    html += '<div class="kn-des-txt kn-tk-nota">' + (v.corte ? 'Esta venta ya está en el corte ' + knEsc(v.corte) + '.' : 'Pasaron más de 30 minutos desde la venta.') +
       ' Ya no se puede deshacer desde la app.</div>';
   }
   knAbrir('venta', 'Detalle de la venta', html);
