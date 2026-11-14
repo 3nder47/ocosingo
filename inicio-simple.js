@@ -583,3 +583,34 @@ function knHeroe() {
   if (hola) hola.textContent = saludo() + ', ' + state.usuario;
 }
 knHeroe();
+
+/* Hoja de venta (sistema visual v3 de Codex, entrega 2). Solo presentación, después de pintar:
+   - "Vendedor" se oculta (no se quita: refrescarOpciones cuenta los grupos): es quien entró con su PIN y se ve al revisar.
+   - Etiquetas neutrales y los ajustes marcados como opcionales.
+   - La ganancia negativa no se pinta de verde. */
+var knPintarVentaBase = pintarVenta;
+pintarVenta = function () {
+  knPintarVentaBase.apply(this, arguments);
+  var body = document.getElementById('venta-body');
+  if (!body) return;
+  var bv = body.querySelector('button[onclick^="setVend"]'), fv = bv && bv.closest('.field');
+  if (fv) fv.classList.add('kn-oculto');
+  var et = { cobro: 'Cobro adicional al cliente (opcional)', gastos: 'Motomandado o gastos (opcional)' };
+  Object.keys(et).forEach(function (id) {
+    var i = document.getElementById(id), l = i && i.closest('.field') && i.closest('.field').querySelector('label');
+    if (l) l.textContent = et[id];
+  });
+  // El aviso del paso 2 decía "10 segundos": desde la 13.1 se puede deshacer 30 minutos desde Mis ventas.
+  body.querySelectorAll('p').forEach(function (pp) {
+    if (pp.textContent.indexOf('Tendrás 10 segundos para deshacer') > -1)
+      pp.textContent = pp.textContent.replace('Tendrás 10 segundos para deshacer.', 'Podrás deshacerla durante 30 minutos desde Mis ventas.');
+  });
+  knMarcarNegativo();
+};
+var knPintarCalcBase = pintarCalc;
+pintarCalc = function () { knPintarCalcBase.apply(this, arguments); knMarcarNegativo(); };
+function knMarcarNegativo() {
+  var neg = typeof gananciaEst === 'function' && gananciaEst() < 0;
+  var c = document.getElementById('calc'); if (c) c.classList.toggle('kn-neg', neg);
+  var t = document.querySelector('#venta-body .review .total'); if (t) t.classList.toggle('kn-neg', neg);
+}
