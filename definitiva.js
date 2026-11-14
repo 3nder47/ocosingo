@@ -6,6 +6,11 @@
        Las operaciones en espera (kn:outbox, kn:pagoPend:*) NO se mandan: se guardan aparte con prefijo kn-prueba:.
    2 · Si la app vieja dejó ventas sin enviar (oc:outbox), se muestra un aviso fijo con su detalle. No se borran ni se
        envían solas: Alex decide cómo registrarlas. */
+// Id de vendedor dentro de la sesión firmada (base64url(JSON {v, e}) + '.' + firma). Solo para mostrar a la persona
+// correcta: quien decide es el servidor, que verifica la firma.
+function knIdSesion(s) {
+  try { return JSON.parse(atob(String(s || '').split('.')[0].replace(/-/g, '+').replace(/_/g, '/'))).v; } catch (e) { return null; }
+}
 (function () {
   var MARCA = 'kn:migracion', VALOR = 'definitiva-2026-11';
   try {
@@ -36,6 +41,18 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', falla); else falla();
     return;
   }
+
+  // 3 · La persona en pantalla es la de la sesión (Codex, 2026-11-14): si el nombre guardado no corresponde a la
+  //     sesión (o no se sabe a quién pertenece), se pide el PIN otra vez. Las ventas en espera no se tocan.
+  try {
+    var ses = localStorage.getItem('kn:sesion');
+    if (ses) {
+      var de = JSON.parse(localStorage.getItem('kn:sesionDe') || 'null');
+      if (!de || de.v !== knIdSesion(ses) || de.n !== localStorage.getItem('kn:usuario')) {
+        localStorage.removeItem('kn:sesion'); localStorage.removeItem('kn:usuario'); localStorage.removeItem('kn:sesionDe');
+      }
+    }
+  } catch (e) {}
 
   var viejas = [];
   try { viejas = JSON.parse(localStorage.getItem('oc:outbox') || '[]') || []; } catch (e) { viejas = []; }

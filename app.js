@@ -1,4 +1,4 @@
-const APP_VERSION='13.0';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='13.1';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -286,7 +286,7 @@ function validarPin(){
   state.busy=true;
   apiPost('verificarPin',{pin:state.pin}).then(res=>{
     state.busy=false;
-    if(res.valido){try{localStorage.setItem(SES_KEY,res.sesion||'');}catch(e){}entrar(res.vendedor);}
+    if(res.valido){try{localStorage.setItem(SES_KEY,res.sesion||'');localStorage.setItem('kn:sesionDe',JSON.stringify({v:knIdSesion(res.sesion),n:res.vendedor}));}catch(e){}entrar(res.vendedor);}
     else{fallo(res.error||'PIN incorrecto');}   // el servidor explica si es bloqueo por intentos
   }).catch(err=>{state.busy=false;fallo(err.api?err.message:'Sin conexión ('+(err&&err.message||err)+')');});
 }
@@ -1285,6 +1285,7 @@ async function enviarPendientes(){
   try{
     for(const x of l){
       if(x.error)continue;                       // rechazada: espera a que la persona decida
+      if(x.venta&&x.venta.vendedor&&x.venta.vendedor!==state.usuario)continue;   // de otra persona: espera su sesión
       if(Date.now()-x.creada<12000)continue;      // respeta la ventana de "Deshacer"
       try{
         const r=await apiPost('registrarVenta',{venta:Object.assign({},x.venta,{creada:x.creada})});
@@ -1375,7 +1376,7 @@ function renderVentas(){
   l.innerHTML=Object.keys(grupos).map(k=>{const g=grupos[k],tot=g.reduce((a,x)=>a+x.precio+x.cobroExtra,0);return`
     <div class="day"><b>${k==='sin'?'Sin fecha':diaLabel(g[0].fechaTimestamp)}</b><span class="num">${g.length} · $${pesos(tot)}</span></div>
     <div class="group stagger">${g.map(x=>{const ok=x.estatusTransferencia==='Transferido';const hh=x.fechaTimestamp?new Date(x.fechaTimestamp).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}):'';return`
-      <div class="vrow">
+      <div class="vrow tap" onclick="knVerVenta('${esc(x.id)}')">
         ${thumb(x)}<div class="name">${esc(x.descripcion)}</div>
         <div class="amt num">$${pesos(x.precio+x.cobroExtra)}</div>
         <div class="meta"><span class="status ${x.estatusTransferencia==='No aplica'?'selva':ok?'selva':'mango'}">${x.estatusTransferencia==='No aplica'?'Tuya':ok?'Liquidada':'Sin liquidar'}</span><span>${hh}</span><span>${x.id}</span>${x.gastoExt?`<span>moto $${pesos(x.gastoExt)}</span>`:''}</div>
@@ -1862,15 +1863,15 @@ function confirmarCerrar(){
 
 /* ---------- USUARIO ---------- */
 function abrirUsuarios(){
-  const u=[['Irene','Vendedora principal'],['Mamá','Ventas ocasionales'],['Alex','Administrador']];
+  const u=[[state.usuario,state.usuario==='Alex'?'Administrador':state.usuario==='Irene'?'Vendedora principal':'Vendedor']];
   document.getElementById('user-list').innerHTML=u.map(([n,d])=>`
-    <button class="user ${state.usuario===n?'on':''}" onclick="cambiarUsuario('${n}')" style="width:100%;text-align:left">
+    <button class="user ${state.usuario===n?'on':''}" onclick="cerrarUsuarios()" style="width:100%;text-align:left">
       <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('')+
     `${state.usuario==='Alex'?'<a class="btn ghost" style="margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="analisis.html">Panel de administración</a>':''}<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>
      <div class="ver">Kiosko v${APP_VERSION} · ${APP_BUILD}<button onclick="buscarActualizacion()">Buscar actualización</button></div>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }
-function cambiarUsuario(u){buzz();state.impulso=null;state._dinArmado='';try{localStorage.setItem('kn:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('catalogo');}
+function cambiarUsuario(u){if(u!==state.usuario){cerrarUsuarios();return;}buzz();state.impulso=null;state._dinArmado='';try{localStorage.setItem('kn:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('catalogo');}
 function cerrarUsuarios(){document.getElementById('sheet-usuario').classList.add('hidden');}
 
 /* ---------- UTILS ---------- */

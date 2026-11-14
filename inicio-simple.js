@@ -360,7 +360,12 @@ function knLimpiarUsuario() {
   if (state._knRefOrig) { var o = state._knRefOrig; state._knRefOrig = null; setTimeout(o, 0); }
 }
 var knCerrarSesionBase = cerrarSesion;
-cerrarSesion = function () { knLimpiarUsuario(); return knCerrarSesionBase.apply(this, arguments); };
+cerrarSesion = function () {
+  // Mientras se mandan ventas en espera no se cambia de sesión: los reintentos leen la sesión vigente y una venta de
+  // una persona podría salir con el PIN de otra (Codex, 2026-11-14).
+  if (typeof _enviando !== 'undefined' && _enviando) { toast('Se están enviando ventas en espera. Intenta en unos segundos.', 'err'); return; }
+  knLimpiarUsuario(); return knCerrarSesionBase.apply(this, arguments);
+};
 // Una respuesta que llega después de cambiar de usuario o de cerrar sesión se descarta: no rellena la pantalla del
 // usuario nuevo con datos del anterior (Codex; el caso ya existía en la app vieja).
 var knApiCachedBase = apiCached;
@@ -512,3 +517,53 @@ pintarCorte = function (c) {
   var f = b && b.closest('.field');
   if (f) f.outerHTML = '<div class="kn-panel-nota">Los pagos se registran en el panel de la PC.</div>';
 };
+
+/* Detalle de una venta desde Mis ventas (2026-11-14, prueba del cambio definitivo). "Deshacer venta" aparece en los
+   primeros 30 minutos (contrato, decisión 8: cada quien las suyas; Alex, las de todos). El servidor tiene la última
+   palabra sobre el tiempo: cuenta desde que la venta llegó, no desde la hora del teléfono. */
+var KN_DESHACER_MS = 30 * 60000;
+function knBuscarVenta(folio) { return (state.ventas || []).filter(function (x) { return x.id === folio; })[0] || null; }
+function knVerVenta(folio) {
+  var v = knBuscarVenta(folio);
+  if (!v) return;
+  var propia = state.usuario === 'Alex' || v.vendedor === state.usuario;
+  var reciente = v.fechaTimestamp && Date.now() - v.fechaTimestamp < KN_DESHACER_MS;
+  var html = '<div class="kn-des-per">' + knEsc(v.id) + (v.fechaTimestamp ? ' · ' + knFecha(v.fechaTimestamp) + ' · ' + knHora(v.fechaTimestamp) : '') + '</div>' +
+    '<div class="kn-des-grupo"><div class="kn-des-txt">' + knEsc(v.descripcion) + '<br>Venta realizada por ' + knEsc(v.vendedor) +
+    '<br>Pago: ' + knEsc(v.metodoPago) + '<br>Mercancía de ' + knEsc(v.origen || 'Alex') + '</div>' +
+    knFila('Precio de venta', knM(v.precio)) + knFila('Cobro adicional', '+ ' + knM(v.cobroExtra)) +
+    knFila('Costo de la mercancía', '− ' + knM(v.costoFinal)) + knFila('Motomandado', '− ' + knM(v.gastoExt)) +
+    knFila('Ganancia', knM(v.ganancia), true) + '</div>';
+  if (propia && reciente && !v.corte) {
+    html += '<button class="kn-des-ir" onclick="knDeshacerVenta(\'' + knEsc(v.id) + '\',this)"><span>Deshacer venta</span>›</button>' +
+      '<div class="kn-des-txt">Disponible durante los primeros 30 minutos. La pieza regresa al inventario.</div>';
+  } else if (propia) {
+    html += '<div class="kn-des-txt">' + (v.corte ? 'Esta venta ya está en el corte ' + knEsc(v.corte) + '.' : 'Pasaron más de 30 minutos desde la venta.') +
+      ' Ya no se puede deshacer desde la app.</div>';
+  }
+  knAbrir('venta', 'Detalle de la venta', html);
+}
+function knDeshacerVenta(folio, b) {
+  var v = knBuscarVenta(folio), et = b && b.querySelector('span');
+  if (!v || !b || b.disabled) return;
+  if (!b.dataset.ok) { b.dataset.ok = '1'; et.textContent = 'Toca otra vez para deshacer'; buzz(12); return; }
+  b.disabled = true; et.textContent = 'Deshaciendo…';
+  var gen = state._knGen;
+  var regresar = function () { b.disabled = false; delete b.dataset.ok; et.textContent = 'Deshacer venta'; };
+  apiPost('anularVenta', { id: v.id, ventaID: v.ventaID || '' }).then(function (r) {
+    if (gen !== state._knGen) return;
+    if (!r || !r.success) { toast((r && r.error) || 'No se pudo deshacer la venta', 'err'); regresar(); cargarDinero(); return; }
+    state.ventas = (state.ventas || []).filter(function (x) { return x.id !== folio; });
+    state.dirty = true; state.catFirma = ''; state.ventFirma = '';
+    cerrarExp(); renderVentas();
+    toast('Venta deshecha. La pieza regresó al inventario.', 'ok');
+    cargarDinero();
+  }).catch(function (err) {
+    if (gen !== state._knGen) return;
+    // Respuesta perdida: el servidor pudo haberla deshecho. Se vuelve a leer todo antes de afirmar nada (Codex).
+    toast(err && err.api ? err.message : 'No se pudo confirmar. Revisa la lista cuando vuelva la señal.', 'err'); regresar();
+    state.dirty = true; state.catFirma = ''; state.ventFirma = '';
+    try { Object.keys(localStorage).filter(function (k) { return k.indexOf('kn:misVentas:') === 0 || k.indexOf('kn:catalogo:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+    cargarDinero();
+  });
+}
