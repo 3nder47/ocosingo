@@ -907,11 +907,11 @@ function nuevaFila(){
   f.menos.addEventListener("click",function(){f.q.value=Math.max(1,Math.round(num(f.q.value))-1);calcular();});
   f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
   f.x.addEventListener("click",function(){if(filas.length===1)return;filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();mostrarX();});
-  filas.push(f);$("renglones").appendChild(el);mostrarX();if(K.altaColor)K.altaColor.fila(f);
+  filas.push(f);$("renglones").appendChild(el);mostrarX();if(K.altaColor)K.altaColor.fila(f);if(K.altaClaro)K.altaClaro.fila(f);
   return f;
 }
 
-function calcular(){
+function calcular(){if(K.altaClaro)K.altaClaro.autoPrecio();
   var pagado=num($("pagado").value),suma=0,piezas=0;
   filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
   var hay=suma>0&&pagado>0,factor=hay?pagado/suma:1;
@@ -952,7 +952,7 @@ function estado(){
   var pagado=num($("pagado").value),suma=0,piezas=0;
   filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
   var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0&&!(K.altaColor&&K.altaColor.faltaColor());
-  $("b-alta").disabled=!listo||enviando;
+  $("b-alta").disabled=enviando;$("b-alta").classList.toggle("incompleto",!listo);
   $("abot-v").textContent=piezas+(piezas===1?" pieza":" piezas");
   $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":(K.altaColor&&K.altaColor.faltaColor())?"Falta elegir el color de un modelo":"Falta nombre o categoría en alguno");
 }
@@ -979,7 +979,7 @@ function subirFotos(){
   return cad.then(function(){return {total:pend.length,ok:ok,mal:mal};});
 }
 $("b-alta").addEventListener("click",function(){
-  if(enviando)return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
+  if(enviando)return;if(K.altaClaro&&!(K.pedidoIncierto&&K.pedidoIncierto.pedidoID===pedidoID)&&!K.altaClaro.listo())return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
   var pedido=(K.pedidoIncierto&&K.pedidoIncierto.pedidoID===pedidoID)?K.pedidoIncierto:armar();K.pedidoIncierto=pedido;altaOK=false;
   K.api("altaPedido",null,{pedido:pedido},45000).then(function(r){
     if(!r||!r.success){K.pedidoIncierto=null;var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
@@ -1045,6 +1045,7 @@ function explicarFila(f){
 })();
 </script>
 <script src="cuenta.js?v=1"></script>
+<script src="alta-claro.js?v=1"></script>
 <script src="colores.js?v=1"></script>
 <script src="alta-colores.js?v=1"></script>
 </body>
