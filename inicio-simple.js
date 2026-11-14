@@ -590,6 +590,8 @@ knHeroe();
    - La ganancia negativa no se pinta de verde. */
 var knPintarVentaBase = pintarVenta;
 pintarVenta = function () {
+  // Mientras se registra una venta, "Corregir" no reconstruye la hoja (Codex: evitaba una segunda venta).
+  if (state._knReg) { state.paso = 2; toast('Registrando la venta…'); return; }
   knPintarVentaBase.apply(this, arguments);
   var body = document.getElementById('venta-body');
   if (!body) return;
@@ -614,3 +616,25 @@ function knMarcarNegativo() {
   var c = document.getElementById('calc'); if (c) c.classList.toggle('kn-neg', neg);
   var t = document.querySelector('#venta-body .review .total'); if (t) t.classList.toggle('kn-neg', neg);
 }
+
+/* Confirmar venta con un toque (sistema visual v3 de Codex, entrega 3). El paso de revisión ya es la comprobación;
+   el botón se bloquea al primer toque (sin doble venta) y confirmarVenta lo rehabilita si el servidor la rechaza.
+   Otros botones de mantener presionado (cerrar corte, en el panel) siguen igual: llaman setupHold con argumentos. */
+var knSetupHoldBase = setupHold;
+setupHold = function (fn, id) {
+  if (fn || id) return knSetupHoldBase.apply(this, arguments);
+  var b = document.getElementById('hold');
+  if (!b) return;
+  b.addEventListener('click', function () {
+    if (b.disabled) return;
+    b.disabled = true;
+    buzz(20);
+    confirmarVenta();
+  });
+};
+
+// Mientras se registra una venta no se cierra la hoja ni se abre otra (la respuesta usa el producto en pantalla).
+var knCerrarVentaBase = cerrarVenta;
+cerrarVenta = function () { if (state._knReg) { toast('Registrando la venta…'); return; } return knCerrarVentaBase.apply(this, arguments); };
+var knAbrirVentaBase = abrirVenta;
+abrirVenta = function () { if (state._knReg) { toast('Registrando la venta…'); return; } return knAbrirVentaBase.apply(this, arguments); };

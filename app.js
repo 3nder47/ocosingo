@@ -1,4 +1,4 @@
-const APP_VERSION='13.3';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='13.4';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -26,13 +26,16 @@ async function apiUnaVez(accion,params={},body=null,ms=20000){
   let r;
   try{r=await fetch(url,opts);}
   catch(err){
+    clearTimeout(reloj);
     const lento=err&&err.name==='AbortError';
     const e=new Error(lento?('El servidor tardó más de '+Math.round(ms/1000)+' s'):'No se pudo conectar con el servidor');
     e.tipo=lento?'lento':'red';throw e;
   }
+  if(!r.ok){clearTimeout(reloj);const e=new Error('El servidor respondió '+r.status);e.api=true;e.tipo='http';e.status=r.status;throw e;}
+  let txt;
+  try{txt=await r.text();}
+  catch(err){const e=new Error('El servidor tardó más de '+Math.round(ms/1000)+' s');e.tipo='lento';throw e;}
   finally{clearTimeout(reloj);}
-  if(!r.ok){const e=new Error('El servidor respondió '+r.status);e.api=true;e.tipo='http';e.status=r.status;throw e;}
-  const txt=await r.text();
   let j;
   try{j=JSON.parse(txt);}
   catch(err){
@@ -1106,7 +1109,7 @@ function pintarVentaBase(){
       ${r('Ganancia '+(esDeIrene(p)?'Irene':state.vendedor),'$'+money(gananciaEst()),'total')}
     </div>
     <p style="font-size:0.8125rem;color:var(--muted);font-weight:600;text-align:center;margin-top:14px">${esDeIrene(p)?'Mercancía de Irene: la ganancia completa es suya y no entra a las cuentas con Alex. ':''}Se descuenta 1 pieza del inventario${Number(p.stock)===1?' (es la última)':''}. Tendrás 10 segundos para deshacer.</p>`;
-    foot.innerHTML=`<button class="hold" id="hold"><div class="fill"></div><svg class="hold-ring" viewBox="0 0 24 24"><circle class="a" cx="12" cy="12" r="10"/><circle class="b" cx="12" cy="12" r="10"/></svg><span>Mantén presionado para confirmar</span></button><button class="btn ghost" onclick="state.paso=1;pintarVenta()">← Corregir</button>`;
+    foot.innerHTML=`<button class="btn primary" id="hold"><span>Registrar venta</span></button><button class="btn ghost" onclick="state.paso=1;pintarVenta()">← Corregir</button>`;
     setupHold();
   }
 }
@@ -1157,14 +1160,15 @@ function setupHold(fn,id){
   b.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 }
 function confirmarVenta(){
+  if(state._knReg)return;state._knReg=true;
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
   const resumen={precio:precioVenta()+(Number(state.cobro)||0),ganancia:gananciaEst()};resumen.hito=hitoVenta(resumen.ganancia);
   const venta={ventaID:uuid(),descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
   const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
   const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
-  const restaurar=()=>{b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para confirmar';};
+  const restaurar=()=>{state._knReg=false;b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Registrar venta';};
   const exito=(id,ventaID,pendiente)=>{
-    cerrarVenta();
+    state._knReg=false;cerrarVenta();
     const vendido=state.producto;if(origen)vendido._fly=origen;
     state.dirty=true;state.catFirma='';   // fuerza datos frescos en la siguiente carga
     // descuenta 1 localmente para que el catálogo se vea al día aunque tarde la red
