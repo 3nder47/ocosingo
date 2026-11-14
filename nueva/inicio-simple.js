@@ -39,10 +39,25 @@
     '#view-ventas .kn-racha{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:14px;font-weight:600;color:var(--kn-positive)}' +
     '#view-ventas .kn-nota{font-size:14px;color:var(--kn-warning);margin-top:8px}' +
     '#view-ventas .kn-nota button{background:none;border:0;color:var(--kn-action);font:inherit;font-weight:600;padding:0 8px;min-height:48px;min-width:48px}' +
-    '#exp-body .kn-reint{background:none;border:0;color:var(--kn-action);font:inherit;font-weight:600;padding:0 8px;min-height:48px;min-width:48px}' +
+    '#exp-body .kn-reint,#view-ventas .kn-reint{background:none;border:0;color:var(--kn-action);font:inherit;font-weight:600;padding:0 8px;min-height:48px;min-width:48px}' +
     '#view-ventas .kn-volver{display:flex;align-items:center;gap:6px;background:none;border:0;color:var(--kn-action);font:inherit;font-size:16px;font-weight:600;padding:14px 2px;min-height:48px}' +
+    // Tres estados de Dinero: resumen, "Mis ventas" (.kn-lista) y "Mi mes" (.kn-mes).
     '#view-ventas:not(.kn-lista) .kn-solo-lista{display:none!important}' +
-    '#view-ventas.kn-lista .kn-solo-resumen{display:none!important}' +
+    '#view-ventas:not(.kn-mes) .kn-solo-mes{display:none!important}' +
+    '#view-ventas:not(.kn-lista):not(.kn-mes) .kn-volver{display:none!important}' +
+    '#view-ventas.kn-lista .kn-solo-resumen,#view-ventas.kn-mes .kn-solo-resumen{display:none!important}' +
+    // Mini gráfica (sin ejes; se lee de un vistazo) y "Mi mes"
+    '#view-ventas .kn-spark{display:block;width:100%;height:40px;margin-top:14px;overflow:visible}' +
+    '#view-ventas .kn-spark polyline{fill:none;stroke:var(--kn-positive);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}' +
+    '#view-ventas .kn-spark line{stroke:var(--kn-divider);stroke-width:1;vector-effect:non-scaling-stroke}' +
+    '#view-ventas .kn-spark-t{font-size:13px;color:var(--kn-muted);margin-top:4px}' +
+    '#view-ventas .kn-mes-t{font-size:28px;font-weight:700;line-height:1.15;margin:4px 4px 2px;color:var(--kn-text)}' +
+    '#view-ventas .kn-mes-p{font-size:14px;color:var(--kn-muted);margin:0 4px 14px;line-height:1.45}' +
+    '#view-ventas .kn-f{display:flex;justify-content:space-between;gap:12px;font-size:16px;line-height:1.45;padding:4px 0}' +
+    '#view-ventas .kn-f span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}' +
+    '#view-ventas .kn-f.kn-res{font-weight:650}' +
+    '#view-ventas .kn-f.kn-sec{color:var(--kn-muted)}' +
+    '#view-ventas .kn-txt{font-size:14px;line-height:1.45;color:var(--kn-muted);margin-top:6px}' +
     '#cortes-wrap,#neg-wrap,#logros,#mes-wrap{display:none!important}' +
     '.kn-panel-nota{font-size:13px;opacity:.7;text-align:center;margin:10px 0 4px}' +
     // Desglose (en la hoja de explicaciones existente, con los mismos tokens)
@@ -76,10 +91,13 @@
     filtros.classList.add('kn-solo-lista');
     document.getElementById('ventas-list').classList.add('kn-solo-lista');
     var volver = document.createElement('button');
-    volver.className = 'kn-volver kn-solo-lista';
+    volver.className = 'kn-volver';
     volver.setAttribute('onclick', 'knResumen()');
     volver.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Dinero';
     v.insertBefore(volver, v.firstChild);
+    var mesDiv = document.createElement('div');
+    mesDiv.id = 'kn-mes'; mesDiv.className = 'kn-solo-mes';
+    volver.insertAdjacentElement('afterend', mesDiv);
     ['dinero-hero', 'dinero-cuenta'].forEach(function (id) { var e = document.getElementById(id); if (e) e.classList.add('kn-solo-resumen'); });
   }
   // La hoja de explicaciones se cierra con "Cerrar" (texto neutral).
@@ -110,15 +128,30 @@ function knIr(texto, onclick) {
 function knVerVentas() {
   buzz(8);
   var v = document.getElementById('view-ventas');
+  v.classList.remove('kn-mes');
   v.classList.add('kn-lista'); v.classList.remove('kn-entra'); void v.offsetWidth; v.classList.add('kn-entra');
   window.scrollTo({ top: 0 });
 }
 function knResumen() {
   var v = document.getElementById('view-ventas');
-  if (!v.classList.contains('kn-lista')) return;
+  if (!v.classList.contains('kn-lista') && !v.classList.contains('kn-mes')) return;
   buzz(8);
-  v.classList.remove('kn-lista'); v.classList.remove('kn-entra'); void v.offsetWidth; v.classList.add('kn-entra');
+  v.classList.remove('kn-lista', 'kn-mes'); v.classList.remove('kn-entra'); void v.offsetWidth; v.classList.add('kn-entra');
   window.scrollTo({ top: 0 });
+}
+function knVerMes() {
+  buzz(8);
+  var v = document.getElementById('view-ventas');
+  knPintarMes();
+  v.classList.remove('kn-lista');
+  v.classList.add('kn-mes'); v.classList.remove('kn-entra'); void v.offsetWidth; v.classList.add('kn-entra');
+  window.scrollTo({ top: 0 });
+}
+// "Ver ventas del mes": la lista con el filtro "Este mes" ya puesto.
+function knVentasDelMes() {
+  var b = document.querySelector('#filtros button[data-f="mes"]');
+  if (b && !b.classList.contains('on')) b.click();
+  knVerVentas();
 }
 function knReintentar() { state._extrasFalla = false; cargarDinero(); }
 
@@ -129,18 +162,19 @@ function knTituloCuenta(total) {
 }
 // Cuándo se obtuvieron de verdad los datos (la caché guarda la hora), no la hora en que se abre la hoja.
 function knHoraDatos(accion, params) { var c = leerCache(cacheKey(accion, params)); return c && c.t ? c.t : 0; }
-function knCuando(t) { var d = new Date(t); return knFecha(t) + ', ' + d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }); }
+function knCuando(t) { return knFecha(t) + ', ' + knHora(t); }
 function knSinActualizar(accion, params) {
   var t = knHoraDatos(accion, params);
   return 'Información sin actualizar.' + (t ? ' Última actualización: ' + knCuando(t) + '.' : '');
 }
 
 function armarDinero() {
-  var esIrene = state.usuario === 'Irene', mes = mesActualNombre();
+  var esIrene = state.usuario === 'Irene', mes = MESES_KN[knMtyDate().getUTCMonth()];   // mes de Monterrey
   var cuenta = knTarjeta('cuenta', '<span id="kn-cuenta-t">' + knTituloCuenta(0) + '</span>',
     'knDesgloseCuenta()', 'h-val', '<div class="kn-sub" id="kn-cuenta-sub"></div>', knIr('Ver cuenta', "abrirDetalle('transferencia')"));
   var ganancia = knTarjeta('tendencia', 'Tu ganancia de ' + mes, 'knDesgloseGanancia()', 'v-gmes',
-    (esIrene ? '' : '<div class="kn-sub">Ventas realizadas por Alex</div>') + '<div id="kn-racha"></div>');
+    (esIrene ? '' : '<div class="kn-sub">Ventas realizadas por Alex</div>') + '<div id="kn-racha"></div><div id="kn-spark-w"></div>',
+    knIr('Ver mi mes', 'knVerMes()'));
   var ventas = knTarjeta('ventas', 'Mis ventas', '', '', '', knIr('Ver ventas', 'knVerVentas()'));
   // id="hero" se conserva: app.js le pone la animación de "se actualizó".
   document.getElementById('dinero-hero').innerHTML = '<div id="hero">' +
@@ -165,18 +199,122 @@ function renderDinero(d, meses, m) {
   if (w) w.innerHTML = (falla ? '<div class="kn-nota">' + (dato ? knSinActualizar('inicioExtras', { usuario: state.usuario }) : 'No se pudo cargar la información.') +
       '<button onclick="knReintentar()">Reintentar</button></div>' : '') +
     (r >= 2 ? '<div class="kn-racha">' + KN_ICO.racha + r + (im.rachaUnidad === 'semanas' ? ' semanas consecutivas con ventas' : ' días consecutivos con ventas') + '</div>' : '');
+  knPintarSpark();
   knRefrescarDesglose();
+}
+
+// ---- Mi mes (acción miMes del Worker; se pide al abrir Dinero, después de lo esencial) ----
+var knCargarDineroBase = cargarDinero;
+cargarDinero = function () {
+  // "Desliza para actualizar" termina cuando acaban lo de app.js y miMes (Codex): se intercala un contador.
+  var fin = null;
+  try {
+    // Solo una vez: si ya está nuestro contador (otra carga a media recarga), no se anida (Codex).
+    if (_refrescando && !_refrescando.knContador) {
+      var orig = _refrescando, k = 2;
+      state._knRefOrig = orig;   // para cancelarlo de una vez al cambiar de usuario (Codex)
+      fin = function () { if (--k === 0 && state._knRefOrig === orig) { state._knRefOrig = null; orig(); } };
+      fin.knContador = true;
+      _refrescando = fin;
+    }
+  } catch (e) {}
+  knCargarDineroBase();
+  knCargarMes(fin);
+};
+// Caché propia (no apiCached): apiCached oculta el fallo cuando hay datos guardados, y aquí hay que avisar que la
+// información no está actualizada y desde cuándo (Codex). Primero lo guardado, luego lo nuevo.
+function knCargarMes(fin) {
+  // Cada petición lleva su número: una respuesta vieja no pisa una más nueva del mismo usuario (Codex).
+  var req = state._knMesReq = (state._knMesReq || 0) + 1, vieja = function () { return (state._knGen || 0) !== g || state._knMesReq !== req; };
+  var termina = function () { if (fin) { var f = fin; fin = null; f(); } };
+  var g = state._knGen || 0, key = cacheKey('miMes', { usuario: state.usuario }), c = leerCache(key);
+  var pintar = function () { knPintarSpark(); knPintarMes(); knRefrescarDesglose(); };
+  if (c && !state.miMes) { state.miMes = c.d; pintar(); }
+  api('miMes', { usuario: state.usuario }).then(function (d) {
+    termina();
+    if (vieja()) return;
+    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
+    state.miMes = d; state._miMesFalla = false; pintar();
+  }).catch(function () {
+    termina();
+    if (vieja()) return;
+    if (!state.miMes && c) state.miMes = c.d;
+    state._miMesFalla = true; pintar();
+  });
+}
+function knReintentarMes() { state._miMesFalla = false; knPintarMes(); knCargarMes(); }
+// Mini gráfica: ganancia por día del mes hasta hoy. Sin ejes ni suavizado; días sin ventas en cero; la línea tenue
+// es el cero. Un solo día: un trazo plano.
+function knPintarSpark() {
+  var w = document.getElementById('kn-spark-w'), m = state.miMes;
+  if (!w) return;
+  if (!m || !Array.isArray(m.serieDiaria) || !m.serieDiaria.length) { w.innerHTML = ''; return; }
+  var s = m.serieDiaria, n = s.length, max = Math.max.apply(null, s.concat([0])), min = Math.min.apply(null, s.concat([0]));
+  var rango = max - min || 1, H = 40, W = 100;
+  var y = function (v) { return (H - 2 - (v - min) / rango * (H - 4)).toFixed(2); };
+  var x = function (i) { return n === 1 ? (i ? W : 0) : (i / (n - 1) * W).toFixed(2); };
+  var pts = n === 1 ? [x(0) + ',' + y(s[0]), x(1) + ',' + y(s[0])] : s.map(function (v, i) { return x(i) + ',' + y(v); });
+  var mes = (m.nombreMes || '').split(' ')[0];
+  w.innerHTML = '<svg class="kn-spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Ganancia diaria de ' + mes + '">' +
+    '<line x1="0" x2="' + W + '" y1="' + y(0) + '" y2="' + y(0) + '"/><polyline points="' + pts.join(' ') + '"/></svg>' +
+    '<div class="kn-spark-t">Ganancia diaria · ' + mes + '</div>';
+}
+function knDia(f) { return Number(String(f).slice(8, 10)); }
+function knRango(a) { var mes = MESES_KN[Number(String(a.desde).slice(5, 7)) - 1]; return knDia(a.desde) + '–' + knDia(a.hasta) + ' de ' + mes; }
+var MESES_KN = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+function knMay(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); }
+function knDif(n, dinero) {
+  n = Number(n) || 0;
+  var t = dinero ? '$' + money(Math.abs(n)) : String(Math.abs(n));
+  return (n > 0 ? '+' : n < 0 ? '−' : '') + t;
+}
+function knF(et, val, cls) { return '<div class="kn-f' + (cls ? ' ' + cls : '') + '"><span>' + et + '</span><span>' + val + '</span></div>'; }
+function knPintarMes() {
+  var w = document.getElementById('kn-mes');
+  if (!w) return;
+  var m = state.miMes, esIrene = state.usuario === 'Irene';
+  if (!m) {
+    w.innerHTML = '<div class="kn-mes-t">Mi mes</div><div class="kn-tarjeta"><div class="kn-txt">' +
+      (state._miMesFalla ? 'No se pudo cargar la información.<button class="kn-reint" onclick="knReintentarMes()">Reintentar</button>' : 'Cargando información…') + '</div></div>';
+    return;
+  }
+  var c = m.comparacion, g = m.ganancia, p = m.piezas, ini = knDia(m.periodo.desde), fin = knDia(m.periodo.hasta);
+  var mesTxt = MESES_KN[Number(m.mes.slice(5, 7)) - 1];
+  var h = '<div class="kn-mes-t">Mi mes</div><div class="kn-mes-p">' + knMay(m.nombreMes) + '<br>' +
+    (ini === fin ? '1 de ' + mesTxt : 'Del 1 al ' + fin + ' de ' + mesTxt) + (esIrene ? '' : '<br>Ventas realizadas por Alex') +
+    (state._miMesFalla ? '<br>' + knSinActualizar('miMes', { usuario: state.usuario }) + '<button class="kn-reint" onclick="knReintentarMes()">Reintentar</button>' : '') + '</div>';
+  h += '<div class="kn-tarjeta">' + knF('Ganancia del mes', knM(g.total), 'kn-res') +
+    (esIrene ? knF('Mercancía propia', knM(g.propio), 'kn-sec') + knF('Mercancía de Alex', knM(g.ajeno), 'kn-sec') : '') + '</div>';
+  h += '<div class="kn-tarjeta">' + knF('Piezas vendidas por ti', String(p.total), 'kn-res') +
+    (esIrene ? knF('Mercancía propia', String(p.propias), 'kn-sec') + knF('Mercancía de Alex', String(p.ajenas), 'kn-sec') : '') +
+    (esIrene && p.propiasPorOtros ? '<div class="kn-txt">La ganancia de mercancía propia incluye ventas realizadas por otras personas.</div>' : '') + '</div>';
+  var hc = Date.parse(c.corte);
+  h += '<div class="kn-tarjeta"><div class="kn-f kn-res"><span>Comparación al mismo corte</span><span></span></div>' +
+    knF(knRango(c.actual), knM(c.actual.ganancia)) + knF(knRango(c.anterior), knM(c.anterior.ganancia)) +
+    knF('Diferencia de ganancia', knDif(c.actual.ganancia - c.anterior.ganancia, true)) +
+    knF('Diferencia de piezas vendidas', knDif(c.actual.piezas - c.anterior.piezas, false)) +
+    '<div class="kn-txt">Corte: ' + knFecha(hc) + ' · ' + knHora(hc) + '</div></div>';
+  h += '<div class="kn-tarjeta"><div class="kn-f kn-res"><span>Mejor mes cerrado</span><span></span></div>' +
+    (m.mejorMesCerrado ? knF(knMay(m.mejorMesCerrado.nombre), knM(m.mejorMesCerrado.ganancia)) : '<div class="kn-txt">No hay meses cerrados con ventas.</div>') + '</div>';
+  h += '<div class="kn-tarjeta kn-sola">' + knIr('Ver ventas del mes', 'knVentasDelMes()') + '</div>';
+  w.innerHTML = h;
 }
 
 // ---- Desgloses con números reales (textos de Codex, kiosko-dinero-v2-codex.md) ----
 function knM(n) { n = Number(n) || 0; return (n < 0 ? '−' : '') + '$' + money(Math.abs(n)); }
 function knFila(et, val, res) { return '<div class="kn-des-f' + (res ? ' kn-res' : '') + '"><span>' + et + '</span><span>' + val + '</span></div>'; }
-function knFecha(ts) { try { return new Date(ts).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' }); } catch (e) { return ''; } }
+// Fechas y horas siempre en Monterrey (UTC-6 fijo), como los rangos del servidor, aunque el teléfono esté en otra zona (Codex).
+var KN_MTY = 6 * 3600 * 1000;
+function knMtyDate(ts) { return new Date((ts == null ? Date.now() : ts) - KN_MTY); }   // leer con getUTC*
+function knMesMty(ts) { return knMtyDate(ts).toISOString().slice(0, 7); }
+function knFecha(ts) { var d = knMtyDate(ts); return d.getUTCDate() + ' de ' + MESES_KN[d.getUTCMonth()]; }
+function knHora(ts) { var d = knMtyDate(ts), h = d.getUTCHours(), mi = d.getUTCMinutes();
+  return (h % 12 || 12) + ':' + (mi < 10 ? '0' : '') + mi + (h < 12 ? ' a.m.' : ' p.m.'); }
 function knPeriodo() {
-  var h = new Date(), mes = mesActualNombre();
-  return h.getDate() === 1 ? '1 de ' + mes : 'Del 1 al ' + h.getDate() + ' de ' + mes;
+  var h = knMtyDate(), mes = MESES_KN[h.getUTCMonth()];
+  return h.getUTCDate() === 1 ? '1 de ' + mes : 'Del 1 al ' + h.getUTCDate() + ' de ' + mes;
 }
-function knInicioMes() { var m0 = new Date(); m0.setDate(1); m0.setHours(0, 0, 0, 0); return m0.getTime(); }
+function knInicioMes() { return Date.parse(knMesMty() + '-01T00:00:00Z') + KN_MTY; }
 // La hoja abierta se vuelve a pintar cuando llegan (o fallan) los datos (Codex): state._knDes = 'ganancia' | 'cuenta'.
 function knAbrir(tipo, titulo, html) {
   var hoja = document.getElementById('sheet-exp'), yaAbierta = state._knDes === tipo && !hoja.classList.contains('hidden');
@@ -208,6 +346,9 @@ setUsuario = function (u) {
 function knLimpiarUsuario() {
   if (state._knDes) cerrarExp();
   state._dash = null; state.operacion = null; state.impulso = null; state.detalle = []; state._extrasFalla = false;
+  state.miMes = null; state._miMesFalla = false;
+  var vv = document.getElementById('view-ventas'), km = document.getElementById('kn-mes');
+  if (vv) vv.classList.remove('kn-lista', 'kn-mes'); if (km) km.innerHTML = '';
   // Nueva generación: toda respuesta pedida antes se descarta, aunque vuelva a entrar la misma persona (Codex).
   state._knGen = (state._knGen || 0) + 1;
   // Nada de cifras ni ventas del anterior en pantalla: cargarDinero pone esqueletos si están vacías.
@@ -216,6 +357,7 @@ function knLimpiarUsuario() {
   if (h) h.innerHTML = ''; if (l) l.innerHTML = '';
   // Si había un "desliza para actualizar" en curso, se termina (sus respuestas ya no llegarán).
   try { if (_refrescando) listo(); } catch (e) {}
+  if (state._knRefOrig) { var o = state._knRefOrig; state._knRefOrig = null; setTimeout(o, 0); }
 }
 var knCerrarSesionBase = cerrarSesion;
 cerrarSesion = function () { knLimpiarUsuario(); return knCerrarSesionBase.apply(this, arguments); };
@@ -252,13 +394,24 @@ function knDesgloseGanancia() {
   if (state._extrasFalla) html += '<div class="kn-des-txt">' + knSinActualizar('inicioExtras', { usuario: state.usuario }) + knReintentarBtn() + '</div>';
   if (esIrene) html += '<div class="kn-des-grupo">' + knFila('Mercancía propia', knM(dato.gMesPropio)) + knFila('Mercancía de Alex', knM(dato.gMesAjeno)) +
     knFila('Ganancia del mes', knM(total), true) + '<div class="kn-des-txt">Incluye la ganancia de la mercancía de Irene y la ganancia de sus ventas de mercancía de Alex.</div></div>';
-  // La última venta del mismo alcance que la cifra: Irene, sus ventas del mes (de cualquier dueño);
-  // Alex, sus ventas del mes de su propia mercancía. La lista solo trae las ventas personales.
-  var m0 = knInicioMes(), L = (state.ventas || []).filter(function (v) {
+  // miMes (entrega 2): desglose agregado de Alex y la última venta exacta del alcance de la cifra. Solo si es del mes
+  // en curso y su total cuadra con la cifra de la tarjeta (si no, se usa lo de antes).
+  var mm = state.miMes, mesAct = knMesMty();
+  var mmOk = mm && mm.mes === mesAct && Math.abs((mm.ganancia ? mm.ganancia.total : NaN) - total) < 0.005;
+  if (mmOk && !esIrene) {
+    var dg = mm.desglose;
+    html += '<div class="kn-des-grupo">' + knFila('Importe de las ventas', knM(dg.precio)) + knFila('Cobros adicionales', '+ ' + knM(dg.extra)) +
+      knFila('Costo de la mercancía', '− ' + knM(dg.costo)) + knFila('Motomandados', '− ' + knM(dg.moto)) +
+      knFila('Ganancia del mes', knM(dg.ganancia), true) + '</div>';
+  }
+  // La última venta del mismo alcance que la cifra. Sin miMes: Irene, sus ventas del mes (de cualquier dueño);
+  // Alex, sus ventas del mes de su propia mercancía (la lista solo trae las ventas personales).
+  var m0 = knInicioMes(), L = mmOk ? (mm.ultimaVenta ? [mm.ultimaVenta] : []) : (state.ventas || []).filter(function (v) {
     return v.fechaTimestamp >= m0 && (esIrene || (v.origen || 'Alex') === 'Alex');
   });
   var fallo = !state.ventFirma && !!document.querySelector('#ventas-list .empty');
   if (L.length) html += knVentaGanancia(L[0], quien) + '<button class="kn-des-ir" onclick="cerrarExp();knVerVentas()"><span>Ver ventas</span>›</button>';
+  else if (mmOk) html += '<div class="kn-des-txt">No hay ventas registradas en este periodo.</div>';
   else if (fallo) html += '<div class="kn-des-txt">No se pudo cargar la información.' + knReintentarBtn() + '</div>';
   else if (!state.ventFirma) html += '<div class="kn-des-txt">Cargando información…</div>';
   // Codex: si hay ganancia pero ninguna venta personal (p. ej. mercancía de Irene vendida por otra persona),
@@ -281,6 +434,18 @@ function knDesgloseCuenta() {
     (!total ? '<div class="kn-des-txt">Sin saldo pendiente</div>' : '') +
     '<div class="kn-des-grupo">' + knFila('Ventas pendientes sin corte', knM(d.sinCorte)) + knFila('Saldo de cortes', knM(d.saldoCortes)) +
     knFila(total < 0 ? 'Saldo a favor de Irene' : 'Saldo total', knM(Math.abs(total)), true) + '</div>';
+  // Componentes de lo pendiente sin corte (miMes). Solo si cuadran exactamente con dashboard.sinCorte.
+  var cs = state.miMes && state.miMes.cuentaSinCorte, cent = function (x) { return Math.round((Number(x) || 0) * 100); };
+  if (cs && cent(cs.total) === cent(d.sinCorte)) {
+    var efectivoCuadra = cent(cs.cobrosEfectivo) - cent(cs.motoEfectivo) === cent(cs.aporteEfectivo);
+    html += '<div class="kn-des-grupo"><div class="kn-des-h">Ventas pendientes sin corte</div>' +
+      (efectivoCuadra
+        ? knFila('Cobros en efectivo de ventas de Alex', '+ ' + knM(cs.cobrosEfectivo)) + knFila('Motomandados de esas ventas', '− ' + knM(cs.motoEfectivo))
+        : knFila('Ventas de Alex cobradas en efectivo', knM(cs.aporteEfectivo))) +
+      knFila('Costo de mercancía de Alex vendida por otras personas', '+ ' + knM(cs.costos)) +
+      knFila('Motomandados de ventas de Alex cobradas directamente por Alex', (cs.aporteDirecto <= 0 ? '− ' : '+ ') + knM(Math.abs(cs.aporteDirecto))) +
+      knFila('Subtotal', knM(cs.total), true) + '</div>';
+  }
   // Última venta pendiente (sin corte): el importe que incorporó a la cuenta es el guardado (aporte).
   var L = (state.detalle || []).filter(function (v) { return v.estatusTransferencia === 'No transferido' && !v.corte; })
     .sort(function (a, b) { return (b.fechaTimestamp || 0) - (a.fechaTimestamp || 0); });
@@ -311,7 +476,7 @@ function renderChipsCortes() {}
 var knCambiarVistaBase = cambiarVista;
 cambiarVista = function (vista) {
   var v = document.getElementById('view-ventas');
-  if (v) v.classList.remove('kn-lista', 'kn-entra');
+  if (v) v.classList.remove('kn-lista', 'kn-mes', 'kn-entra');
   knCambiarVistaBase(vista);
   // Título grande por pestaña (como iOS): en Dinero el encabezado dice "Dinero" en vez del saludo.
   var gr = document.getElementById('greeting');
