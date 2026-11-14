@@ -638,3 +638,73 @@ var knCerrarVentaBase = cerrarVenta;
 cerrarVenta = function () { if (state._knReg) { toast('Registrando la venta…'); return; } return knCerrarVentaBase.apply(this, arguments); };
 var knAbrirVentaBase = abrirVenta;
 abrirVenta = function () { if (state._knReg) { toast('Registrando la venta…'); return; } return knAbrirVentaBase.apply(this, arguments); };
+
+/* Venta registrada (sistema visual v3 de Codex, entrega 4). En vez de una pantalla completa con esferas, halos y la foto
+   "volando", una hoja compacta sobre la Tienda con lo que importa, etiquetado por separado:
+   - Confirmada por el servidor: verde. Guardada en el teléfono (sin señal): ámbar, "se enviará sola".
+   - Ganancia con su signo real (sin "+" automático); negativa en rojo.
+   - Ya no se cierra sola a los 10 s ni tiene cuenta regresiva: "Deshacer" sigue disponible mientras la hoja esté
+     abierta, y después, 30 minutos desde Mis ventas. "Vender otro" vuelve a la búsqueda. */
+celebrar = function (id, p, ventaID, pendiente, resumen) {
+  var s = document.getElementById('success');
+  s.className = 'success kn-v3' + (pendiente ? ' pend' : '');
+  s.style.removeProperty('--tint');
+  var g = resumen && resumen.ganancia != null ? Number(resumen.ganancia) : null;
+  var signo = g == null ? '' : (g < 0 ? '−$' : '$') + money(Math.abs(g));
+  s.innerHTML = '<div class="kn-ok" role="dialog" aria-modal="true" aria-labelledby="kn-ok-t">' +
+    '<div class="kn-ok-cab"><span class="kn-ok-ic" aria-hidden="true">' + (pendiente ? '!' : '✓') + '</span>' +
+    '<div><b id="kn-ok-t">' + (pendiente ? 'Venta guardada en el teléfono' : 'Venta registrada') + '</b>' +
+    '<small>' + (pendiente ? 'Se enviará sola cuando haya señal' : knEsc(id || '')) + '</small></div></div>' +
+    (p ? '<div class="kn-ok-prod">' + thumb(p) + '<b>' + knEsc(p.descripcion) + '</b></div>' : '') +
+    (resumen ? '<div class="kn-ok-cifras">' +
+      '<div><span>Cobro</span><b class="num">$' + money(resumen.precio) + '</b></div>' +
+      (g != null ? '<div class="' + (g < 0 ? 'kn-neg' : 'kn-pos') + '"><span>Ganancia</span><b class="num">' + signo + '</b></div>' : '') +
+      '</div>' : '') +
+    (resumen && resumen.hito ? '<p class="kn-ok-hito">' + knEsc(resumen.hito) + '</p>' : '') +
+    '<p class="kn-ok-nota">' + (pendiente ? 'Al enviarse aparecerá en Mis ventas; ahí podrás deshacerla durante 30 minutos.' : 'Puedes deshacerla durante 30 minutos desde Mis ventas.') + '</p>' +
+    '<div class="kn-ok-acc"><button class="btn primary" onclick="cerrarExito()">Listo</button>' +
+    '<button class="btn kn-ok-otro" onclick="knVenderOtro()">Vender otro</button>' +
+    '<button class="btn ghost" id="btn-undo" onclick="deshacerVenta()">Deshacer venta</button></div></div>';
+  s.classList.remove('hidden');
+  buzz([30, 40, 60]);
+  if (p) delete p._fly;
+  state._exito = { id: id, p: p, ventaID: ventaID, pendiente: pendiente, timer: null };
+  var b = s.querySelector('.btn.primary'); if (b) b.focus({ preventScroll: true });
+  // Cuando la hoja se oculta por cualquier ruta (Listo, Vender otro o Deshacer), el foco pasa al botón Vender (Codex).
+  if (window.MutationObserver) {
+    var obs = new MutationObserver(function () {
+      if (!s.classList.contains('hidden')) return;
+      obs.disconnect();
+      var v = document.querySelector('.nav .fab');
+      if (v && (!document.activeElement || document.activeElement === document.body || s.contains(document.activeElement))) v.focus({ preventScroll: true });
+    });
+    obs.observe(s, { attributes: true, attributeFilter: ['class'] });
+  }
+  // El foco no sale de la hoja con Tab (Codex).
+  s.onkeydown = function (e) {
+    if (e.key === 'Escape') { cerrarExito(); return; }
+    if (e.key !== 'Tab') return;
+    var f = [].slice.call(s.querySelectorAll('button:not([disabled])'));
+    if (!f.length) return;
+    var i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  };
+};
+// Al cerrar "Venta registrada" el foco pasa al botón Vender (no se queda en un botón oculto). Al cerrarla, una venta
+// guardada en el teléfono ya puede enviarse (enviarPendientes no la manda mientras su hoja está abierta).
+var knCerrarExitoBase = cerrarExito;
+cerrarExito = function () {
+  var r = knCerrarExitoBase.apply(this, arguments);
+  // A un botón, no al buscador: enfocar el buscador abriría el teclado del teléfono.
+  var v = document.querySelector('.nav .fab');
+  if (v) v.focus({ preventScroll: true });
+  if (typeof enviarPendientes === 'function') setTimeout(enviarPendientes, 12500);
+  return r;
+};
+function knVenderOtro() {
+  cerrarExito();
+  cambiarVista('catalogo');
+  var q = document.getElementById('search');
+  if (q) { q.value = ''; if (typeof renderCatalogo === 'function') renderCatalogo(); q.focus(); }
+}

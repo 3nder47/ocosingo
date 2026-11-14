@@ -1,4 +1,4 @@
-const APP_VERSION='13.4';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='13.5';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -1290,6 +1290,7 @@ async function enviarPendientes(){
     for(const x of l){
       if(x.error)continue;                       // rechazada: espera a que la persona decida
       if(x.venta&&x.venta.vendedor&&x.venta.vendedor!==state.usuario)continue;   // de otra persona: espera su sesión
+      if(state._exito&&state._exito.pendiente&&state._exito.ventaID===x.ventaID)continue;   // con su hoja abierta se puede deshacer: no se manda aún
       if(Date.now()-x.creada<12000)continue;      // respeta la ventana de "Deshacer"
       try{
         const r=await apiPost('registrarVenta',{venta:Object.assign({},x.venta,{creada:x.creada})});
