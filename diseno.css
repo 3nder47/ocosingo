@@ -235,6 +235,21 @@ body{background:var(--kn-bg);color:var(--kn-text);font-family:system-ui,-apple-s
 .btn.danger{color:var(--kn-danger);border:1px solid var(--kn-danger);margin-top:24px}
 @media (max-width:380px){#sheet-alta .kn-precios{flex-direction:column;gap:0!important}}
 
+/* ---------- PIN (entrega 7): marca en lima, teclado amplio, error escrito y sin sacudidas ---------- */
+#login{background:var(--kn-bg)}
+.brand-mark{background:var(--kn-lime)!important;color:var(--kn-on-lime)!important;box-shadow:none!important}
+.brand h1{font-weight:750;letter-spacing:-.01em;color:var(--kn-text)}
+.brand p{color:var(--kn-muted)}
+.key{background:var(--kn-surface);box-shadow:none;border:1px solid var(--kn-divider);color:var(--kn-text)}
+.key:active{background:var(--kn-tono)}
+.key.ghost{border:0;background:transparent;color:var(--kn-muted)}
+.key .rip{display:none}
+.pin-dots span{border-color:var(--kn-control-border)}
+.pin-dots span.on{background:var(--kn-text);border-color:var(--kn-text)}
+.pin-dots.ok span{background:var(--kn-positive);border-color:var(--kn-positive)}
+.pin-dots.shake{animation:none}
+.login-err{color:var(--kn-danger);font-size:.9375rem}
+
 /* ---------- Avisos y botones de error (Codex): texto rojo sobre fondo rojo claro, legible en claro y oscuro ---------- */
 .toast.err,.btn.danger.solid{background:var(--kn-danger-bg)!important;color:var(--kn-danger)!important;border:1px solid var(--kn-danger)}
 .toast.ok{background:var(--kn-positive-bg)!important;color:var(--kn-positive)!important}

@@ -731,3 +731,52 @@ function knVenderOtro() {
   var lf = foto && foto.closest('.form-field') && foto.closest('.form-field').querySelector('label');
   if (lf) lf.textContent = 'Hasta 4, opcional';
 })();
+
+/* Botón Atrás de Android (2026-11-14). Antes ninguna hoja agregaba una entrada al historial y Atrás sacaba de la app.
+   Ahora cada hoja abierta (y "Mis ventas" / "Mi mes" dentro de Dinero) agrega una entrada: Atrás cierra lo de arriba con
+   la misma función que su botón. Si se cierra con su botón, la entrada se quita. Si el cierre se rechaza (por ejemplo,
+   una venta registrándose), la entrada vuelve a ponerse. */
+(function () {
+  if (!window.history || !history.pushState || !window.MutationObserver) return;
+  var CIERRE = { 'sheet-venta': 'cerrarVenta', 'sheet-quick': 'cerrarQuick', 'sheet-usuario': 'cerrarUsuarios',
+    'sheet-detalle': 'cerrarDetalle', 'sheet-exp': 'cerrarExp', 'sheet-alta': 'cerrarAlta', 'sheet-meta': 'cerrarMeta',
+    'sheet-outbox': 'cerrarOutbox', 'sheet-corte': 'cerrarCorteSheet', 'sheet-cerrar': 'cerrarCerrar', 'sheet-cats': 'cerrarCats',
+    'sheet-analisis': 'cerrarAnalisis', 'success': 'cerrarExito', 'view-ventas': 'knResumen' };
+  var pila = [], ignorar = 0;
+  var abierta = function (el) {
+    if (!el) return false;
+    if (el.id === 'view-ventas') return el.classList.contains('kn-lista') || el.classList.contains('kn-mes');
+    return !el.classList.contains('hidden');
+  };
+  var cerrar = function (el) {
+    var f = window[CIERRE[el.id]];
+    if (typeof f === 'function') f(); else el.classList.add('hidden');
+  };
+  var cambio = function (el) {
+    var i = pila.indexOf(el.id);
+    if (abierta(el) && i < 0) { pila.push(el.id); history.pushState({ kn: el.id }, ''); }
+    else if (!abierta(el) && i > -1) { pila.splice(i, 1); ignorar++; history.back(); }
+  };
+  window.addEventListener('popstate', function (e) {
+    if (ignorar > 0) { ignorar--; return; }
+    var id = pila.pop();
+    // Entrada que quedó de antes de recargar (Codex): no hay hoja que cerrar; se sigue retrocediendo hasta una propia.
+    if (!id) { if (e.state && e.state.kn) history.back(); return; }
+    var el = document.getElementById(id);
+    if (!abierta(el)) return;
+    cerrar(el);
+    if (abierta(el)) { pila.push(id); history.pushState({ kn: id }, ''); }   // el cierre se rechazó
+  });
+  var vigilar = function (el) {
+    if (!el || el.dataset.knAtras) return;
+    el.dataset.knAtras = '1';
+    new MutationObserver(function () { cambio(el); }).observe(el, { attributes: true, attributeFilter: ['class'] });
+  };
+  Object.keys(CIERRE).forEach(function (id) { vigilar(document.getElementById(id)); });
+  vigilar(document.getElementById('sheet-color'));
+  // sheet-color la crea venta-colores.js; si aparece después, también se vigila.
+  new MutationObserver(function () { vigilar(document.getElementById('sheet-color')); }).observe(document.body, { childList: true });
+  CIERRE['sheet-color'] = '';
+  // Si se recargó con una hoja abierta, el historial conserva su entrada: se regresa a la página sin hojas.
+  if (history.state && history.state.kn) history.back();
+})();
