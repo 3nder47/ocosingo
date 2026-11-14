@@ -285,6 +285,22 @@ body{background:var(--kn-bg);color:var(--kn-text);font-family:system-ui,-apple-s
 .kn-tk-deshacer{margin-top:14px;background:var(--kn-surface);color:var(--kn-danger);border:1px solid var(--kn-danger)}
 .kn-tk-nota{text-align:center;margin-top:10px}
 
+/* ---------- Desgloses de Dinero con estilo de recibo ---------- */
+#exp-body .kn-des-per{display:inline-block!important;font:600 .8125rem/1.4 ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace!important;letter-spacing:.03em!important;background:var(--kn-bg)!important;border:1px solid var(--kn-divider)!important;border-radius:14px!important;padding:6px 12px!important;color:var(--kn-muted)!important}
+#exp-body .kn-des-total{font-size:clamp(2.25rem,11vw,3rem)!important;font-weight:700!important;letter-spacing:-.02em!important;line-height:1.05!important;margin:12px 0 4px!important;overflow-wrap:anywhere!important}
+#exp-body[data-kn-tipo="ganancia"] .kn-des-total{color:var(--kn-positive)!important}
+#exp-body .kn-des-total .kn-tk-signo{font-size:1.375rem!important;vertical-align:1em!important;margin-right:2px!important}
+#exp-body .kn-des-total .kn-tk-cent{font-size:1.375rem!important}
+#exp-body .kn-des-grupo{background:var(--kn-bg)!important;border:0!important;border-radius:20px!important;padding:14px 16px!important;margin-top:12px!important}
+#exp-body .kn-des-h{font:600 .75rem/1.3 ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:var(--kn-muted)!important;margin:0 0 8px!important}
+#exp-body .kn-des-f{padding:6px 0!important;font-size:.9375rem!important}
+#exp-body .kn-des-f span:first-child{color:var(--kn-muted)!important;min-width:0!important;overflow-wrap:anywhere!important}
+#exp-body .kn-des-f span:last-child{color:var(--kn-text)!important;font-weight:600!important}
+#exp-body .kn-des-f.kn-res{border-top:2px dashed var(--kn-divider)!important;margin-top:8px!important;padding-top:10px!important}
+#exp-body .kn-des-f.kn-res span{color:var(--kn-text)!important;font-weight:700!important;font-size:1.0625rem!important}
+#exp-body .kn-des-grupo .kn-des-txt{margin-top:8px!important}
+#exp-body .kn-des-ir{background:var(--kn-surface)!important;border:1px solid var(--kn-divider)!important;border-radius:16px!important;padding:0 16px!important;margin-top:12px!important;color:var(--kn-action)!important;font-weight:600!important}
+
 /* ---------- Avisos y botones de error (Codex): texto rojo sobre fondo rojo claro, legible en claro y oscuro ---------- */
 .toast.err,.btn.danger.solid{background:var(--kn-danger-bg)!important;color:var(--kn-danger)!important;border:1px solid var(--kn-danger)}
 .toast.ok{background:var(--kn-positive-bg)!important;color:var(--kn-positive)!important}

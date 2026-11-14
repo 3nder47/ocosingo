@@ -325,6 +325,13 @@ function knAbrir(tipo, titulo, html) {
   document.getElementById('exp-titulo').textContent = titulo;
   // Marca propia: si otra explicación sustituye la hoja, el refresco ya no la pisa (Codex).
   document.getElementById('exp-body').innerHTML = '<i hidden data-kn="1"></i>' + html;
+  // Estilo de recibo (2026-11-14): la cifra principal con los centavos más chicos; el tipo decide su color.
+  var eb = document.getElementById('exp-body');
+  eb.setAttribute('data-kn-tipo', tipo);
+  eb.querySelectorAll('.kn-des-total').forEach(function (el) {
+    var m = /^\s*([−-]?)\$([\d,]+)\.(\d{2})\s*$/.exec(el.textContent);
+    if (m) el.innerHTML = '<span class="kn-tk-signo">' + (m[1] ? '−$' : '$') + '</span>' + m[2] + '<span class="kn-tk-cent">.' + m[3] + '</span>';
+  });
   hoja.classList.remove('hidden');
 }
 function knRefrescarDesglose() {
