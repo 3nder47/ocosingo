@@ -8,7 +8,7 @@
 const V = '12.7';
 const CACHE = 'kn-shell-' + V;   // versión nueva: cachés propias (kn-)
 const IMG_CACHE = 'kn-img-v1';
-const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './app.js?v=' + V, './venta-colores.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
   // allSettled: si un ícono falla, el resto del shell se precachea igual (addAll era todo o nada)

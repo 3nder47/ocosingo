@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats(),'sheet-analisis':()=>cerrarAnalisis()};
+  const cierres={'sheet-color':()=>document.getElementById('sheet-color').classList.add('hidden'),'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats(),'sheet-analisis':()=>cerrarAnalisis()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -958,7 +958,7 @@ function elegirCat(c){cerrarCats();setCat(c);window.scrollTo({top:0,behavior:'sm
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
 function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
 function miniCard(p,tag){
-  return`<button class="mini" data-d="${esc(p.descripcion)}" onclick="venderProducto(this.dataset.d)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
+  return`<button class="mini" data-d="${esc(p.descripcion)}" data-pid="${esc(p.pid||'')}" data-o="${esc(p.origen||'')}" onclick="venderProducto(this.dataset.d,this.dataset.pid,this.dataset.o)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
 }
 function renderStrips(q){
   const w=document.getElementById('cat-strips');if(!w)return;
@@ -981,14 +981,15 @@ function renderStrips(q){
     <div class="strip-h stagger">${bajos.map(p=>miniCard(p,p.stock===1?'<span class="tag">Última</span>':'<span class="tag two">Quedan 2</span>')).join('')}</div>`:'')+
     ((nuevos.length||rapidos.length||bajos.length)?`<div class="section-title" style="padding-top:14px">Todo el catálogo</div>`:'');
 }
-function venderProducto(desc){
-  const p=state.catalogo.find(x=>x.descripcion===desc);if(!p){toast('Sin stock','err');return;}
+function venderProducto(desc,pid,o){
+  const p=pid?state.catalogo.find(x=>x.pid===pid&&(x.origen||'Alex')===(o||'Alex')):state.catalogo.find(x=>x.descripcion===desc);if(!p){toast('Sin stock','err');return;}
   buzz(12);state.producto=p;state.vendedor=state.usuario;state.metodo=null;state.paso=1;abrirVenta();
 }
 function renderCatalogo(){
   const q=document.getElementById('search').value.trim().toLowerCase();
   renderStrips(q);
   state.filtrado=state.catalogo.filter(p=>filtroDueno(p)&&(state.cat==='Todas'||p.categoria===state.cat)&&(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)));
+  if(typeof vcRender==='function'&&vcRender(q))return;
   const l=document.getElementById('catalogo-list');
   if(!state.filtrado.length){l.innerHTML=q?vacio('search','Nada con ese nombre','Prueba con otra palabra.'):vacio('box','Sin stock','Todo está vendido.');return;}
   if(state.grid){
@@ -1062,7 +1063,8 @@ function stockLinea(p){
   const n=Number(p.stock)||0,low=n<=1;
   return`<div class="stock-line ${low?'low':''}">${stockDots(n,true)}<span>${n===1?'Última pieza':n+' en stock'}</span></div>`;
 }
-function pintarVenta(){
+function pintarVenta(){pintarVentaBase();if(typeof vcDecorar==='function')vcDecorar();}
+function pintarVentaBase(){
   const p=state.producto,body=document.getElementById('venta-body'),foot=document.getElementById('venta-foot');
   if(state.paso===1){
     document.getElementById('venta-titulo').textContent='Registrar venta';
