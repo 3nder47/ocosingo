@@ -185,6 +185,56 @@ body{background:var(--kn-bg);color:var(--kn-text);font-family:system-ui,-apple-s
 #view-ventas .kn-v{font-weight:700!important;letter-spacing:-.01em}
 #view-ventas .kn-tarjeta{border:1px solid var(--kn-divider)}
 
+/* ---------- Calcular (entrega 6): campos claros y resultados en tarjetas estables ---------- */
+.calc-head h3{font-size:1.5rem;font-weight:700;letter-spacing:-.01em}
+.calc-head p{color:var(--kn-muted)}
+.calc-campos label>span,.calc-ajustes label>span,.calc-card label>span{color:var(--kn-muted);font-size:.8125rem;letter-spacing:.04em}
+.calc-campos input,.calc-campos select,.calc-ajustes input,.calc-card input{background:var(--kn-surface);color:var(--kn-text);
+  border:1px solid var(--kn-control-border)!important;min-height:56px;font-weight:600}
+.calc-campos input:focus,.calc-campos select:focus,.calc-ajustes input:focus,.calc-card input:focus{border:2px solid var(--kn-focus)!important}
+.calc-campos .money,.calc-ajustes .money,.calc-card .money{border:0!important;background:none!important;min-height:0;padding:0;border-radius:0}
+.calc-edit input{border:0!important;border-bottom:2px dashed var(--kn-positive)!important;border-radius:0!important;min-height:0!important;background:none!important;padding:0 0 .1rem!important}
+.calc-edit input:focus{border-bottom-style:solid!important}
+.calc-edit input{color:inherit!important}
+.calc-card{background:var(--kn-surface);border:1px solid var(--kn-divider);border-radius:24px;box-shadow:none}
+.calc-cifra,.calc-mini,.calc-ajustes{border-top-color:var(--kn-divider)}
+.calc-cifra .et,.calc-mini .et,.calc-total .et{color:var(--kn-muted);opacity:1;letter-spacing:.04em}
+.calc-cifra .n,.calc-mini .n{font-weight:700;letter-spacing:-.02em;color:var(--kn-text)}
+.calc-cifra .n.verde,.calc-edit{color:var(--kn-positive)}
+.calc-edit input{border-bottom-color:var(--kn-positive)}
+.calc-cifra .ay,.calc-mini .ay{color:var(--kn-muted);opacity:1}
+.calc-det{background:var(--kn-tono)}
+.calc-sub,.calc-hero .et,.calc-hero .ay{color:var(--kn-muted);opacity:1!important}
+.calc-hero{border-top-color:var(--kn-divider)}
+.calc-volver{color:var(--kn-action)!important;font-size:.875rem!important;text-transform:none!important;letter-spacing:0!important;min-height:48px;min-width:48px;padding:0 8px!important}
+.calc-nota{background:var(--kn-tono);color:var(--kn-text)}
+.calc-nota.si{background:var(--kn-positive-bg);color:var(--kn-positive)}
+.calc-nota.no{background:var(--kn-danger-bg);color:var(--kn-danger)}
+.calc-total{background:var(--kn-tono);color:var(--kn-text);border-radius:24px}
+.calc-total .n{font-weight:700;letter-spacing:-.02em}
+.calc-total .ay{color:var(--kn-muted);opacity:1}
+.calc-mas{border:1px dashed var(--kn-control-border);color:var(--kn-text);opacity:1;min-height:48px}
+.calc-limpiar{color:var(--kn-danger);min-height:48px}
+
+/* ---------- Agregar producto (entrega 6): grupos, campos de 56 px y fotos estables ---------- */
+.kn-grupo-t{font-size:.8125rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--kn-muted);margin:20px 0 10px;
+  padding-top:14px;border-top:1px solid var(--kn-divider)}
+.kn-grupo-t.kn-primero{border-top:0;padding-top:0;margin-top:4px}
+.form-field label{color:var(--kn-muted);font-weight:700;letter-spacing:.04em;text-transform:none;font-size:.9375rem}
+.form-field input{background:var(--kn-surface);color:var(--kn-text);box-shadow:none;border:1px solid var(--kn-control-border)!important;
+  min-height:56px;border-radius:16px;font-weight:600}
+.form-field input:focus{border:2px solid var(--kn-focus)!important}
+.form-field .money{border:1px solid var(--kn-control-border)!important}
+.form-field .money:focus-within{border:2px solid var(--kn-focus)!important}
+.form-field .money input{border:0!important;min-height:54px}
+.cant button{background:var(--kn-surface);box-shadow:none;border:1px solid var(--kn-control-border);width:48px;height:48px;border-radius:16px;color:var(--kn-text)}
+.foto-pick{background:var(--kn-surface);box-shadow:none;border:1px dashed var(--kn-control-border);min-height:56px;color:var(--kn-text);border-radius:16px}
+.foto-pick.ok{background:var(--kn-positive-bg);color:var(--kn-positive);border-style:solid}
+.foto-pick img{width:40px;height:40px;object-fit:cover;flex:none}
+.tag-irene{background:var(--kn-selected-bg);color:var(--kn-selected-text)}
+.btn.danger{color:var(--kn-danger);border:1px solid var(--kn-danger);margin-top:24px}
+@media (max-width:380px){#sheet-alta .kn-precios{flex-direction:column;gap:0!important}}
+
 /* ---------- Avisos y botones de error (Codex): texto rojo sobre fondo rojo claro, legible en claro y oscuro ---------- */
 .toast.err,.btn.danger.solid{background:var(--kn-danger-bg)!important;color:var(--kn-danger)!important;border:1px solid var(--kn-danger)}
 .toast.ok{background:var(--kn-positive-bg)!important;color:var(--kn-positive)!important}

@@ -487,7 +487,7 @@ cambiarVista = function (vista) {
   knCambiarVistaBase(vista);
   // Título grande por pestaña (como iOS): en Dinero el encabezado dice "Dinero" en vez del saludo.
   var gr = document.getElementById('greeting');
-  if (gr && state.usuario) gr.textContent = vista === 'ventas' ? 'Dinero' : vista === 'catalogo' ? 'Tienda' : saludo() + ', ' + state.usuario;
+  if (gr && state.usuario) gr.textContent = vista === 'ventas' ? 'Dinero' : vista === 'catalogo' ? 'Tienda' : vista === 'calc' ? 'Calcular' : saludo() + ', ' + state.usuario;
   knHeroe();
   var fab = document.getElementById('fab-add');
   if (fab && state.usuario === 'Alex') fab.style.display = 'none';
@@ -714,3 +714,20 @@ function knVenderOtro() {
   var q = document.getElementById('search');
   if (q) { q.value = ''; if (typeof renderCatalogo === 'function') renderCatalogo(); q.focus(); }
 }
+
+/* Agregar producto (sistema visual v3 de Codex, entrega 6): el formulario se agrupa en "Producto", "Precio y cantidad"
+   y "Fotos" (solo presentación: los campos, sus id y guardarProducto no cambian). */
+(function () {
+  var h = document.getElementById('sheet-alta');
+  if (!h || h.querySelector('.kn-grupo-t')) return;
+  var grupo = function (el, texto, primero) {
+    if (el) el.insertAdjacentHTML('beforebegin', '<div class="kn-grupo-t' + (primero ? ' kn-primero' : '') + '">' + texto + '</div>');
+  };
+  var desc = document.getElementById('np-desc'), costo = document.getElementById('np-costo'), foto = document.getElementById('np-foto');
+  grupo(desc && desc.closest('.form-field'), 'Producto', true);
+  var fila = costo && costo.closest('.form-field') && costo.closest('.form-field').parentElement;
+  if (fila) { fila.classList.add('kn-precios'); grupo(fila, 'Precio y cantidad'); }
+  grupo(foto && foto.closest('.form-field'), 'Fotos');
+  var lf = foto && foto.closest('.form-field') && foto.closest('.form-field').querySelector('label');
+  if (lf) lf.textContent = 'Hasta 4, opcional';
+})();
