@@ -147,7 +147,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 <div id="app"><div class="cargando">Cargando…</div></div>
 <canvas id="lienzo" width="40" height="40" style="display:none"></canvas>
 
-<script src="config.js"></script>
+<script src="config-worker.js?v=13.0"></script>
 <script>
 (function(){
 "use strict";
@@ -249,7 +249,7 @@ function pedir(a){return fetch(API+"?accion="+a,{redirect:"follow"}).then(functi
 function porSlug(s){for(var i=0;i<TODO.length;i++)if(TODO[i].slug===s)return TODO[i];return null;}
 
 /* Historial: vive solo en este teléfono, no se manda a ningún lado. */
-var LLAVE="kiosko:vistos";
+var LLAVE="kn-kiosko:vistos";
 function leerVistos(){try{return JSON.parse(localStorage.getItem(LLAVE)||"[]");}catch(e){return [];}}
 function guardarVisto(sl){
   try{

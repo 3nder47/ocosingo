@@ -1,4 +1,4 @@
-const APP_VERSION='12.7';const APP_BUILD='13 Sep 2026 07:10';
+const APP_VERSION='13.0';const APP_BUILD='13 Sep 2026 07:10';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -6,20 +6,22 @@ const APP_VERSION='12.7';const APP_BUILD='13 Sep 2026 07:10';
 /* La URL y el token viven en config.js (no en este archivo) para que
    actualizar index.html nunca obligue a volver a pegar el token. */
 const API_URL=(window.OC_CONFIG||{}).API_URL||'';
-const API_TOKEN=(window.OC_CONFIG||{}).API_TOKEN||'';
-if(!API_URL||!API_TOKEN)console.error('Falta config.js con OC_CONFIG.API_URL y API_TOKEN');
+/* VERSIÓN NUEVA (prueba): Worker de Cloudflare + D1. Ya no hay token: la sesión la da el PIN (verificarPin). */
+const SES_KEY='kn:sesion';
+const sesionGuardada=()=>{try{return localStorage.getItem(SES_KEY)||'';}catch(e){return '';}};
+if(!API_URL)console.error('Falta config.js con OC_CONFIG.API_URL');
 
 async function apiUnaVez(accion,params={},body=null,ms=20000){
-  if(!API_URL||!API_TOKEN){const e=new Error('Falta config.js en el repo (URL y token)');e.api=true;e.tipo='config';throw e;}
+  if(!API_URL){const e=new Error('Falta config.js en el repo (URL)');e.api=true;e.tipo='config';throw e;}
   const url=new URL(API_URL);
   const ctrl=new AbortController(),reloj=setTimeout(()=>ctrl.abort(),ms);
   const opts={redirect:'follow',signal:ctrl.signal};
   if(body){
     opts.method='POST';
     opts.headers={'Content-Type':'text/plain;charset=utf-8'}; // text/plain = sin preflight CORS
-    opts.body=JSON.stringify({token:API_TOKEN,accion,...body});
+    opts.body=JSON.stringify({sesion:sesionGuardada(),accion,...body});
   }else{
-    url.search=new URLSearchParams({token:API_TOKEN,accion,...params}).toString();
+    url.search=new URLSearchParams({sesion:sesionGuardada(),accion,...params}).toString();
   }
   let r;
   try{r=await fetch(url,opts);}
@@ -39,7 +41,8 @@ async function apiUnaVez(accion,params={},body=null,ms=20000){
     const e=new Error(login?'La app no tiene permiso de entrar al servidor (revisa el acceso del despliegue)':'El servidor no devolvió datos válidos');
     e.api=true;e.tipo='formato';e.muestra=txt.slice(0,200);throw e;
   }
-  if(!j.ok){const e=new Error(j.error||'Error del servidor');e.api=true;e.tipo='api';throw e;}
+  if(!j.ok&&j.codigo==='sin_sesion'&&accion!=='verificarPin'){try{localStorage.removeItem(SES_KEY);}catch(e){}if(state.usuario)setTimeout(cerrarSesion,0);}
+  if(!j.ok){const e=new Error(j.error||'Error del servidor');e.api=true;e.tipo='api';e.codigo=j.codigo;throw e;}
   return j.data;
 }
 
@@ -86,7 +89,7 @@ const apiPost=(accion,body)=>api(accion,{},body);
    1) si hay copia local (y no está marcada sucia) la pinta al instante,
    2) pide datos frescos y vuelve a pintar,
    3) si no hay red, se queda con la copia local y avisa. */
-const cacheKey=(a,p)=>'oc:'+a+':'+JSON.stringify(p||{});
+const cacheKey=(a,p)=>'kn:'+a+':'+JSON.stringify(p||{});
 function leerCache(k){try{const c=localStorage.getItem(k);return c?JSON.parse(c):null;}catch(e){return null;}}
 function apiCached(accion,params,onData,onFail){
   const key=cacheKey(accion,params);
@@ -191,7 +194,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* Deslizar la hoja hacia abajo para cerrarla (solo cuando está arriba del todo y el gesto es vertical). */
 function setupSwipeSheets(){
-  const cierres={'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats(),'sheet-analisis':()=>cerrarAnalisis()};
+  const cierres={'sheet-color':()=>document.getElementById('sheet-color').classList.add('hidden'),'sheet-venta':()=>cerrarVenta(),'sheet-quick':()=>cerrarQuick(),'sheet-usuario':()=>cerrarUsuarios(),'sheet-detalle':()=>cerrarDetalle(),'sheet-exp':()=>cerrarExp(),'sheet-alta':()=>cerrarAlta(),'sheet-meta':()=>cerrarMeta(),'sheet-outbox':()=>cerrarOutbox(),'sheet-corte':()=>cerrarCorteSheet(),'sheet-cerrar':()=>cerrarCerrar(),'sheet-cats':()=>cerrarCats(),'sheet-analisis':()=>cerrarAnalisis()};
   document.querySelectorAll('.overlay .sheet').forEach(sh=>{
     const id=sh.parentElement.id;let y0=null,x0=0,dy=0,activo=false,decidido=false;
     sh.addEventListener('touchstart',e=>{if(sh.scrollTop>2)return;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;activo=false;decidido=false;},{passive:true});
@@ -283,7 +286,7 @@ function validarPin(){
   state.busy=true;
   apiPost('verificarPin',{pin:state.pin}).then(res=>{
     state.busy=false;
-    if(res.valido){entrar(res.vendedor);}
+    if(res.valido){try{localStorage.setItem(SES_KEY,res.sesion||'');}catch(e){}entrar(res.vendedor);}
     else{fallo(res.error||'PIN incorrecto');}   // el servidor explica si es bloqueo por intentos
   }).catch(err=>{state.busy=false;fallo(err.api?err.message:'Sin conexión ('+(err&&err.message||err)+')');});
 }
@@ -302,12 +305,12 @@ function entrar(u){
     app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
     setUsuario(u);cambiarVista('catalogo');
   },420);
-  try{localStorage.setItem('oc:usuario',u);}catch(e){}
+  try{localStorage.setItem('kn:usuario',u);}catch(e){}
 }
 /* Si este teléfono ya entró antes, salta el login */
 function entrarRecordado(){
-  let u=null;try{u=localStorage.getItem('oc:usuario');}catch(e){}
-  if(!u)return false;
+  let u=null;try{u=localStorage.getItem('kn:usuario');}catch(e){}
+  if(!u||!sesionGuardada())return false;
   state.usuario=u;
   document.getElementById('login').classList.add('hidden');
   const app=document.getElementById('app');app.classList.remove('hidden');app.classList.add('hello');setTimeout(()=>app.classList.remove('hello'),600);
@@ -325,7 +328,7 @@ async function buscarActualizacion(){
   toast('Ya tienes la última versión (v'+APP_VERSION+'). Si acabas de subir cambios, GitHub tarda unos minutos.');
 }
 function cerrarSesion(){
-  try{localStorage.removeItem('oc:usuario');}catch(e){}
+  try{localStorage.removeItem('kn:usuario');localStorage.removeItem(SES_KEY);}catch(e){}
   cerrarUsuarios();state.usuario=null;state.ventas=[];state.ventFirma='';
   document.getElementById('app').classList.add('hidden');
   const lg=document.getElementById('login');lg.classList.remove('hidden');state.pin='';pintarDots();
@@ -522,12 +525,24 @@ function refrescar(done){
 function listo(){if(_refrescando){const f=_refrescando;_refrescando=null;setTimeout(f,350);}}
 
 /* ---------- DINERO (fusión del dashboard y Mis ventas) ---------- */
+/* VERSIÓN NUEVA: gráfica por mes, sugerencias, racha y operación de Irene llegan en una segunda llamada
+   (inicioExtras) para que ninguna pase del límite de CPU del plan gratis. Lo esencial para vender llega primero. */
+function cargarExtras(despues){
+  apiCached('inicioExtras',{usuario:state.usuario},x=>{
+    if(Array.isArray(x.recientes))state.recientes=x.recientes;
+    if(Array.isArray(x.ofrecer))state.ofrecer=x.ofrecer;
+    if(x.operacionIrene)state.operacion=x.operacionIrene;
+    if(x.impulso)state.impulso=x.impulso;
+    if(Array.isArray(x.ventasMes))state._meses=x.ventasMes;
+    state._extrasFalla=false;try{if(despues)despues();}catch(e){}
+  },()=>{state._extrasFalla=true;try{if(despues)despues();}catch(e){}});
+}
 function cargarDinero(){
   const hero=document.getElementById('dinero-hero');
   if(!hero.innerHTML)hero.innerHTML='<div class="sk" style="height:180px"></div>';
   if(!document.getElementById('ventas-list').innerHTML)document.getElementById('ventas-list').innerHTML='<div class="sk" style="height:200px;margin-top:8px"></div>';
   let pendientes=2;const fin=st=>{if(!st)pendientes--;if(pendientes<=0)listo();};
-  apiCached('inicio',{usuario:state.usuario},(d,m)=>{
+  apiCached('inicio',{usuario:state.usuario,partes:'base'},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
     if(Array.isArray(d.catalogo))state.catalogo=aplicarOutbox(d.catalogo);
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
@@ -536,8 +551,9 @@ function cargarDinero(){
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
     if(Array.isArray(d.cortes))state.cortes=d.cortes;
-    renderDinero(d.dashboard,d.ventasMes||[],m);fin(m.stale);
+    state._dash=d.dashboard;renderDinero(d.dashboard,state._meses||[],m);fin(m.stale);
   },()=>{hero.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');fin(false);});
+  cargarExtras(()=>{if(state._dash)renderDinero(state._dash,state._meses||[],{stale:false});});
   apiCached('misVentas',{vendedor:state.usuario},(d,m)=>{
     if(d.logros)renderLogros(d.logros);
     if(Array.isArray(d.ventas)){const firma=JSON.stringify(d.ventas);if(firma!==state.ventFirma){state.ventFirma=firma;state.ventas=d.ventas;renderVentas();}}
@@ -615,8 +631,8 @@ function renderDinero(d,meses,m){
   const $=id=>document.getElementById(id);state._dash=d;state._meses=meses;
   const esIrene=state.usuario==='Irene',o=state.operacion;
   if(esIrene){
-    tick($('h-val'),o?o.gMesTotal:0);
-    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')+rachaChip()||'<span class="chip">Aún sin ventas este mes</span>';
+    if(o)tick($('h-val'),o.gMesTotal);else $('h-val').textContent=state._extrasFalla?'—':'…';
+    $('h-chips').innerHTML=(o&&o.gMesPropio?`<span class="chip">De tu mercancía $${pesos(o.gMesPropio)}</span>`:'')+(o&&o.gMesAjeno?`<span class="chip">Vendiendo lo de Alex $${pesos(o.gMesAjeno)}</span>`:'')+(o&&state._extrasFalla?'<span class="chip">Sin actualizar · desliza para reintentar</span>':'')+rachaChip()||(o?'<span class="chip">Aún sin ventas este mes</span>':(state._extrasFalla?'<span class="chip">No se pudo cargar tu ganancia · desliza para reintentar</span>':''));
     tick($('tc-val'),d.porTransferir);
     $('tc-sub').textContent=d.cortesAbiertos?`Corte abierto: faltan $${pesos(d.saldoCortes)}${d.sinCorte>0?` · nuevas $${pesos(d.sinCorte)}`:''}`:`${d.totalVentas} venta${d.totalVentas===1?'':'s'} sin liquidar · toca para ver la cuenta`;
     renderChipsCortes(d);
@@ -634,7 +650,7 @@ function renderDinero(d,meses,m){
   if(!esIrene){
   tick($('v-girene'),d.gananciaIrene);$('row-gmama').style.display=(d.gananciaMama||0)>0?'':'none';tick($('v-gmama'),d.gananciaMama||0);
   tick($('v-moto'),d.gastoMotomandado);
-  tick($('v-gmes'),(state.impulso||{}).gananciaMes||0);
+  if(state.impulso)tick($('v-gmes'),state.impulso.gananciaMes||0);else $('v-gmes').textContent=state._extrasFalla?'—':'…';
   tick($('v-total'),d.ventasTotalesMes);tick($('v-art'),d.articulosMesTotal!=null?d.articulosMesTotal:d.articulosMes,{prefix:'',fmt:entero});
   }
   const c=$('chart');if(!c)return;
@@ -851,7 +867,7 @@ function guardarProducto(){
       for(let i=0;i<lote.length;i++){
         b.textContent=lote.length>1?`Subiendo foto ${i+1} de ${lote.length}…`:'Subiendo foto…';
         try{
-          const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,base64:lote[i].b64,mime:'image/jpeg',principal:i===0&&!!ed});
+          const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,pid:r.pid||(ed&&ed.pid)||'',claveApp:lote[i].k||(lote[i].k=crypto.randomUUID()),base64:lote[i].b64,mime:'image/jpeg',principal:i===0&&!!ed});
           if(!rf.success)fallaron++;
         }catch(e){fallaron++;}
       }
@@ -881,7 +897,7 @@ function cargarCatalogo(){
   const l=document.getElementById('catalogo-list');
   if(state.catalogo.length){renderCats();renderCatalogo();}
   else l.innerHTML='<div class="sk" style="height:60px;margin-top:16px"></div><div class="sk" style="height:180px;margin-top:10px"></div>';
-  apiCached('inicio',{usuario:state.usuario},(d,m)=>{
+  apiCached('inicio',{usuario:state.usuario,partes:'base'},(d,m)=>{
     if(d.dashboard&&d.dashboard.error){toast(d.dashboard.error,'err');return;}
     if(Array.isArray(d.recientes))state.recientes=d.recientes;
     if(Array.isArray(d.detalle))state.detalle=d.detalle;
@@ -889,10 +905,11 @@ function cargarCatalogo(){
     if(d.operacionIrene)state.operacion=d.operacionIrene;
     if(d.impulso)state.impulso=d.impulso;
     if(Array.isArray(d.cortes))state.cortes=d.cortes;
-    state._dash=d.dashboard;state._meses=d.ventasMes||[];
+    state._dash=d.dashboard;if(Array.isArray(d.ventasMes))state._meses=d.ventasMes;
     if(Array.isArray(d.catalogo)){const firma=JSON.stringify(d.catalogo)+outboxFirma();if(firma!==state.catFirma){state.catFirma=firma;state.catalogo=aplicarOutbox(d.catalogo);renderCats();renderCatalogo();}else renderStrips(document.getElementById('search').value.trim().toLowerCase());}
     if(!m.stale)listo();
   },()=>{l.innerHTML=vacio('wifi','No se pudo cargar','Desliza hacia abajo para reintentar.');listo();});
+  cargarExtras(()=>{if(state.catalogo.length)renderStrips(document.getElementById('search').value.trim().toLowerCase());});
 }
 function renderDuenos(){
   const w=document.getElementById('duenos');if(!w)return;
@@ -941,7 +958,7 @@ function elegirCat(c){cerrarCats();setCat(c);window.scrollTo({top:0,behavior:'sm
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
 function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
 function miniCard(p,tag){
-  return`<button class="mini" data-d="${esc(p.descripcion)}" onclick="venderProducto(this.dataset.d)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
+  return`<button class="mini" data-d="${esc(p.descripcion)}" data-pid="${esc(p.pid||'')}" data-o="${esc(p.origen||'')}" onclick="venderProducto(this.dataset.d,this.dataset.pid,this.dataset.o)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
 }
 function renderStrips(q){
   const w=document.getElementById('cat-strips');if(!w)return;
@@ -964,14 +981,15 @@ function renderStrips(q){
     <div class="strip-h stagger">${bajos.map(p=>miniCard(p,p.stock===1?'<span class="tag">Última</span>':'<span class="tag two">Quedan 2</span>')).join('')}</div>`:'')+
     ((nuevos.length||rapidos.length||bajos.length)?`<div class="section-title" style="padding-top:14px">Todo el catálogo</div>`:'');
 }
-function venderProducto(desc){
-  const p=state.catalogo.find(x=>x.descripcion===desc);if(!p){toast('Sin stock','err');return;}
+function venderProducto(desc,pid,o){
+  const p=pid?state.catalogo.find(x=>x.pid===pid&&(x.origen||'Alex')===(o||'Alex')):state.catalogo.find(x=>x.descripcion===desc);if(!p){toast('Sin stock','err');return;}
   buzz(12);state.producto=p;state.vendedor=state.usuario;state.metodo=null;state.paso=1;abrirVenta();
 }
 function renderCatalogo(){
   const q=document.getElementById('search').value.trim().toLowerCase();
   renderStrips(q);
   state.filtrado=state.catalogo.filter(p=>filtroDueno(p)&&(state.cat==='Todas'||p.categoria===state.cat)&&(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q)));
+  if(typeof vcRender==='function'&&vcRender(q))return;
   const l=document.getElementById('catalogo-list');
   if(!state.filtrado.length){l.innerHTML=q?vacio('search','Nada con ese nombre','Prueba con otra palabra.'):vacio('box','Sin stock','Todo está vendido.');return;}
   if(state.grid){
@@ -1045,7 +1063,8 @@ function stockLinea(p){
   const n=Number(p.stock)||0,low=n<=1;
   return`<div class="stock-line ${low?'low':''}">${stockDots(n,true)}<span>${n===1?'Última pieza':n+' en stock'}</span></div>`;
 }
-function pintarVenta(){
+function pintarVenta(){pintarVentaBase();if(typeof vcDecorar==='function')vcDecorar();}
+function pintarVentaBase(){
   const p=state.producto,body=document.getElementById('venta-body'),foot=document.getElementById('venta-foot');
   if(state.paso===1){
     document.getElementById('venta-titulo').textContent='Registrar venta';
@@ -1057,7 +1076,7 @@ function pintarVenta(){
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
       <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto(this)">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">$${money(p.precio)}</span></div>
-      <div class="field"><label>Vendedor</label><div class="opts">${['Irene','Mamá','Alex'].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
+      <div class="field"><label>Vendedor</label><div class="opts">${[state.usuario].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>
         <button class="opt ${state.metodo===(esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex')?'on':''}" onclick="setMetodo('${esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex'}')">Transferencia</button>
@@ -1236,7 +1255,7 @@ function deshacerVenta(){
    envía sola cuando vuelve la señal. El backend rechaza duplicados por ventaID, así que
    reintentar nunca descuenta dos piezas. Las ventas que el servidor rechaza a propósito
    (sin stock, etc.) se quedan esperando a que la persona decida: reintentar o descartar. */
-const OUTBOX_KEY='oc:outbox';
+const OUTBOX_KEY='kn:outbox';
 function uuid(){
   if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16);});
@@ -1268,7 +1287,7 @@ async function enviarPendientes(){
       if(x.error)continue;                       // rechazada: espera a que la persona decida
       if(Date.now()-x.creada<12000)continue;      // respeta la ventana de "Deshacer"
       try{
-        const r=await apiPost('registrarVenta',{venta:x.venta});
+        const r=await apiPost('registrarVenta',{venta:Object.assign({},x.venta,{creada:x.creada})});
         if(r.success){outboxQuitar(x.ventaID);ok++;}
         else marcarError_(x.ventaID,r.error||'El servidor no aceptó la venta');
       }catch(err){
@@ -1774,7 +1793,7 @@ function abrirCorte(id){
   buzz();const body=document.getElementById('corte-body'),t=document.getElementById('corte-titulo');
   t.textContent='Corte '+id;body.innerHTML='<div class="sk" style="height:120px"></div><div class="sk" style="height:200px;margin-top:10px"></div>';
   document.getElementById('sheet-corte').classList.remove('hidden');document.querySelector('#sheet-corte .sheet').scrollTo({top:0});
-  apiCached('cortes',{},(L)=>{const c=(L||[]).find(x=>x.id===id);if(!c){body.innerHTML=vacio('search','No se encontró el corte');return;}pintarCorte(c);},()=>{body.innerHTML=vacio('wifi','No se pudo cargar','Revisa la conexión.');});
+  apiCached('cortes',{id},(L)=>{const c=(L||[]).find(x=>x.id===id);if(!c){body.innerHTML=vacio('search','No se encontró el corte');return;}pintarCorte(c);},()=>{body.innerHTML=vacio('wifi','No se pudo cargar','Revisa la conexión.');});
 }
 function pintarCorte(c){
   const body=document.getElementById('corte-body'),esAlex=state.usuario==='Alex';
@@ -1791,24 +1810,33 @@ function pintarCorte(c){
     <button class="btn ghost" onclick="cerrarCorteSheet()">Cerrar</button>`;
 }
 function cerrarCorteSheet(){document.getElementById('sheet-corte').classList.add('hidden');}
+/* VERSIÓN NUEVA (Codex 2026-11-08): un abono cuya respuesta se perdió queda guardado en el teléfono con su clave
+   (kn:pagoPend:CORTE) hasta que el servidor conteste. Reintentar manda la MISMA clave: no se registra dos veces,
+   aunque se cierre la hoja. Mientras esté pendiente no se acepta otro monto para ese corte. */
+const pagoPendKey=id=>'kn:pagoPend:'+id;
+function pagoPendLeer(id){try{return JSON.parse(localStorage.getItem(pagoPendKey(id))||'null');}catch(e){return null;}}
+function pagoPendBorrar(id,pid){try{const pp=pagoPendLeer(id);if(pp&&pp.pid===pid)localStorage.removeItem(pagoPendKey(id));}catch(e){}}
+function pagoClave(id,monto){const pp=pagoPendLeer(id);if(pp&&pp.monto===monto)return pp.pid;const pid=uuid();try{localStorage.setItem(pagoPendKey(id),JSON.stringify({pid,monto}));}catch(e){}const ok=pagoPendLeer(id);return ok&&ok.pid===pid?pid:null;}
 function guardarPago(id){
+  {const pp=pagoPendLeer(id),mi=document.getElementById('pago-monto');if(pp&&mi&&Number(mi.value)!==pp.monto){mi.value=pp.monto;toast(`Quedó sin confirmar un abono de $${money(pp.monto)}. Tócalo otra vez con ese monto: si ya entró, no se repite`,'err');return;}const m0=Number(mi&&mi.value);if(m0>0&&!pagoClave(id,m0)){toast('El teléfono no dejó guardar el abono (¿modo incógnito?). No se mandó nada.','err');return;}}
   const monto=Number(document.getElementById('pago-monto').value),nota=(document.getElementById('pago-nota').value||'').trim();
   if(!(monto>0)){toast('Escribe el monto que recibiste','err');return;}
   const b=document.getElementById('pago-btn');b.disabled=true;b.textContent='Guardando…';
-  apiPost('registrarPago',{usuario:state.usuario,corteID:id,monto,nota}).then(r=>{
+  const pidEnv=(pagoPendLeer(id)||{}).pid;
+  apiPost('registrarPago',{usuario:state.usuario,corteID:id,monto,nota,pagoID:pidEnv}).then(r=>{pagoPendBorrar(id,pidEnv);
     if(!r.success){toast(r.error||'No se pudo registrar','err');b.disabled=false;b.textContent='Registrar pago';return;}
     buzz([20,30,20]);state.dirty=true;state.ventFirma='';
     toast(r.corte.estado==='Pagado'?`${id} pagado por completo · ${r.liquidadas} venta${r.liquidadas===1?'':'s'} liquidada${r.liquidadas===1?'':'s'}`:`Abono registrado · faltan $${pesos(r.corte.saldo)}`,'ok');
     state.cortes=(state.cortes||[]).map(c=>c.id===id?Object.assign({},c,r.corte):c);
-    try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}
+    try{Object.keys(localStorage).filter(k=>k.startsWith('kn:cortes:')).forEach(k=>localStorage.removeItem(k));}catch(e){}
     cerrarCorteSheet();cerrarDetalle();cargarDinero();
-  }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se guardó','err');b.disabled=false;b.textContent='Registrar pago';});
+  }).catch(err=>{if(err.tipo==='api'&&(err.codigo==='sin_sesion'||err.codigo==='sin_permiso'))pagoPendBorrar(id,pidEnv);toast(err.api?err.message:'No se sabe si se guardó. Toca otra vez: si ya entró, no se registra dos veces','err');b.disabled=false;b.textContent='Registrar pago';});
 }
 /* Hoja para cerrar el corte: resume lo que se va a congelar y pide mantener presionado. */
 function abrirCerrar(){
   buzz();const r=state._resumen;if(!r||!r.n){toast('No hay ventas nuevas que cortar','err');return;}
   document.getElementById('cerrar-body').innerHTML=`
-    <p class="exp-p">Se congelan <b>${r.n} venta${r.n===1?'':'s'}</b> bajo un número de corte. Lo que se venda después entra al siguiente. El bloque se escribe en tu hoja <b>Transferencias</b> como siempre.</p>
+    <p class="exp-p">Se congelan <b>${r.n} venta${r.n===1?'':'s'}</b> bajo un número de corte. Lo que se venda después entra al siguiente. Queda guardado con su número de corte.</p>
     <div class="review">
       ${r.A?`<div class="row"><div class="t"><b>Ventas de Alex en efectivo</b></div><div class="v num">$${money(r.A)}</div></div>`:''}
       ${r.B?`<div class="row"><div class="t"><b>Costo de lo de Irene y Mamá</b></div><div class="v num">$${money(r.B)}</div></div>`:''}
@@ -1826,7 +1854,7 @@ function confirmarCerrar(){
     if(!r.success){toast(r.error||'No se pudo cerrar','err');b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para cerrar';return;}
     buzz([30,40,60]);state.dirty=true;state.ventFirma='';
     state.cortes=[r.corte].concat(state.cortes||[]);
-    try{localStorage.removeItem(cacheKey('cortes',{}));}catch(e){}   // que abrirCorte no lea una lista vieja
+    try{Object.keys(localStorage).filter(k=>k.startsWith('kn:cortes:')).forEach(k=>localStorage.removeItem(k));}catch(e){}   // que abrirCorte no lea una lista vieja
     cerrarCerrar();cerrarDetalle();toast(`Corte ${r.corte.id} cerrado · $${pesos(r.corte.total)}`,'ok');cargarDinero();
     setTimeout(()=>abrirCorte(r.corte.id),400);
   }).catch(err=>{toast(err.api?err.message:'Sin conexión, no se cerró el corte','err');b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Mantén presionado para cerrar';});
@@ -1838,11 +1866,11 @@ function abrirUsuarios(){
   document.getElementById('user-list').innerHTML=u.map(([n,d])=>`
     <button class="user ${state.usuario===n?'on':''}" onclick="cambiarUsuario('${n}')" style="width:100%;text-align:left">
       <div class="avatar ${claseUsuario(n)}">${n[0]}</div><div><b>${n}</b><small>${d}</small></div></button>`).join('')+
-    `<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>
+    `${state.usuario==='Alex'?'<a class="btn ghost" style="margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="analisis.html">Panel de administración</a>':''}<button class="btn ghost" style="margin-top:8px" onclick="cerrarSesion()">Cerrar sesión en este teléfono</button>
      <div class="ver">Kiosko v${APP_VERSION} · ${APP_BUILD}<button onclick="buscarActualizacion()">Buscar actualización</button></div>`;
   document.getElementById('sheet-usuario').classList.remove('hidden');
 }
-function cambiarUsuario(u){buzz();state.impulso=null;state._dinArmado='';try{localStorage.setItem('oc:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('catalogo');}
+function cambiarUsuario(u){buzz();state.impulso=null;state._dinArmado='';try{localStorage.setItem('kn:usuario',u);}catch(e){}setUsuario(u);state.ventas=[];state.ventFirma='';const lw=document.getElementById('logros');if(lw){lw.innerHTML='';lw.dataset.firma='';}cerrarUsuarios();cambiarVista('catalogo');}
 function cerrarUsuarios(){document.getElementById('sheet-usuario').classList.add('hidden');}
 
 /* ---------- UTILS ---------- */
@@ -1885,7 +1913,7 @@ window.addEventListener('appinstalled',()=>{cerrarInstall(true);toast('Kiosko in
 function instalada(){return matchMedia('(display-mode:standalone)').matches||navigator.standalone===true;}
 function setupInstall(){
   if(_installListo||instalada())return;_installListo=true;
-  let hasta=0,visitas=0;try{hasta=Number(localStorage.getItem('oc:install-no')||0);visitas=Number(localStorage.getItem('oc:visitas')||0)+1;localStorage.setItem('oc:visitas',String(visitas));}catch(e){}
+  let hasta=0,visitas=0;try{hasta=Number(localStorage.getItem('kn:install-no')||0);visitas=Number(localStorage.getItem('kn:visitas')||0)+1;localStorage.setItem('kn:visitas',String(visitas));}catch(e){}
   if(Date.now()<hasta||visitas<2)return;   // en la primera visita, cero interrupciones
   setTimeout(mostrarInstall,3000);   // deja que cargue el inicio antes de pedir algo
 }
@@ -1906,5 +1934,5 @@ function instalar(){
 }
 function cerrarInstall(silencio){
   document.getElementById('install').classList.add('hidden');
-  if(!silencio)try{localStorage.setItem('oc:install-no',String(Date.now()+7*864e5));}catch(e){}  // vuelve a preguntar en una semana
+  if(!silencio)try{localStorage.setItem('kn:install-no',String(Date.now()+7*864e5));}catch(e){}  // vuelve a preguntar en una semana
 }

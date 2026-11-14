@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1D9E75">
 <title>Kiosko · Resumen</title>
+<script src="definitiva.js?v=13.0"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ui.css?v=6">
-<script>(function(){try{var t=localStorage.getItem("kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem("kn-kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
 
@@ -27,14 +28,17 @@
   <button class="nav on" data-p="resumen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Resumen</button>
   <button class="nav" data-p="ventas"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Ventas</button>
   <button class="nav" data-p="inventario"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>Inventario <span class="n" id="nav-n"></span></button>
+  <button class="nav" data-p="cuenta"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/></svg> La cuenta <span class="n" id="nav-cuenta"></span></button>
+  <button class="nav" data-p="colores"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.3"/><circle cx="12" cy="7.5" r="1.3"/><circle cx="15.5" cy="10" r="1.3"/></svg> Colores</button>
   <div class="sep"></div>
   <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>¿Me conviene?</button>
   <button class="nav" data-p="alta"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
+  <a class="nav" href="./" style="text-decoration:none"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg> App de venta</a>
   <div class="fin"><span>Sesión de Alex</span><button class="tema" id="tema" title="Cambiar apariencia">Tema: auto</button></div>
 </aside>
 
 <main class="main">
-  <div id="carga" class="cargando"><div class="spin"></div>Leyendo tu hoja…</div>
+  <div id="carga" class="cargando"><div class="spin"></div>Cargando…</div>
   <div class="nota warn" id="aviso-global" style="display:none;margin:0 0 16px"></div>
 
   <!-- ===== RESUMEN ===== -->
@@ -94,6 +98,9 @@
   </section>
 
   <!-- ===== ALTA DE PEDIDO ===== -->
+  <section class="pant" id="p-cuenta"></section>
+  <section class="pant" id="p-colores"></section>
+
   <section class="pant" id="p-alta">
     <div class="top">
       <div><h1>Alta de pedido</h1><p>Lo que pagaste afuera, traducido a lo que te cuesta aquí.</p></div>
@@ -154,19 +161,19 @@
 
 <div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
-<script src="config.js"></script>
+<script src="config-worker.js?v=13.0"></script>
 <script>
 (function(){
 "use strict";
 /* ============ API (misma lógica de reintentos que antes) ============ */
-var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
+var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN="";
 function apiUnaVez(a,p,b,ms){ms=ms||30000;
-  if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
+  if(!API_URL)return Promise.reject(new Error("Falta la configuración de config.js"));
   var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
-  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
-  else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
+  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},b));}
+  else u.search=new URLSearchParams(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},p||{})).toString();
   return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
-   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok)throw new Error(j.error||"Error del servidor");return j.data;})
+   .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok){if(j.codigo==="sin_sesion"){try{localStorage.removeItem("kn:sesion");}catch(e){}}var er=new Error(j.error||"Error del servidor");er.codigo=j.codigo;throw er;}return j.data;})
    .catch(function(e){clearTimeout(t);
      if(e&&e.name==="AbortError"){var le=new Error("El servidor tardó demasiado");le.tipo="lento";throw le;}
      if(e&&!e.tipo&&e.name==="TypeError")e.tipo="red";
@@ -204,6 +211,7 @@ function ayuda(t){return '<button class="ayuda" type="button" data-t="'+esc(t)+'
 function foto(x){return x.imagen?'<img class="foto" src="'+esc(x.imagen)+'" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'foto\'}))">':'<span class="foto"></span>';}
 
 /* ============ estado ============ */
+function expandirVentas(r){if(!r||r.formato!=="ventas-v1"||!Array.isArray(r.filas))return r;var P=r.prod,T=r.txt;return r.filas.map(function(f){var p=P[f[0]];return{descripcion:p[0],origen:p[1],imagen:p[2],fechaTimestamp:f[1],precio:f[2]/100,costoFinal:f[3]/100,cobroExtra:f[4]/100,gastoExt:f[5]/100,aporte:f[6]/100,ganancia:f[7]/100,vendedor:T[f[8]],estatusTransferencia:T[f[9]],corte:f[10]};});}
 var D=null,CAT=[],VEN=[],INV=[],rango="todo",MOTO=25,COBRO=10,VEN_ERR="";
 function avisar(t){var a=$("aviso-global");a.textContent=t;a.style.display="block";}
 var sel={};                       // clave -> precio de remate
@@ -212,8 +220,8 @@ var iTab="todo",iMerc="Alex";     // inventario
 var vOrden={campo:"utilidad",dir:-1};
 
 /* ============ sesión ============ */
-var SES_KEY="kiosko:sesion:alex";
-function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
+var SES_KEY="kn-kiosko:sesion:alex";
+function sesionViva(){try{return !!localStorage.getItem("kn:sesion")&&localStorage.getItem("kn:usuario")==="Alex";}catch(e){return false;}}
 function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
 var pi=$("pin-in");
 pi.addEventListener("input",function(){
@@ -222,6 +230,7 @@ pi.addEventListener("input",function(){
   api("verificarPin",null,{pin:v},60000).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
     if(d.vendedor!=="Alex")throw new Error("Esta pantalla es solo de Alex");
+    try{localStorage.setItem("kn:sesion",d.sesion||"");localStorage.setItem("kn:usuario",d.vendedor);}catch(e){}
     abrirSesion();entrar();
   }).catch(function(e){$("pin-e").style.color="var(--rojo)";$("pin-e").textContent=e.message+" · vuelve a escribirlo";pi.value="";pi.disabled=false;pi.focus();});
 });
@@ -229,9 +238,9 @@ function entrar(){$("pin").classList.add("oculto");$("app").classList.remove("oc
 
 /* ============ tema ============ */
 var TEMAS=["auto","dark","light"],TEMAN={auto:"auto",dark:"oscuro",light:"claro"};
-function tema(){var t;try{t=localStorage.getItem("kiosko:tema");}catch(e){}return TEMAS.indexOf(t)>-1?t:"auto";}
+function tema(){var t;try{t=localStorage.getItem("kn-kiosko:tema");}catch(e){}return TEMAS.indexOf(t)>-1?t:"auto";}
 function pintarTema(){var t=tema();if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);$("tema").textContent="Tema: "+TEMAN[t];}
-$("tema").addEventListener("click",function(){var n=TEMAS[(TEMAS.indexOf(tema())+1)%3];try{if(n==="auto")localStorage.removeItem("kiosko:tema");else localStorage.setItem("kiosko:tema",n);}catch(e){}pintarTema();});
+$("tema").addEventListener("click",function(){var n=TEMAS[(TEMAS.indexOf(tema())+1)%3];try{if(n==="auto")localStorage.removeItem("kn-kiosko:tema");else localStorage.setItem("kn-kiosko:tema",n);}catch(e){}pintarTema();});
 pintarTema();
 
 /* ============ carga ============ */
@@ -240,9 +249,9 @@ function cargar(){
   Promise.all([
     api("analisis",{rango:rango},null,45000),
     api("catalogo",null,null,30000).catch(function(){return[];}),
-    api("ventasAnalisis",null,null,45000).catch(function(){return api("ventas",{limite:3000},null,45000);}).catch(function(e){VEN_ERR=e.message;return[];})
+    api("ventasAnalisis",null,null,45000).then(expandirVentas).catch(function(){return api("ventas",{limite:3000},null,45000);}).catch(function(e){VEN_ERR=e.message;return[];})
   ]).then(function(r){
-    D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];
+    D=r[0]||{};CAT=r[1]||[];VEN=r[2]||[];if(window.KIOSKO&&window.KIOSKO.cuenta){window.KIOSKO.cuenta.olvidar();window.KIOSKO.cuenta.badge();}
     if(VEN_ERR||!VEN.length)avisar(VEN_ERR?"No pude leer tus ventas ("+VEN_ERR+"). Ventas, gastos y 'Se acaba' salen vacíos.":"Tu hoja no devolvió ventas: Ventas, gastos y 'Se acaba' salen vacíos.");
     armarInventario();llenarSelects();
     $("carga").classList.add("oculto");
@@ -327,14 +336,16 @@ function llenarSelects(){
 var pantalla="resumen";
 var sucio=false;
 function ir(p,tab,est){
-  if(pantalla==="alta"&&p!=="alta"&&sucio){sucio=false;cargar();}
+  if((pantalla==="alta"||pantalla==="colores")&&p!==pantalla&&sucio){sucio=false;cargar();}
   pantalla=p;
   if(p==="alta"&&window.KIOSKO.alta)window.KIOSKO.alta.iniciar();
+  if(p==="cuenta"&&window.KIOSKO.cuenta)window.KIOSKO.cuenta.abrir();
+  if(p==="colores"&&window.KIOSKO.colores)window.KIOSKO.colores.abrir();
   $("aflot").classList.toggle("on",p==="alta"&&$("alta-fin").classList.contains("oculto"));
   if(est!=null){$("v-est").value=est;$("v-per").value="todo";vAbiertos={};pintarVentas();}
   document.querySelectorAll(".pant").forEach(function(s){s.classList.toggle("on",s.id==="p-"+p);});
   document.querySelectorAll(".nav[data-p]").forEach(function(b){b.classList.toggle("on",b.dataset.p===p);});
-  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido"}[p];
+  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido",cuenta:"La cuenta",colores:"Colores"}[p];
   if(tab){iTab=tab;pintarInventario();}
   barra();window.scrollTo(0,0);
 }
@@ -383,7 +394,7 @@ function pintarResumen(){
   h+='<div class="c3 card kpi"><div class="lb">Pendiente de transferir '+ayuda("Dinero de ventas de tu mercancía que todavía está en Ocosingo. Si vendió Irene o Mamá te deben el costo (la ganancia es de ellas); si vendiste tú y cobraron en efectivo, te deben la venta completa.")+'</div>'+
     '<div class="v">'+mx(debe)+'</div><ul class="mini">'+
     (deb.length?Object.keys(porV).sort(function(a,b){return porV[b]-porV[a];}).slice(0,2).map(function(k){return '<li><span>'+esc(k)+'</span><span class="m mal">'+mx(porV[k])+'</span></li>';}).join("")+'<li><span class="tenue">'+deb.length+(deb.length===1?" venta":" ventas")+(masVieja?', la más vieja del '+fCorta(masVieja):'')+'</span></li>':'<li><span class="tenue">Todo transferido. Nadie te debe.</span></li>')+
-    '</ul><button class="ir" data-ir="ventas" data-est="pend">Ver qué ventas son</button></div>';
+    '</ul><button class="ir" data-ir="cuenta">Ver la cuenta</button></div>';
   h+='<div class="c8 card graf"><h2>Ventas por mes</h2>'+grafica()+'</div>';
 
   h+='<div class="c4 card kpi"><div class="lb">A dónde se fue el dinero '+ayuda("Todo lo que has pagado por tu mercancía desde el inicio (vendida y en cajas), más lo que pagaste de motomandado y lo que sí cobraste de envío.")+'</div>'+
@@ -796,7 +807,7 @@ function reiniciar(){
   var hoy=new Date();$("fecha").value=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
   nuevaFila();calcular();
 }
-K.alta={iniciar:iniciar,activa:function(){return enviando||filas.some(function(f){return f.desc.value.trim()||num(f.costo.value)>0;});}};
+K.alta={filas:function(){return filas;},calcular:function(){calcular();},iniciar:function(){if(K.altaColor)K.altaColor.cargar(true).catch(function(){});iniciar();},activa:function(){return enviando||filas.some(function(f){return f.desc.value.trim()||num(f.costo.value)>0;});}};
 
 function mostrarX(){filas.forEach(function(o){if(o.x)o.x.style.display=filas.length>1?"":"none";});}
 function nuevaFila(){
@@ -878,7 +889,8 @@ function nuevaFila(){
   f.catTxt.addEventListener("input",function(){revisarCat();calcular();});
   f.pintarChips();
 
-  f.detectar=function(){
+  f.detectar=function(){if(f.modelo&&K.altaColor){K.altaColor.detectar(f);return;}f.detectarOriginal();};
+  f.detectarOriginal=function(){
     var d=f.desc.value.trim();f.gemelo=null;f.fotosDrive=[];
     if(!d){f.noHeredar=false;f.pintarGaleria();f.pintarChips();return;}
     var g=parecido(d);f.parcial=false;
@@ -896,11 +908,11 @@ function nuevaFila(){
   f.menos.addEventListener("click",function(){f.q.value=Math.max(1,Math.round(num(f.q.value))-1);calcular();});
   f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
   f.x.addEventListener("click",function(){if(filas.length===1)return;filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();mostrarX();});
-  filas.push(f);$("renglones").appendChild(el);mostrarX();
+  filas.push(f);$("renglones").appendChild(el);mostrarX();if(K.altaColor)K.altaColor.fila(f);if(K.altaClaro)K.altaClaro.fila(f);
   return f;
 }
 
-function calcular(){
+function calcular(){if(K.altaClaro)K.altaClaro.autoPrecio();
   var pagado=num($("pagado").value),suma=0,piezas=0;
   filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
   var hay=suma>0&&pagado>0,factor=hay?pagado/suma:1;
@@ -940,10 +952,10 @@ function completas(){return filas.filter(function(f){return f.desc.value.trim()&
 function estado(){
   var pagado=num($("pagado").value),suma=0,piezas=0;
   filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
-  var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0;
-  $("b-alta").disabled=!listo||enviando;
+  var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0&&!(K.altaColor&&K.altaColor.faltaColor());
+  $("b-alta").disabled=enviando;$("b-alta").classList.toggle("incompleto",!listo);
   $("abot-v").textContent=piezas+(piezas===1?" pieza":" piezas");
-  $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":"Falta nombre o categoría en alguno");
+  $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":(K.altaColor&&K.altaColor.faltaColor())?"Falta elegir el color de un modelo":"Falta nombre o categoría en alguno");
 }
 function armar(){
   var pagado=num($("pagado").value),suma=0;
@@ -951,40 +963,42 @@ function armar(){
   var factor=suma>0?pagado/suma:1;
   return {pedidoID:pedidoID,fecha:$("fecha").value||"",pagado:pagado,
     productos:filas.map(function(f){var cf=r2(num(f.costo.value)*factor);
-      return {descripcion:f.desc.value.trim(),categoria:f.cat.value.trim(),cantidad:Math.round(num(f.q.value)),costo:num(f.costo.value),lista:num(f.lista.value),precio:f.tocado?num(f.precioVal):a10(cf*MULT)};})};
+      return {descripcion:f.desc.value.trim(),categoria:f.cat.value.trim(),cantidad:Math.round(num(f.q.value)),costo:num(f.costo.value),lista:num(f.lista.value),modeloId:f.modelo?f.modelo.id:undefined,color:f.modelo?f.color:undefined,precio:f.tocado?num(f.precioVal):a10(cf*MULT)};})};
 }
 var altaOK=false,ultimoR=null,PENDIENTES=[];
 function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function knPid(f,i){var L=(ultimoR&&ultimoR.productos)||[],n=function(s){return String(s||"").trim().replace(/\s+/g," ").toLowerCase();},d=n(f.desc.value);for(var j=0;j<L.length;j++)if(n(L[j].descripcion)===d&&L[j].pid)return L[j].pid;return (L.length===filas.length&&L[i]&&L[i].pid)||"";}
 function subirUna(p,intento){
-  return comprimir(p.archivo).then(function(b64){return K.api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
+  return comprimir(p.archivo).then(function(b64){return K.api("subirFoto",null,{descripcion:p.desc,claveApp:p.archivo._kn||(p.archivo._kn=crypto.randomUUID()),pid:p.pid||"",base64:b64,mime:"image/jpeg"},60000);})
     .then(function(rf){if(rf&&rf.success)return true;throw new Error((rf&&rf.error)||"el servidor no la aceptó");})
     .catch(function(e){if(intento<2)return espera(2500).then(function(){return subirUna(p,intento+1);});p.error=e.message||"error desconocido";return false;});
 }
 function subirFotos(){
-  var pend=[];filas.forEach(function(f){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo});});});
+  var pend=[];filas.forEach(function(f,fi){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo,pid:knPid(f,fi)});});});
   PENDIENTES=[];var ok=0,mal=[],cad=Promise.resolve(),i=0;
   pend.forEach(function(p){cad=cad.then(function(){i++;$("abot-s").textContent="Subiendo foto "+i+" de "+pend.length+"…";
     return subirUna(p,1).then(function(bien){if(bien)ok++;else{mal.push(p);PENDIENTES.push(p);}return espera(700);});});});
   return cad.then(function(){return {total:pend.length,ok:ok,mal:mal};});
 }
 $("b-alta").addEventListener("click",function(){
-  if(enviando)return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
-  var pedido=armar();altaOK=false;
+  if(enviando)return;if(K.altaClaro&&!(K.pedidoIncierto&&K.pedidoIncierto.pedidoID===pedidoID)&&!K.altaClaro.listo())return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
+  var pedido=(K.pedidoIncierto&&K.pedidoIncierto.pedidoID===pedidoID)?K.pedidoIncierto:armar();K.pedidoIncierto=pedido;altaOK=false;
   K.api("altaPedido",null,{pedido:pedido},45000).then(function(r){
-    if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
-    altaOK=true;ultimoR=r;K.recargarDespues();
+    if(!r||!r.success){K.pedidoIncierto=null;var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
+    K.pedidoIncierto=null;if(K.altaColor)K.altaColor.cargar(true).catch(function(){});altaOK=true;ultimoR=r;K.recargarDespues();
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("abot-s").textContent=e.message;
     K.abrirHTML(altaOK
       ?"<h3>El pedido sí entró</h3><p>Tus filas ya están en la hoja. Falló lo de después: <b>"+esc(e.message)+"</b></p><div class=\"acciones\"><button class=\"btn pri\" id=\"solo-fotos\" data-cerrar=\"1\">Subir las fotos ahora</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>"
-      :"<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p><p>Puede que sí haya entrado y solo se perdió la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un número único y si ya está en la hoja el servidor no lo duplica.</p><div class=\"acciones\"><button class=\"btn pri\" id=\"reintentar-alta\" data-cerrar=\"1\">Volver a intentar</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>");
+      :e.rechazo?"<h3>El servidor no aceptó el pedido</h3><p><b>"+esc(e.message)+"</b></p><p>No se dio de alta nada. Corrige ese dato y vuelve a tocar Dar de alta.</p><div class=\"acciones\"><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>"
+      :"<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p><p>Puede que sí haya entrado y solo se perdió la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un número único y si ya está en la base el servidor no lo duplica.</p><div class=\"acciones\"><button class=\"btn pri\" id=\"reintentar-alta\" data-cerrar=\"1\">Volver a intentar</button><button class=\"btn claro\" data-cerrar=\"1\">Cerrar</button></div>");
     var ba=$("reintentar-alta");if(ba)ba.addEventListener("click",function(){setTimeout(function(){$("b-alta").disabled=false;$("b-alta").click();},50);});
     var bf=$("solo-fotos");if(bf)bf.addEventListener("click",function(){enviando=true;estado();subirFotos().then(function(fot){resultado(ultimoR,fot);}).catch(function(e2){enviando=false;estado();$("abot-s").textContent=e2.message;});});
   });
 });
 function resultado(r,fot){
   enviando=false;
-  var sub="Filas "+r.desde+" a "+r.hasta+" de ALEX_NUEVO · reparto ×"+r.factor;
+  var sub="Guardado en tu inventario · reparto ×"+(Math.round(r.factor*1000)/1000);
   if(fot.total)sub+=" · "+fot.ok+" de "+fot.total+(fot.total===1?" foto subida":" fotos subidas");
   if(!r.verificado)sub+=" · "+(r.aviso||"revisa la hoja");
   $("alta-cuerpo").classList.add("oculto");$("aflot").classList.remove("on");
@@ -1015,7 +1029,7 @@ $("b-ajustes").addEventListener("click",function(){
     '<label class="campo"><span>Ganancia mínima</span><span class="money"><i>$</i><input id="a-piso" type="number" value="'+PISO+'" min="0" step="10"></span></label></div>'+
     '<div class="acciones"><button class="btn pri" id="a-ok">Aplicar</button><button class="btn claro" data-cerrar="1">Cancelar</button></div>');
   $("a-ok").addEventListener("click",function(){INCLUIDO=$("a-incluido").checked;MOTO=num($("a-moto").value);EXTRA=INCLUIDO?0:num($("a-extra").value);MULT=num($("a-mult").value)||2;PISO=num($("a-piso").value);
-    filas.forEach(function(f){f.tocado=false;});$("mo").classList.remove("on");calcular();});
+    filas.forEach(function(f){if(!f.modelo)f.tocado=false;});$("mo").classList.remove("on");calcular();});
 });
 $("agregar").addEventListener("click",function(){var f=nuevaFila();calcular();f.desc.focus();f.el.scrollIntoView({behavior:"smooth",block:"center"});});
 $("pagado").addEventListener("input",calcular);
@@ -1032,5 +1046,9 @@ function explicarFila(f){
 }
 })();
 </script>
+<script src="cuenta.js?v=1"></script>
+<script src="alta-claro.js?v=1"></script>
+<script src="colores.js?v=1"></script>
+<script src="alta-colores.js?v=1"></script>
 </body>
 </html>

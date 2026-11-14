@@ -5,14 +5,19 @@
 // - Fotos de producto (Drive): caché primero para siempre (cada subida crea URL nueva) · máx. 120.
 // - Al cambiar de versión, actualizar CACHE y los ?v= de SHELL junto con index.html.
 // UNICO lugar que hay que tocar al subir version, junto con los ?v= de index.html y APP_VERSION de app.js.
-const V = '12.7';
-const CACHE = 'kiosko-shell-' + V;
-const IMG_CACHE = 'ocosingo-img-v2';
-const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './app.js?v=' + V, './manifest.json', './config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const V = '13.0';
+const CACHE = 'kn-shell-' + V;   // versión nueva: cachés propias (kn-)
+const IMG_CACHE = 'kn-img-v1';
+const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './app.js?v=' + V, './venta-colores.js?v=' + V, './inicio-simple.js?v=' + V, './manifest.json', './config-worker.js?v=' + V, './definitiva.js?v=' + V, './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
-  // allSettled: si un ícono falla, el resto del shell se precachea igual (addAll era todo o nada)
-  e.waitUntil(caches.open(CACHE).then(c => Promise.allSettled(SHELL.map(u => c.add(u)))));
+  // App todo o nada (sin la app completa no se instala); íconos opcionales. Con la app vieja, se activa sola.
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    await c.addAll(SHELL.filter(u => u.indexOf('/icons/') < 0));
+    await Promise.allSettled(SHELL.filter(u => u.indexOf('/icons/') > -1).map(u => c.add(u)));
+    if ((await caches.keys()).some(k => k.startsWith('kiosko-shell-'))) self.skipWaiting();
+  })());
 });
 
 self.addEventListener('message', e => {
@@ -21,7 +26,7 @@ self.addEventListener('message', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== IMG_CACHE).map(k => caches.delete(k))))
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && (k.startsWith('kn-shell-') || k.startsWith('kiosko-shell-') || k === 'ocosingo-img-v2')).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -76,13 +81,13 @@ self.addEventListener('fetch', e => {
         if (r.ok) { const copia = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copia)); }
         return r;
       }).catch(() =>
-        caches.match(e.request, { ignoreSearch: true }).then(r => {
+        caches.open(CACHE).then(c => c.match(e.request, { ignoreSearch: true })).then(r => {
           if (r) return r;
           // El catálogo público tiene su propio HTML de respaldo
           if (e.request.mode === 'navigate') {
             // alta.html necesita red siempre; no la disfrazamos de index.html
             if (url.pathname.indexOf('alta') > -1) return new Response('<!doctype html><meta charset=utf-8><title>Sin conexion</title><body style="font-family:system-ui;display:grid;place-items:center;min-height:100vh;margin:0;background:#F2F4F1;color:#141F19;text-align:center;padding:2rem"><div><h1 style="font-size:1.25rem">Sin conexion</h1><p style="color:#5C6A63">El alta de pedidos necesita internet para escribir en tu hoja. Intenta de nuevo cuando tengas senal.</p></div>', { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-            return caches.match(url.pathname.indexOf('catalogo') > -1 ? './catalogo.html' : './index.html');
+            return caches.open(CACHE).then(c => c.match(url.pathname.indexOf('catalogo') > -1 ? './catalogo.html' : './index.html'));
           }
           return new Response('', { status: 504 });
         })

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#EAF0F6">
 <title>Alta de pedido — Kiosko</title>
+<script src="definitiva.js?v=13.0"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
@@ -131,16 +132,16 @@
 <div class="modal-overlay" id="mo"><div class="modal-box" id="mo-in"></div></div>
 <datalist id="dl-prods"></datalist>
 
-<script src="config.js"></script>
+<script src="config-worker.js?v=13.0"></script>
 <script>
 (function(){
 "use strict";
-var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN=CFG.API_TOKEN||"";
+var CFG=window.OC_CONFIG||{},API_URL=CFG.API_URL||"",API_TOKEN="";
 function apiUnaVez(a,p,b,ms){ms=ms||30000;
-  if(!API_URL||!API_TOKEN)return Promise.reject(new Error("Falta la configuración de config.js"));
+  if(!API_URL)return Promise.reject(new Error("Falta la configuración de config.js"));
   var u=new URL(API_URL),c=new AbortController(),t=setTimeout(function(){c.abort();},ms),o={redirect:"follow",signal:c.signal};
-  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({token:API_TOKEN,accion:a},b));}
-  else u.search=new URLSearchParams(Object.assign({token:API_TOKEN,accion:a},p||{})).toString();
+  if(b){o.method="POST";o.headers={"Content-Type":"text/plain;charset=utf-8"};o.body=JSON.stringify(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},b));}
+  else u.search=new URLSearchParams(Object.assign({sesion:(function(){try{return localStorage.getItem("kn:sesion")||"";}catch(e){return "";}})(),accion:a},p||{})).toString();
   return fetch(u,o).then(function(r){clearTimeout(t);if(!r.ok){var he=new Error("Respuesta del servidor: "+r.status);he.tipo="http";he.status=r.status;throw he;}return r.text();})
    .then(function(x){var j;try{j=JSON.parse(x);}catch(e){throw new Error("Respuesta de datos no válida");}if(!j.ok){var se=new Error(j.error||"Error del servidor");se.raw=String(x).slice(0,200);throw se;}return j.data;})
    .catch(function(e){clearTimeout(t);
@@ -296,8 +297,8 @@ function comprimir(archivo){
    Vive en sessionStorage: aguanta recargas y saltos entre pantallas dentro de la
    misma pestaña, y se borra sola al cerrar el navegador. No guarda el PIN: solo
    la marca de que ya lo validaste. Si abres una pestaña NUEVA, pide PIN otra vez. */
-var SES_KEY="kiosko:sesion:alex";
-function sesionViva(){try{return sessionStorage.getItem(SES_KEY)==="1";}catch(e){return false;}}
+var SES_KEY="kn-kiosko:sesion:alex";
+function sesionViva(){try{return !!localStorage.getItem("kn:sesion")&&localStorage.getItem("kn:usuario")==="Alex";}catch(e){return false;}}
 function abrirSesion(){try{sessionStorage.setItem(SES_KEY,"1");}catch(e){}}
 function entrar(){
   $("pin").classList.add("oculto");$("app").classList.remove("oculto");
@@ -311,6 +312,7 @@ pi.addEventListener("input",function(){
   api("verificarPin",null,{pin:v}).then(function(d){
     if(!d||!d.valido)throw new Error((d&&d.error)||"PIN incorrecto");
     if(d.vendedor!=="Alex")throw new Error("Pantalla restringida a Alex");
+    try{localStorage.setItem("kn:sesion",d.sesion||"");localStorage.setItem("kn:usuario",d.vendedor);}catch(e){}
     abrirSesion();entrar();
   }).catch(function(e){$("pin-e").textContent=e.message;pi.value="";pi.disabled=false;pi.focus();});
 });
@@ -575,7 +577,7 @@ $("b-alta").addEventListener("click",function(){
   var pedido=armar();
   altaOK=false;
   api("altaPedido",null,{pedido:pedido},45000).then(function(r){
-    if(!r||!r.success)throw new Error((r&&r.error)||"El servidor no pudo dar de alta");
+    if(!r||!r.success){var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
     altaOK=true;ultimoR=r;
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("bot-s").textContent=e.message;
@@ -585,8 +587,9 @@ $("b-alta").addEventListener("click",function(){
       ? "<h3>El pedido si entro</h3><p>Tus filas ya estan en la hoja. Fallo lo de despues: <b>"+esc(e.message)+"</b></p>"+
         '<button class="btn-action pri" id="solo-fotos" data-cerrar="1">Subir las fotos ahora</button> '+
         '<button class="btn-action gh" data-cerrar="1">Cerrar</button>'
+      : e.rechazo ? "<h3>El servidor no acepto el pedido</h3><p><b>"+esc(e.message)+"</b></p><p>No se dio de alta nada. Corrige ese dato y vuelve a tocar Dar de alta.</p>"+'<button class="btn-action gh" data-cerrar="1">Cerrar</button>'
       : "<h3>No se pudo confirmar el alta</h3><p><b>"+esc(e.message)+"</b></p>"+
-        "<p>Puede que si haya entrado y solo se perdio la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un numero unico y si ya esta en la hoja, el servidor no lo duplica; solo devuelve el resultado y sube las fotos.</p>"+
+        "<p>Puede que si haya entrado y solo se perdio la respuesta. <b>Volver a intentar es seguro:</b> este pedido tiene un numero unico y si ya esta en la base, el servidor no lo duplica; solo devuelve el resultado y sube las fotos.</p>"+
         (e.raw?'<p class="sub" style="font-size:.75rem;opacity:.7">Respuesta del servidor: '+esc(e.raw)+"</p>":"")+
         '<button class="btn-action pri" id="reintentar-alta" data-cerrar="1">Volver a intentar</button> '+
         '<button class="btn-action gh" data-cerrar="1">Cerrar</button>');
@@ -602,9 +605,10 @@ var PENDIENTES=[];   // fotos que no subieron, para poder reintentarlas
 function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
 /* Sube una foto con un reintento. Google corta si le llegan muchas seguidas,
    así que entre cada una va una pausa y, si falla, se espera más y se repite. */
+function knPid(f,i){var L=(ultimoR&&ultimoR.productos)||[],n=function(s){return String(s||"").trim().replace(/\s+/g," ").toLowerCase();},d=n(f.desc.value);for(var j=0;j<L.length;j++)if(n(L[j].descripcion)===d&&L[j].pid)return L[j].pid;return (L.length===filas.length&&L[i]&&L[i].pid)||"";}
 function subirUna(p,intento){
   return comprimir(p.archivo)
-    .then(function(b64){return api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
+    .then(function(b64){return api("subirFoto",null,{descripcion:p.desc,claveApp:p.archivo._kn||(p.archivo._kn=crypto.randomUUID()),pid:p.pid||"",base64:b64,mime:"image/jpeg"},60000);})
     .then(function(rf){
       if(rf&&rf.success)return true;
       throw new Error((rf&&rf.error)||"el servidor no la aceptó");
@@ -617,7 +621,7 @@ function subirUna(p,intento){
 }
 function subirFotos(){
   var pend=[];
-  filas.forEach(function(f){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo});});});
+  filas.forEach(function(f,fi){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo,pid:knPid(f,fi)});});});
   PENDIENTES=[];
   var ok=0,mal=[],cad=Promise.resolve(),i=0;
   pend.forEach(function(p){
@@ -633,7 +637,7 @@ function subirFotos(){
 }
 function resultado(r,fot){
   enviando=false;$("bot").classList.remove("on");
-  var sub="Filas "+r.desde+" a "+r.hasta+" de ALEX_NUEVO · reparto ×"+r.factor;
+  var sub="Guardado en tu inventario · reparto ×"+(Math.round(r.factor*1000)/1000);
   if(fot.total)sub+=" · "+fot.ok+" de "+fot.total+(fot.total===1?" foto subida":" fotos subidas");
   if(!r.verificado)sub+=" · "+(r.aviso||"revisa la hoja");
   document.querySelector(".main").innerHTML=
