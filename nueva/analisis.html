@@ -806,7 +806,7 @@ function reiniciar(){
   var hoy=new Date();$("fecha").value=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
   nuevaFila();calcular();
 }
-K.alta={iniciar:iniciar,activa:function(){return enviando||filas.some(function(f){return f.desc.value.trim()||num(f.costo.value)>0;});}};
+K.alta={filas:function(){return filas;},calcular:function(){calcular();},iniciar:function(){if(K.altaColor)K.altaColor.cargar(true).catch(function(){});iniciar();},activa:function(){return enviando||filas.some(function(f){return f.desc.value.trim()||num(f.costo.value)>0;});}};
 
 function mostrarX(){filas.forEach(function(o){if(o.x)o.x.style.display=filas.length>1?"":"none";});}
 function nuevaFila(){
@@ -888,7 +888,8 @@ function nuevaFila(){
   f.catTxt.addEventListener("input",function(){revisarCat();calcular();});
   f.pintarChips();
 
-  f.detectar=function(){
+  f.detectar=function(){if(f.modelo&&K.altaColor){K.altaColor.detectar(f);return;}f.detectarOriginal();};
+  f.detectarOriginal=function(){
     var d=f.desc.value.trim();f.gemelo=null;f.fotosDrive=[];
     if(!d){f.noHeredar=false;f.pintarGaleria();f.pintarChips();return;}
     var g=parecido(d);f.parcial=false;
@@ -906,7 +907,7 @@ function nuevaFila(){
   f.menos.addEventListener("click",function(){f.q.value=Math.max(1,Math.round(num(f.q.value))-1);calcular();});
   f.mas.addEventListener("click",function(){f.q.value=Math.min(50,Math.round(num(f.q.value))+1);calcular();});
   f.x.addEventListener("click",function(){if(filas.length===1)return;filas=filas.filter(function(o){return o.id!==id;});el.remove();calcular();mostrarX();});
-  filas.push(f);$("renglones").appendChild(el);mostrarX();
+  filas.push(f);$("renglones").appendChild(el);mostrarX();if(K.altaColor)K.altaColor.fila(f);
   return f;
 }
 
@@ -950,10 +951,10 @@ function completas(){return filas.filter(function(f){return f.desc.value.trim()&
 function estado(){
   var pagado=num($("pagado").value),suma=0,piezas=0;
   filas.forEach(function(f){var q=Math.max(0,Math.round(num(f.q.value)));suma+=num(f.costo.value)*q;piezas+=q;});
-  var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0;
+  var listo=suma>0&&pagado>0&&completas().length===filas.length&&piezas>0&&!(K.altaColor&&K.altaColor.faltaColor());
   $("b-alta").disabled=!listo||enviando;
   $("abot-v").textContent=piezas+(piezas===1?" pieza":" piezas");
-  $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":"Falta nombre o categoría en alguno");
+  $("abot-s").textContent=listo?"Se crea una fila por pieza":(suma<=0?"Captura un producto con su costo":pagado<=0?"Falta el cargo de tu tarjeta":(K.altaColor&&K.altaColor.faltaColor())?"Falta elegir el color de un modelo":"Falta nombre o categoría en alguno");
 }
 function armar(){
   var pagado=num($("pagado").value),suma=0;
@@ -961,7 +962,7 @@ function armar(){
   var factor=suma>0?pagado/suma:1;
   return {pedidoID:pedidoID,fecha:$("fecha").value||"",pagado:pagado,
     productos:filas.map(function(f){var cf=r2(num(f.costo.value)*factor);
-      return {descripcion:f.desc.value.trim(),categoria:f.cat.value.trim(),cantidad:Math.round(num(f.q.value)),costo:num(f.costo.value),lista:num(f.lista.value),precio:f.tocado?num(f.precioVal):a10(cf*MULT)};})};
+      return {descripcion:f.desc.value.trim(),categoria:f.cat.value.trim(),cantidad:Math.round(num(f.q.value)),costo:num(f.costo.value),lista:num(f.lista.value),modeloId:f.modelo?f.modelo.id:undefined,color:f.modelo?f.color:undefined,precio:f.tocado?num(f.precioVal):a10(cf*MULT)};})};
 }
 var altaOK=false,ultimoR=null,PENDIENTES=[];
 function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
@@ -979,10 +980,10 @@ function subirFotos(){
 }
 $("b-alta").addEventListener("click",function(){
   if(enviando)return;enviando=true;estado();$("abot-s").textContent="Escribiendo en tu hoja…";
-  var pedido=armar();altaOK=false;
+  var pedido=(K.pedidoIncierto&&K.pedidoIncierto.pedidoID===pedidoID)?K.pedidoIncierto:armar();K.pedidoIncierto=pedido;altaOK=false;
   K.api("altaPedido",null,{pedido:pedido},45000).then(function(r){
-    if(!r||!r.success){var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
-    altaOK=true;ultimoR=r;K.recargarDespues();
+    if(!r||!r.success){K.pedidoIncierto=null;var er=new Error((r&&r.error)||"El servidor no pudo dar de alta");er.rechazo=true;throw er;}
+    K.pedidoIncierto=null;if(K.altaColor)K.altaColor.cargar(true).catch(function(){});altaOK=true;ultimoR=r;K.recargarDespues();
     return subirFotos().then(function(fot){resultado(r,fot);});
   }).catch(function(e){enviando=false;estado();$("abot-s").textContent=e.message;
     K.abrirHTML(altaOK
@@ -1026,7 +1027,7 @@ $("b-ajustes").addEventListener("click",function(){
     '<label class="campo"><span>Ganancia mínima</span><span class="money"><i>$</i><input id="a-piso" type="number" value="'+PISO+'" min="0" step="10"></span></label></div>'+
     '<div class="acciones"><button class="btn pri" id="a-ok">Aplicar</button><button class="btn claro" data-cerrar="1">Cancelar</button></div>');
   $("a-ok").addEventListener("click",function(){INCLUIDO=$("a-incluido").checked;MOTO=num($("a-moto").value);EXTRA=INCLUIDO?0:num($("a-extra").value);MULT=num($("a-mult").value)||2;PISO=num($("a-piso").value);
-    filas.forEach(function(f){f.tocado=false;});$("mo").classList.remove("on");calcular();});
+    filas.forEach(function(f){if(!f.modelo)f.tocado=false;});$("mo").classList.remove("on");calcular();});
 });
 $("agregar").addEventListener("click",function(){var f=nuevaFila();calcular();f.desc.focus();f.el.scrollIntoView({behavior:"smooth",block:"center"});});
 $("pagado").addEventListener("input",calcular);
@@ -1045,5 +1046,6 @@ function explicarFila(f){
 </script>
 <script src="cuenta.js?v=1"></script>
 <script src="colores.js?v=1"></script>
+<script src="alta-colores.js?v=1"></script>
 </body>
 </html>
