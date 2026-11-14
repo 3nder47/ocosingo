@@ -966,13 +966,14 @@ function armar(){
 }
 var altaOK=false,ultimoR=null,PENDIENTES=[];
 function espera(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function knPid(f,i){var L=(ultimoR&&ultimoR.productos)||[],n=function(s){return String(s||"").trim().replace(/\s+/g," ").toLowerCase();},d=n(f.desc.value);for(var j=0;j<L.length;j++)if(n(L[j].descripcion)===d&&L[j].pid)return L[j].pid;return (L.length===filas.length&&L[i]&&L[i].pid)||"";}
 function subirUna(p,intento){
-  return comprimir(p.archivo).then(function(b64){return K.api("subirFoto",null,{descripcion:p.desc,base64:b64,mime:"image/jpeg"},60000);})
+  return comprimir(p.archivo).then(function(b64){return K.api("subirFoto",null,{descripcion:p.desc,claveApp:p.archivo._kn||(p.archivo._kn=crypto.randomUUID()),pid:p.pid||"",base64:b64,mime:"image/jpeg"},60000);})
     .then(function(rf){if(rf&&rf.success)return true;throw new Error((rf&&rf.error)||"el servidor no la aceptó");})
     .catch(function(e){if(intento<2)return espera(2500).then(function(){return subirUna(p,intento+1);});p.error=e.message||"error desconocido";return false;});
 }
 function subirFotos(){
-  var pend=[];filas.forEach(function(f){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo});});});
+  var pend=[];filas.forEach(function(f,fi){f.fotos.forEach(function(ft){pend.push({desc:f.desc.value.trim(),archivo:ft.archivo,pid:knPid(f,fi)});});});
   PENDIENTES=[];var ok=0,mal=[],cad=Promise.resolve(),i=0;
   pend.forEach(function(p){cad=cad.then(function(){i++;$("abot-s").textContent="Subiendo foto "+i+" de "+pend.length+"…";
     return subirUna(p,1).then(function(bien){if(bien)ok++;else{mal.push(p);PENDIENTES.push(p);}return espera(700);});});});

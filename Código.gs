@@ -118,6 +118,9 @@ function procesar_(e, metodo) {
       return { ok: true, data: getCatalogoPublico() };
     }
 
+    // --- Fotos de la versión nueva (Fotos.gs): con su propia llave, no con API_TOKEN ---
+    if (metodo === 'POST' && String(p.accion || '').trim() === 'subirFotoWorker') return subirFotoWorker_(p);
+
     // --- Seguridad ---
     const tokenEsperado = String(PropertiesService.getScriptProperties().getProperty('API_TOKEN') || '').trim();
     if (!tokenEsperado) return { ok: false, error: 'Falta API_TOKEN en Propiedades del script' };

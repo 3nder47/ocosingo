@@ -867,7 +867,7 @@ function guardarProducto(){
       for(let i=0;i<lote.length;i++){
         b.textContent=lote.length>1?`Subiendo foto ${i+1} de ${lote.length}…`:'Subiendo foto…';
         try{
-          const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,base64:lote[i].b64,mime:'image/jpeg',principal:i===0&&!!ed});
+          const rf=await apiPost('subirFoto',{descripcion:producto.descripcion,pid:r.pid||(ed&&ed.pid)||'',claveApp:lote[i].k||(lote[i].k=crypto.randomUUID()),base64:lote[i].b64,mime:'image/jpeg',principal:i===0&&!!ed});
           if(!rf.success)fallaron++;
         }catch(e){fallaron++;}
       }
