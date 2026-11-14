@@ -166,6 +166,25 @@ body{background:var(--kn-bg);color:var(--kn-text);font-family:system-ui,-apple-s
 .outbox.err{background:var(--kn-danger-bg)!important;color:var(--kn-danger)!important;border-color:var(--kn-danger)}
 .outbox small{color:inherit;opacity:.9}
 
+/* ---------- Íconos (entrega 5): Lucide, 24 px, trazo 2, color del texto ---------- */
+.kn-i{width:24px;height:24px;flex:none}
+.cat .kn-cat-ic{width:24px;height:24px;color:var(--kn-muted)}
+.cat.on .kn-cat-ic{display:none}
+.cat.ver-cats{background:var(--kn-surface)!important;color:var(--kn-action)!important;border:1px solid var(--kn-divider)!important}
+.thumb{background:var(--kn-tono)!important;background-image:none!important}
+.thumb svg.ph,.tile .thumb .ph,.gal-track .thumb .ph,.mini .thumb .ph{color:var(--kn-muted);stroke:currentColor;stroke-width:2;width:24px!important;height:24px!important}
+.cat.ver-cats svg{width:24px!important;height:24px!important}
+.ctile:not(.todas){background:var(--kn-tono)!important}
+.ctile .ph{color:var(--kn-muted);stroke:currentColor!important;stroke-width:2!important;width:24px!important;height:24px!important}
+.ctile .tx .kn-i{width:24px;height:24px;vertical-align:-6px;margin-right:6px}
+.nav button .kn-i,.nav .fab.kn-vender svg{width:24px!important;height:24px!important}
+#view-ventas .kn-ir svg,#view-ventas .kn-volver svg{width:24px!important;height:24px!important}
+/* Dinero y Mi mes: mismo sistema que la Tienda */
+#view-ventas .kn-ico{width:40px!important;height:40px!important;border-radius:12px!important;background:var(--kn-tono)!important;color:var(--kn-text)}
+#view-ventas .kn-ico svg{width:24px!important;height:24px!important}
+#view-ventas .kn-v{font-weight:700!important;letter-spacing:-.01em}
+#view-ventas .kn-tarjeta{border:1px solid var(--kn-divider)}
+
 /* ---------- Avisos y botones de error (Codex): texto rojo sobre fondo rojo claro, legible en claro y oscuro ---------- */
 .toast.err,.btn.danger.solid{background:var(--kn-danger-bg)!important;color:var(--kn-danger)!important;border:1px solid var(--kn-danger)}
 .toast.ok{background:var(--kn-positive-bg)!important;color:var(--kn-positive)!important}

@@ -74,7 +74,7 @@
     // Botón central con texto visible "Vender" (Codex): de círculo a píldora.
     '.nav .fab.kn-vender{width:auto!important;height:48px!important;border-radius:999px!important;display:flex!important;' +
     'flex-direction:row!important;align-items:center;justify-content:center;gap:4px;padding:0 14px!important;font-size:.875rem;margin:0 auto}' +
-    '.nav .fab.kn-vender svg{width:20px!important;height:20px!important}';
+    '.nav .fab.kn-vender svg{width:24px!important;height:24px!important}';
   document.head.appendChild(st);
   var fabV = document.querySelector('.nav .fab[data-view="nueva"]');
   if (fabV) { fabV.classList.add('kn-vender'); fabV.insertAdjacentText('beforeend', 'Vender'); fabV.removeAttribute('aria-label'); }
@@ -108,6 +108,12 @@ var KN_ICO = {
   ventas: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>',
   racha: '<svg viewBox="0 0 24 24"><path d="M12 3c1 3 4 4 4 8a4 4 0 0 1-8 0c0-1 .5-2 1-2.5 0 1.5 1 2.5 2 2.5-1-3 0-5 1-8z"/></svg>'
 };
+
+// Sistema visual v3, entrega 5: los íconos de las tarjetas son de Lucide (iconos.js), como el resto de la app.
+if (typeof knIcono === 'function') {
+  KN_ICO.cuenta = knIcono('wallet'); KN_ICO.tendencia = knIcono('chart-no-axes-combined');
+  KN_ICO.ventas = knIcono('receipt-text'); KN_ICO.racha = knIcono('flame');
+}
 
 function knEsc(s) { return typeof esc === 'function' ? esc(s) : String(s == null ? '' : s); }
 function knTarjeta(ico, titulo, desglose, idValor, cuerpo, accion) {
