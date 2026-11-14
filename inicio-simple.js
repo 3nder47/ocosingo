@@ -16,11 +16,7 @@
 (function () {
   var st = document.createElement('style');
   st.textContent =
-    // Tokens de Codex (kiosko-dinero-v2-codex.md), solo para Dinero y sus desgloses mientras llega el rediseño completo.
-    ':root{--kn-surface:#FFFFFF;--kn-text:#191B20;--kn-muted:#5C6069;--kn-divider:#E1E3E8;--kn-action:#245BCC;' +
-    '--kn-positive:#237044;--kn-positive-bg:#E8F4EC;--kn-tono:#ECEEF2;--kn-warning:#895500}' +
-    '@media (prefers-color-scheme:dark){:root{--kn-surface:#1C1D20;--kn-text:#F5F5F7;--kn-muted:#B4B7C0;' +
-    '--kn-divider:#383A41;--kn-action:#9BBCFF;--kn-positive:#86D9A5;--kn-positive-bg:#193529;--kn-tono:#292B30;--kn-warning:#F0CA80}}' +
+    // Los tokens --kn-* viven en diseno.css (sistema visual v3 de Codex, 2026-11-14).
     '#view-ventas .kn-tarjeta{background:var(--kn-surface);color:var(--kn-text);border-radius:24px;padding:20px;margin-bottom:12px}' +
     '@media (prefers-color-scheme:dark){#view-ventas .kn-tarjeta{border:1px solid var(--kn-divider)}}' +
     '#view-ventas .kn-cab{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;margin:-8px 0 0;padding:0;' +
@@ -485,7 +481,8 @@ cambiarVista = function (vista) {
   knCambiarVistaBase(vista);
   // Título grande por pestaña (como iOS): en Dinero el encabezado dice "Dinero" en vez del saludo.
   var gr = document.getElementById('greeting');
-  if (gr && state.usuario) gr.textContent = vista === 'ventas' ? 'Dinero' : saludo() + ', ' + state.usuario;
+  if (gr && state.usuario) gr.textContent = vista === 'ventas' ? 'Dinero' : vista === 'catalogo' ? 'Tienda' : saludo() + ', ' + state.usuario;
+  knHeroe();
   var fab = document.getElementById('fab-add');
   if (fab && state.usuario === 'Alex') fab.style.display = 'none';
 };
@@ -567,3 +564,22 @@ function knDeshacerVenta(folio, b) {
     cargarDinero();
   });
 }
+
+/* Tienda (sistema visual v3 de Codex, entrega 1): la bienvenida en lima es la única tarjeta de color de la pantalla y
+   lleva dentro la búsqueda. El encabezado grande dice "Tienda", como "Dinero" en su pestaña. */
+function knHeroe() {
+  var vista = document.getElementById('view-catalogo');
+  if (!vista || !state.usuario) return;
+  var h = document.getElementById('kn-heroe');
+  if (!h) {
+    h = document.createElement('div');
+    h.id = 'kn-heroe'; h.className = 'kn-heroe';
+    h.innerHTML = '<span class="kn-hola" id="kn-hola"></span><span class="kn-sub">Busca un producto para vender</span>';
+    vista.insertBefore(h, vista.firstChild);
+    var buscar = vista.querySelector('.search');
+    if (buscar) h.appendChild(buscar);
+  }
+  var hola = document.getElementById('kn-hola');
+  if (hola) hola.textContent = saludo() + ', ' + state.usuario;
+}
+knHeroe();

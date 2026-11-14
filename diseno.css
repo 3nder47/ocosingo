@@ -1,0 +1,94 @@
+/* Kiosko · sistema visual "energía para vender" (propuesta de Codex, 2026-11-14: cerebro/.../kiosko-diseno-v3-codex.md).
+   Entrega 1: paleta compartida, Tienda y barra de navegación con Vender en lima. Se carga al final, después de
+   styles.css, ui.css y kiosko.css: solo sobrescribe aspecto, nunca comportamiento.
+   Significado del color: lima = actuar (Vender) e identidad · verde = resultado positivo · ámbar = pendiente o por
+   agotarse · rojo = error · azul = ver detalle. Una sola tarjeta de color pleno por pantalla. */
+:root{
+  --kn-bg:#F4F5F0;--kn-surface:#FFFFFF;--kn-tono:#EAEDE5;--kn-text:#182015;--kn-muted:#56614F;--kn-divider:#D7DDD1;
+  --kn-control-border:#77826F;--kn-lime:#D4F76B;--kn-on-lime:#182015;--kn-selected-bg:#EAF5CB;--kn-selected-text:#354D13;
+  --kn-action:#245BCC;--kn-focus:#245BCC;--kn-positive:#23633D;--kn-positive-bg:#E5F2E7;--kn-warning:#795000;
+  --kn-warning-bg:#FFF0CF;--kn-danger:#AC2436;--kn-danger-bg:#FCE8EC;
+  --kn-ease-in:cubic-bezier(.2,0,0,1);--kn-ease-out:cubic-bezier(.4,0,1,1);
+  /* La base vieja usa estos nombres: se apuntan a la paleta nueva para que todo el resto se vea coherente. */
+  --bg:var(--kn-bg);--card:var(--kn-surface);--card-2:var(--kn-tono);--ink:var(--kn-text);--muted:var(--kn-muted);
+  --line:var(--kn-divider);--selva:var(--kn-positive);--selva-soft:var(--kn-positive-bg);--selva-ink:var(--kn-positive);
+  --mango-soft:var(--kn-warning-bg);--danger:var(--kn-danger);--danger-soft:var(--kn-danger-bg);
+  --nav-blur:var(--kn-surface);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --kn-bg:#111410;--kn-surface:#1C211B;--kn-tono:#2A3128;--kn-text:#F3F6EE;--kn-muted:#B6C1AF;--kn-divider:#3B4636;
+    --kn-control-border:#87967D;--kn-selected-bg:#334222;--kn-selected-text:#D4F76B;--kn-action:#9BBCFF;--kn-focus:#9BBCFF;
+    --kn-positive:#91D7A3;--kn-positive-bg:#203B29;--kn-warning:#F3CC7A;--kn-warning-bg:#3C301A;--kn-danger:#FFADB6;
+    --kn-danger-bg:#40232A;
+  }
+}
+body{background:var(--kn-bg);color:var(--kn-text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.num,.p,.v{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--kn-focus);outline-offset:2px}
+
+/* ---------- Encabezado ---------- */
+.header h2{font-size:2rem;font-weight:750;letter-spacing:-.02em}
+.avatar{min-width:48px;min-height:48px}
+
+/* ---------- Tienda: bienvenida en lima con la búsqueda ---------- */
+.kn-heroe{background:var(--kn-lime);color:var(--kn-on-lime);border-radius:24px;padding:20px;margin:6px 0 12px}
+.kn-heroe .kn-hola{display:block;font-size:1.625rem;line-height:1.15;font-weight:750;letter-spacing:-.01em}
+.kn-heroe .kn-sub{display:block;font-size:.9375rem;margin-top:4px}
+.kn-heroe .search{background:rgba(255,255,255,.78);box-shadow:none;border:0!important;border-radius:16px;margin:14px 0 0;min-height:48px;color:#182015}
+.kn-heroe .search input{color:#182015}
+.kn-heroe .search input::placeholder{color:#3F4A39}
+.kn-heroe .search svg{stroke:#3F4A39}
+.kn-heroe .view-toggle{color:#182015}
+.kn-heroe .search input{min-width:0;flex:1}
+.kn-heroe .search svg,.kn-heroe .view-toggle{flex:none}
+
+/* Filtros: píldoras neutras; la seleccionada lleva fondo tonal y marca. */
+.cat{background:var(--kn-surface);box-shadow:none;border:1px solid var(--kn-divider);color:var(--kn-text);min-height:48px;font-weight:600}
+.cat.on,.cat.on:hover{background:var(--kn-selected-bg)!important;color:var(--kn-selected-text)!important;border-color:transparent!important}
+.cat.on::before{content:"✓";font-weight:700}
+.cat.ver-cats::before{content:none}
+.cat .n{background:var(--kn-tono);color:var(--kn-muted)}
+.cat.on .n{background:rgba(0,0,0,.07)!important;color:var(--kn-selected-text)!important}
+
+/* Títulos de sección */
+.section-title{color:var(--kn-muted);font-weight:700;letter-spacing:.04em}
+
+/* Tarjetas de producto: superficie neutra, sin sombra, cifra clara. */
+.tile,.mini{background:var(--kn-surface);box-shadow:none;border:1px solid var(--kn-divider)}
+.tile{border-radius:24px}
+.tile .thumb{background:var(--kn-tono)}
+.tile .info{padding:10px 14px 14px}
+.tile .info b{font-weight:600;color:var(--kn-text)}
+.tile .info .p,.tile .p{color:var(--kn-text);font-weight:700;font-size:1.0625rem}
+.mini{border-radius:18px}
+.mini .mi small{color:var(--kn-text);font-weight:700}
+/* Etiquetas: ámbar solo para "por agotarse"; "nuevo" o "en 60 días" en tono neutro. */
+.tile .low,.mini .tag{background:var(--kn-warning-bg);color:var(--kn-warning)!important;text-transform:none;letter-spacing:0;font-weight:700}
+.mini .tag.two{background:var(--kn-warning-bg);color:var(--kn-warning)!important}
+.mini .tag.n{background:var(--kn-surface);color:var(--kn-text)!important;border:1px solid var(--kn-divider)}
+.stock-line.low{color:var(--kn-warning)}
+.group{background:var(--kn-surface);box-shadow:none}
+.v.pos{color:var(--kn-text)}
+
+/* ---------- Barra inferior: sólida, con Vender en lima ---------- */
+.nav{background:var(--kn-surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  border:1px solid var(--kn-divider);box-shadow:0 4px 16px #18201514}
+.nav button{color:var(--kn-muted);min-height:48px;font-weight:600}
+.nav button.on{color:var(--kn-text)}
+.nav button.on svg{animation:none}
+.nav .fab.kn-vender,.nav .fab{background:var(--kn-lime)!important;color:var(--kn-on-lime)!important;box-shadow:none!important;
+  font-size:1.0625rem!important;font-weight:750!important}
+.nav .fab svg{stroke:var(--kn-on-lime)!important}
+.fab-add{background:var(--kn-text);color:var(--kn-bg)}
+
+/* ---------- Avisos y botones de error (Codex): texto rojo sobre fondo rojo claro, legible en claro y oscuro ---------- */
+.toast.err,.btn.danger.solid{background:var(--kn-danger-bg)!important;color:var(--kn-danger)!important;border:1px solid var(--kn-danger)}
+.toast.ok{background:var(--kn-positive-bg)!important;color:var(--kn-positive)!important}
+
+/* ---------- Movimiento: corto, y nada si el teléfono pide reducirlo ---------- */
+.tile,.mini,.cat,.nav button{transition:transform 100ms var(--kn-ease-in),background-color 100ms var(--kn-ease-in)}
+.tile:active,.mini:active{transform:scale(.99)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}
+}
