@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1D9E75">
 <title>Kiosko · Resumen</title>
-<script src="definitiva.js?v=14.2"></script>
+<script src="definitiva.js?v=14.3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ui.css?v=6">
+<link rel="stylesheet" href="panel-v3.css?v=14.3">
 <script>(function(){try{var t=localStorage.getItem("kn-kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -31,7 +32,7 @@
   <button class="nav" data-p="cuenta"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M16 15h2"/></svg> La cuenta <span class="n" id="nav-cuenta"></span></button>
   <button class="nav" data-p="colores"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.3"/><circle cx="12" cy="7.5" r="1.3"/><circle cx="15.5" cy="10" r="1.3"/></svg> Colores</button>
   <div class="sep"></div>
-  <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>¿Me conviene?</button>
+  <button class="nav" data-p="conviene"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>Calcular</button>
   <button class="nav" data-p="alta"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Alta de pedido</button>
   <a class="nav" href="./" style="text-decoration:none"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg> App de venta</a>
   <div class="fin"><span>Sesión de Alex</span><button class="tema" id="tema" title="Cambiar apariencia">Tema: auto</button></div>
@@ -121,9 +122,9 @@
     <div id="alta-fin" class="oculto"></div>
   </section>
 
-  <!-- ===== ¿ME CONVIENE? ===== -->
+  <!-- ===== CALCULAR ===== -->
   <section class="pant" id="p-conviene">
-    <div class="top"><div><h1>¿Me conviene comprarlo?</h1><p>Escribe lo que ves en la plataforma antes de pagar. Te digo cuánto te cuesta puesto en Ocosingo y a cuánto venderlo.</p></div></div>
+    <div class="top"><div><h1>Calcular</h1><p>Escribe lo que ves en la plataforma antes de pagar. Te digo cuánto te cuesta puesto en Ocosingo y a cuánto venderlo.</p></div></div>
     <div class="card">
       <div class="form">
         <label class="campo"><span>Precio en la plataforma, por pieza</span><span class="money"><i>$</i><input id="sim-precio" type="number" min="0" step="1" placeholder="200" inputmode="decimal"></span></label>
@@ -161,7 +162,7 @@
 
 <div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
-<script src="config-worker.js?v=14.2"></script>
+<script src="config-worker.js?v=14.3"></script>
 <script>
 (function(){
 "use strict";
@@ -345,7 +346,7 @@ function ir(p,tab,est){
   if(est!=null){$("v-est").value=est;$("v-per").value="todo";vAbiertos={};pintarVentas();}
   document.querySelectorAll(".pant").forEach(function(s){s.classList.toggle("on",s.id==="p-"+p);});
   document.querySelectorAll(".nav[data-p]").forEach(function(b){b.classList.toggle("on",b.dataset.p===p);});
-  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"¿Me conviene?",alta:"Alta de pedido",cuenta:"La cuenta",colores:"Colores"}[p];
+  document.title="Kiosko · "+{resumen:"Resumen",ventas:"Ventas",inventario:"Inventario",conviene:"Calcular",alta:"Alta de pedido",cuenta:"La cuenta",colores:"Colores"}[p];
   if(tab){iTab=tab;pintarInventario();}
   barra();window.scrollTo(0,0);
 }

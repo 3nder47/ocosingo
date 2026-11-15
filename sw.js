@@ -5,7 +5,7 @@
 // - Fotos de producto (Drive): caché primero para siempre (cada subida crea URL nueva) · máx. 120.
 // - Al cambiar de versión, actualizar CACHE y los ?v= de SHELL junto con index.html.
 // UNICO lugar que hay que tocar al subir version, junto con los ?v= de index.html y APP_VERSION de app.js.
-const V = '14.2';
+const V = '14.3';
 const CACHE = 'kn-shell-' + V;   // versión nueva: cachés propias (kn-)
 const IMG_CACHE = 'kn-img-v1';
 const SHELL = ['./', './index.html', './catalogo.html', './styles.css?v=' + V, './diseno.css?v=' + V, './app.js?v=' + V, './venta-colores.js?v=' + V, './iconos.js?v=' + V, './inicio-simple.js?v=' + V, './manifest.json', './config-worker.js?v=' + V, './definitiva.js?v=' + V, './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];

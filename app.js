@@ -1,4 +1,4 @@
-const APP_VERSION='14.2';const APP_BUILD='14/11/2026 19:42';
+const APP_VERSION='14.3';const APP_BUILD='14/11/2026 20:19';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 

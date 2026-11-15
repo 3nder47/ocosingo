@@ -1,0 +1,149 @@
+/* Kiosko · panel de PC con el sistema visual v3 "energía para vender" (propuesta de Codex, 2026-11-14:
+   cerebro/.../kiosko-diseno-v3-codex.md, "Panel de PC"). Se carga después de ui.css en analisis.html y solo cambia el
+   aspecto: ninguna función, filtro, cifra ni lugar cambia (regla de Alex: no mover lo que la gente ya sabe encontrar).
+
+   Cómo: los nombres de ui.css (--bg, --verde, --oscuro, …) se apuntan a los tokens --kn-* del teléfono (diseno.css),
+   así PC y teléfono comparten paleta. Significado del color, igual que en el teléfono:
+   lima = identidad y acción principal · verde = resultado positivo · ámbar = pendiente · rojo = pérdida o error ·
+   azul = ver detalle. Una sola tarjeta de color pleno por pantalla (el bloque principal de Resumen).
+   Modo oscuro: automático o manual (<html data-theme>), como ya funcionaba el botón "Tema". */
+:root{
+  --kn-bg:#F4F5F0;--kn-surface:#FFFFFF;--kn-tono:#EAEDE5;--kn-text:#182015;--kn-muted:#56614F;--kn-divider:#D7DDD1;
+  --kn-control-border:#77826F;--kn-lime:#D4F76B;--kn-on-lime:#182015;--kn-selected-bg:#EAF5CB;--kn-selected-text:#354D13;
+  --kn-action:#245BCC;--kn-focus:#245BCC;--kn-positive:#23633D;--kn-positive-bg:#E5F2E7;--kn-warning:#795000;
+  --kn-warning-bg:#FFF0CF;--kn-danger:#AC2436;--kn-danger-bg:#FCE8EC;--kn-hover:#F8F9F5;--kn-cabecera:#FAFBF8;
+  --kn-oscuro:#182015;--kn-oscuro-tx:#C9D3C1;--kn-oscuro-tx2:#E4EBDC;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --kn-bg:#111410;--kn-surface:#1C211B;--kn-tono:#2A3128;--kn-text:#F3F6EE;--kn-muted:#B6C1AF;--kn-divider:#3B4636;
+    --kn-control-border:#87967D;--kn-selected-bg:#334222;--kn-selected-text:#D4F76B;--kn-action:#9BBCFF;--kn-focus:#9BBCFF;
+    --kn-positive:#91D7A3;--kn-positive-bg:#203B29;--kn-warning:#F3CC7A;--kn-warning-bg:#3C301A;--kn-danger:#FFADB6;
+    --kn-danger-bg:#40232A;--kn-hover:#232A22;--kn-cabecera:#181D17;
+    --kn-oscuro:#0B0E0A;--kn-oscuro-tx:#B6C1AF;--kn-oscuro-tx2:#DDE5D5;
+  }
+}
+:root[data-theme="dark"]{
+  --kn-bg:#111410;--kn-surface:#1C211B;--kn-tono:#2A3128;--kn-text:#F3F6EE;--kn-muted:#B6C1AF;--kn-divider:#3B4636;
+  --kn-control-border:#87967D;--kn-selected-bg:#334222;--kn-selected-text:#D4F76B;--kn-action:#9BBCFF;--kn-focus:#9BBCFF;
+  --kn-positive:#91D7A3;--kn-positive-bg:#203B29;--kn-warning:#F3CC7A;--kn-warning-bg:#3C301A;--kn-danger:#FFADB6;
+  --kn-danger-bg:#40232A;--kn-hover:#232A22;--kn-cabecera:#181D17;
+  --kn-oscuro:#0B0E0A;--kn-oscuro-tx:#B6C1AF;--kn-oscuro-tx2:#DDE5D5;
+}
+/* Los nombres de ui.css, sobre la paleta nueva (claro y oscuro a la vez: siguen a los --kn-*). */
+:root,:root[data-theme="light"],:root[data-theme="dark"]{
+  --bg:var(--kn-bg);--card:var(--kn-surface);--hover:var(--kn-hover);--cabecera:var(--kn-cabecera);
+  --ink:var(--kn-text);--gris:var(--kn-muted);--tenue:var(--kn-muted);--linea:var(--kn-divider);
+  --verde:var(--kn-positive);--verde-bg:var(--kn-positive-bg);--verde-ink:var(--kn-positive);
+  --naranja:var(--kn-warning);--naranja-bg:var(--kn-warning-bg);--naranja-ink:var(--kn-warning);
+  --rojo:var(--kn-danger);--rojo-bg:var(--kn-danger-bg);--rojo-ink:var(--kn-danger);
+  --azul:var(--kn-action);--azul-bg:var(--kn-tono);--azul-ink:var(--kn-action);
+  --oscuro:var(--kn-oscuro);--oscuro-tx:var(--kn-oscuro-tx);--oscuro-tx2:var(--kn-oscuro-tx2);
+  --r:18px;--r-sm:12px;
+  --sombra:none;
+  /* Misma letra que el teléfono; los importes con números tabulares (alineados) en vez de letra de máquina. */
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:var(--sans);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:var(--kn-bg);--card:var(--kn-surface);--hover:var(--kn-hover);--cabecera:var(--kn-cabecera);
+    --ink:var(--kn-text);--gris:var(--kn-muted);--tenue:var(--kn-muted);--linea:var(--kn-divider);
+    --verde:var(--kn-positive);--verde-bg:var(--kn-positive-bg);--verde-ink:var(--kn-positive);
+    --naranja:var(--kn-warning);--naranja-bg:var(--kn-warning-bg);--naranja-ink:var(--kn-warning);
+    --rojo:var(--kn-danger);--rojo-bg:var(--kn-danger-bg);--rojo-ink:var(--kn-danger);
+    --azul:var(--kn-action);--azul-bg:var(--kn-tono);--azul-ink:var(--kn-action);
+    --oscuro:var(--kn-oscuro);--oscuro-tx:var(--kn-oscuro-tx);--oscuro-tx2:var(--kn-oscuro-tx2);--sombra:none;
+  }
+}
+html,body{font-size:15px}
+.mono,td.num,th.num,.num,.v,.big{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--kn-focus);outline-offset:2px}
+h1{font-size:28px;font-weight:750;letter-spacing:-.02em}
+h2{letter-spacing:-.01em}
+
+/* ---- Lateral: marca lima como en el teléfono; destino elegido en lima suave ---- */
+.side{background:var(--kn-surface);border-right:1px solid var(--kn-divider);padding:22px 14px}
+.logo{background:var(--kn-lime);color:var(--kn-on-lime);border-radius:11px;width:38px;height:38px;font-weight:800;letter-spacing:-.02em}
+.marca b{font-size:16px;font-weight:750}
+.nav{min-height:44px;padding:10px 12px;border-radius:14px;color:var(--kn-muted);font-weight:600}
+.nav:hover{background:var(--kn-tono);color:var(--kn-text)}
+.nav.on{background:var(--kn-selected-bg);color:var(--kn-selected-text)}
+.nav .n{background:var(--kn-warning-bg);color:var(--kn-warning);font-weight:750}
+.tema{background:var(--kn-surface);border-color:var(--kn-divider);color:var(--kn-muted)}
+
+/* ---- Tarjetas: superficies sólidas, borde suave, sin sombra ---- */
+.card,.kpi,.sc,.graf,.tabla-wrap,.modal-box{border-radius:var(--r)}
+.card,.kpi,.sc{border-color:var(--kn-divider)}
+
+/* ---- Resumen: el bloque principal es la única tarjeta de color pleno (lima) ---- */
+.hero{background:var(--kn-lime);color:var(--kn-on-lime);border-radius:24px;padding:28px 30px}
+.hero .lb{color:var(--kn-on-lime);opacity:.78}
+.hero .sub{color:var(--kn-on-lime);opacity:.86}
+.hero .sub b{opacity:1}
+.hero .big{color:var(--kn-on-lime);letter-spacing:-.03em}
+.hero .pill{background:rgba(255,255,255,.62);color:var(--kn-on-lime);border:0}
+.hero .pill.lima{background:var(--kn-on-lime);color:var(--kn-lime)}
+.hero .pill.mango{background:var(--kn-warning-bg);color:var(--kn-warning)}   /* "de descuento" en Alta sigue en ámbar (Codex) */
+.hero .pagado i{color:var(--kn-on-lime)}                                       /* el $ del total pagado, legible sobre lima (Codex) */
+.hero .pagado input{background:rgba(255,255,255,.7);color:var(--kn-on-lime);border-color:transparent}
+.hero .pagado input::placeholder{color:rgba(24,32,21,.6)}
+/* Botón dentro del bloque lima (La cuenta › "Cerrar corte"): oscuro con texto lima, para que no se pierda. */
+.hero .btn.pri{background:var(--kn-on-lime);color:var(--kn-lime);padding:0 20px}
+.hero .btn.pri:disabled{background:rgba(24,32,21,.12);color:rgba(24,32,21,.55)}
+
+/* ---- Selectores de periodo y vista: el elegido en lima ---- */
+.seg{background:var(--kn-surface);border:1px solid var(--kn-divider)}
+.seg button{min-height:40px}
+.seg button.on{background:var(--kn-lime);color:var(--kn-on-lime)}
+.tabs button.on{background:var(--kn-selected-bg);color:var(--kn-selected-text);border-color:transparent}
+.chip{border-color:var(--kn-control-border)}
+.chip.on{background:var(--kn-selected-bg);color:var(--kn-selected-text);border-color:transparent}
+.buscar{border-color:var(--kn-control-border);background:var(--kn-surface)}
+
+/* ---- Tablas: filas de 48 px, encabezados claros, importes a la derecha ---- */
+th{background:var(--kn-cabecera);color:var(--kn-muted);font-weight:650;font-size:12.5px;letter-spacing:.02em;height:44px}
+td{height:48px;border-color:var(--kn-divider)}
+tbody tr:hover td{background:var(--kn-hover)}
+.fila-mes td{font-weight:650}
+
+/* ---- Etiquetas de estado: texto y fondo del mismo significado ---- */
+.et.ok{background:var(--kn-positive-bg);color:var(--kn-positive)}
+.et.alto,.et.warn{background:var(--kn-warning-bg);color:var(--kn-warning)}
+.et.mal{background:var(--kn-danger-bg);color:var(--kn-danger)}
+.et.azul{background:var(--kn-tono);color:var(--kn-action)}
+
+/* ---- Botones: acción principal en lima con texto oscuro ---- */
+.btn{border-radius:14px;min-height:44px;font-weight:700}
+.btn.pri{background:var(--kn-lime);color:var(--kn-on-lime)}
+.btn.pri:disabled{background:var(--kn-tono);color:var(--kn-muted);opacity:1}
+.btn.gh{border-color:var(--kn-control-border)}
+.kpi .ir,.liga,.mas-btn{color:var(--kn-action)}
+
+/* ---- Barra del reparto (Ventas): colores de relleno propios y una línea entre tramos, porque costo, motomandado y
+   ganancia quedaban con la misma luminancia (Codex). Solo decorativo: la leyenda dice el nombre y el porcentaje. ---- */
+.rep-bar,.rep-leg{--tenue:#A9B3A1;--naranja:#E8A317}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rep-bar,:root:not([data-theme="light"]) .rep-leg{--tenue:#6E7867;--naranja:#F3CC7A}}
+:root[data-theme="dark"] .rep-bar,:root[data-theme="dark"] .rep-leg{--tenue:#6E7867;--naranja:#F3CC7A}
+.rep-bar i+i{box-shadow:inset 2px 0 0 var(--kn-surface)}
+
+/* ---- Barra flotante (selección de remate) y avisos ---- */
+.flot{background:var(--kn-oscuro);border-radius:20px}
+.flot .btn.pri{background:var(--kn-lime);color:var(--kn-on-lime)}
+.campo input,.campo select,.money{border-color:var(--kn-control-border);border-radius:12px}
+.campo input:focus,.campo select:focus{border-color:var(--kn-focus)}
+
+/* ---- Alta de pedido: los pasos numerados en lima (alta-claro.js usa --verde) ---- */
+#p-alta .paso b{background:var(--kn-lime)!important;color:var(--kn-on-lime)!important}
+
+/* ---- Campos de los módulos (Colores, color en el alta, La cuenta): su estilo se inyecta después de esta hoja, así que
+   el borde visible necesita !important (Codex: con --linea el campo casi no se veía). ---- */
+#p-colores input[type=text],#p-colores input[type=number],#p-colores input[type=search],
+.ac-caja input[type=search],.ac-caja input[type=text],.cu-buscar input,.cu-form input{border-color:var(--kn-control-border)!important}
+
+/* ---- PIN de la PC: misma bienvenida que el teléfono ---- */
+.pin-c{border-radius:24px;border-color:var(--kn-divider)}
+.pin-c .logo{width:52px;height:52px;border-radius:16px;font-size:20px}
+.pin-c h1{font-size:22px}
+.pin-c input:focus{border-color:var(--kn-focus)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
