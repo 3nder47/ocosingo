@@ -1,4 +1,4 @@
-const APP_VERSION='14.6';const APP_BUILD='14/11/2026 23:09';
+const APP_VERSION='14.6.1';const APP_BUILD='14/11/2026 23:18';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -1079,6 +1079,7 @@ function pintarVentaBase(){
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
       <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto(this)">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">${knPrecioHTML(p,money)}${knConRebaja(p)?'<span class="kn-pill-rebaja">Rebaja</span>':''}</span></div>
+      ${typeof knFichaHTML==='function'?knFichaHTML(p):''}
       <div class="field"><label>Vendedor</label><div class="opts">${[state.usuario].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>

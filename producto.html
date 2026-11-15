@@ -110,6 +110,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 .acciones svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 .dice{margin-top:22px;font-size:15.5px;line-height:1.55;color:var(--suave)}
+.ficha{margin-top:26px;font-size:15px;line-height:1.5}.ficha h2{font-size:17px;margin:0 0 4px;color:#fff}.ficha .nota{color:var(--suave);font-size:13px;margin:0 0 8px}.ficha ul{margin:0;padding-left:20px;display:grid;gap:4px}.ficha p{margin:10px 0 0}
 .dice b{color:var(--sobre);font-weight:700}
 
 .mas-de{margin-top:30px}
@@ -147,7 +148,7 @@ h1{font-size:34px;line-height:1.08;letter-spacing:-.035em;font-weight:800;margin
 <div id="app"><div class="cargando">Cargando…</div></div>
 <canvas id="lienzo" width="40" height="40" style="display:none"></canvas>
 
-<script src="config-worker.js?v=14.6"></script>
+<script src="config-worker.js?v=14.6.1"></script>
 <script>
 (function(){
 "use strict";
@@ -309,6 +310,7 @@ function carrusel(titulo,l){
       (x.imagen?'<img src="'+esc(x.imagen)+'" alt="" loading="lazy" onload="this.classList.add(\'ok\')" onerror="this.remove()">':"")+'</span>'+
       '<span class="nm">'+esc(x.descripcion)+'</span><span class="pp">'+mx(x.precio)+'</span></button>';}).join("")+'</div></div>';
 }
+function fichaPub(p){var f=p.ficha;if(!f)return "";var d=f.datos||[],inc=f.incluye||[],pr=f.promesas||[];if(!d.length&&!inc.length&&!pr.length)return "";var li=function(l){return "<ul>"+l.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>";};return '<section class="ficha"><h2>Ficha técnica</h2><p class="nota">Información publicada por el vendedor original; Kiosko no la ha verificado.</p>'+(d.length?li(d):"")+(inc.length?"<p><b>Incluye:</b> "+inc.map(esc).join("; ")+".</p>":"")+(pr.length?'<p class="nota" style="margin-top:12px"><b>Según el fabricante, sin confirmar:</b></p>'+li(pr):"")+"</section>";}
 function ver(p,sinHash){
   actual=p;
   var fotos=p.fotos.length?p.fotos:[""],vs=vecinos(p),sug=vs[0],antes=vistosAntes(p);
@@ -357,7 +359,7 @@ function ver(p,sinHash){
 
     '<p class="dice">'+esc(p.descripcion)+(p.ultima?' Queda <b>una sola pieza</b>.':(p.piezas>1?' Quedan <b>'+p.piezas+' piezas</b>.':""))+
       ' Te llega <b>hoy mismo</b> en Ocosingo y pagas cuando lo tengas en la mano.'+
-      (p.precio>=600?' El envío va incluido.':' El motomandado cuesta lo mismo lleve una pieza o tres.')+'</p>'+
+      (p.precio>=600?' El envío va incluido.':' El motomandado cuesta lo mismo lleve una pieza o tres.')+'</p>'+fichaPub(p)+
 
     (vs.length?carrusel("Más de "+p.categoria,vs):"")+
     (antes.length?carrusel("Lo que viste antes",antes):"")+

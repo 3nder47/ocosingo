@@ -188,3 +188,19 @@
     if (prod && prod.parentNode) prod.parentNode.insertBefore(div, prod.nextSibling); else body.insertBefore(div, body.firstChild);
   };
 })();
+
+/* Ficha técnica en la hoja de venta (14.6.1, 2026-11-14). El Worker manda `ficha` solo si la asociación con el
+   producto está confirmada; sin aprobar trae solo datos e incluye (src/fichas.js). Plegada: no estorba al vender. */
+window.knFichaHTML = function (p) {
+  var f = p && p.ficha;
+  if (!f || !((f.datos && f.datos.length) || (f.incluye && f.incluye.length) || (f.promesas && f.promesas.length))) return '';
+  var e = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var li = function (l) { return '<ul style="margin:6px 0 0;padding-left:18px;display:grid;gap:3px">' + l.map(function (x) { return '<li>' + e(x) + '</li>'; }).join('') + '</ul>'; };
+  var h = '<details class="field kn-ficha" style="border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:0.875rem;line-height:1.45">' +
+    '<summary style="cursor:pointer;font-weight:700">Ficha técnica</summary>' +
+    '<p style="margin:6px 0 0;color:var(--muted);font-size:0.8125rem">Información publicada por el vendedor' + (f.aprobada ? '' : '; pendiente de aprobación') + '.</p>';
+  if (f.datos && f.datos.length) h += li(f.datos);
+  if (f.incluye && f.incluye.length) h += '<p style="margin:8px 0 0"><b>Incluye:</b> ' + f.incluye.map(e).join('; ') + '.</p>';
+  if (f.promesas && f.promesas.length) h += '<p style="margin:8px 0 0;color:var(--muted)"><b>Según el fabricante, sin confirmar:</b></p>' + li(f.promesas);
+  return h + '</details>';
+};
