@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1D9E75">
 <title>Kiosko · Resumen</title>
-<script src="definitiva.js?v=14.4"></script>
+<script src="definitiva.js?v=14.5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ui.css?v=6">
-<link rel="stylesheet" href="panel-v3.css?v=14.4">
+<link rel="stylesheet" href="panel-v3.css?v=14.5">
 <script>(function(){try{var t=localStorage.getItem("kn-kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -162,7 +162,7 @@
 
 <div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
-<script src="config-worker.js?v=14.4"></script>
+<script src="config-worker.js?v=14.5"></script>
 <script>
 (function(){
 "use strict";
@@ -280,7 +280,7 @@ function armarInventario(){
     if(!x||!x.descripcion)return;
     CATMAP[norm(x.descripcion)]=x.categoria||CATMAP[norm(x.descripcion)];
     var k=claveDe(x.descripcion,x.origen);
-    m[k]={clave:k,descripcion:x.descripcion,categoria:x.categoria||"Sin categoría",origen:x.origen||"Alex",stock:Number(x.stock)||0,
+    m[k]={clave:k,pid:x.pid||"",antes:Number(x.antes)||0,descripcion:x.descripcion,categoria:x.categoria||"Sin categoría",origen:x.origen||"Alex",stock:Number(x.stock)||0,
       costo:Number(x.costoFinal)||0,precio:Number(x.precio)||0,agregado:Number(x.agregado)||0,imagen:x.imagen||"",
       dias:x.agregado?Math.round((HOY-Number(x.agregado))/DIA):0,ventas12:0,ventasTot:0,primera12:0,ultima:0};
   });
@@ -565,7 +565,7 @@ function pintarInventario(){
   ["todo","reciente","reponer","parado","nocomprar"].forEach(function(t){var b=document.querySelector('#i-tabs [data-tab="'+t+'"]');var n=mio.filter(function(x){return x[t];}).length;b.querySelector(".n").textContent=n;b.classList.toggle("on",t===iTab);});
   var L=invFiltrado(),cap=L.reduce(function(s,x){return s+x.capital;},0),pzs=L.reduce(function(s,x){return s+x.stock;},0);
   var capT=mio.reduce(function(s,x){return s+x.capital;},0),pzT=mio.reduce(function(s,x){return s+x.stock;},0);
-  $("i-sub").textContent=pzT+" piezas · "+mx(capT)+" pagados. Marca lo que quieras rematar.";
+  $("i-sub").textContent=pzT+" piezas · "+mx(capT)+" pagados. Toca un producto para ver sus datos o editarlo; marca los que quieras rematar.";
   var n=$("i-nota");if(NOTAS[iTab]){n.textContent=NOTAS[iTab];n.style.display="block";n.classList.toggle("warn",iTab==="nocomprar"||iTab==="parado");}else n.style.display="none";
   if(!L.length){$("i-tabla").innerHTML='<div class="vacio">Nada aquí con estos filtros.</div>';barra();return;}
   var h;
@@ -577,10 +577,10 @@ function pintarInventario(){
   }else{
     h='<table><thead><tr><th style="width:36px"></th><th>Producto</th><th class="num">Piezas</th><th>Comprado</th><th class="num">Te costó por pieza</th><th class="num">Precio</th><th class="num">Te queda por pieza '+ayuda("Precio menos lo que te costó menos el moto que absorbes.")+'</th><th>Cómo va</th></tr></thead><tbody>'+
       L.map(function(x){var q=x.precio-x.costo-MOTO,rem=x.origen==="Alex"&&x.stock>0;
-        return '<tr><td>'+(rem?'<input class="chk" type="checkbox" data-k="'+esc(x.clave)+'"'+(sel[x.clave]?" checked":"")+'>':'')+'</td>'+
-          '<td><div class="prod">'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+(x.origen!=="Alex"?' · de '+esc(x.origen):'')+'</small></div></div></td>'+
+        return '<tr><td>'+(rem?'<input class="chk" type="checkbox" data-k="'+esc(x.clave)+'"'+(Object.prototype.hasOwnProperty.call(sel,x.clave)?" checked":"")+'>':'')+'</td>'+
+          '<td><div class="prod'+(x.pid?' kn-tap" role="button" tabindex="0" data-pid="'+esc(x.pid)+'"':'"')+'>'+foto(x)+'<div><b>'+esc(x.descripcion)+'</b><small>'+esc(x.categoria)+(x.origen!=="Alex"?' · de '+esc(x.origen):'')+'</small></div></div></td>'+
           '<td class="num">'+x.stock+'</td><td>'+(x.stock?(x.dias?'hace '+dias(x.dias)+' <span class="tenue">· '+fCorta(HOY-x.dias*DIA)+'</span>':'—'):'<span class="tenue">última venta '+fCorta(x.ultima)+'</span>')+'</td>'+
-          '<td class="num">'+mx(x.costo)+'</td><td class="num">'+mx(x.precio)+'</td><td class="num '+(q>=0?"mas":"menos")+'">'+mx(q)+'</td><td>'+estado(x)+'</td></tr>';}).join("")+'</tbody></table>';
+          '<td class="num">'+mx(x.costo)+'</td><td class="num">'+mx(x.precio)+(x.antes>x.precio?'<small class="kn-antes" style="display:block">'+mx(x.antes)+'</small>':'')+'</td><td class="num '+(q>=0?"mas":"menos")+'">'+mx(q)+'</td><td>'+estado(x)+'</td></tr>';}).join("")+'</tbody></table>';
   }
   $("i-tabla").innerHTML=h+'<div class="pie"><span>'+L.length+' de '+mio.filter(function(x){return x.todo;}).length+' productos · '+pz(pzs)+'</span><span class="mono">Pagado en lo que ves: '+mx(cap)+'</span></div>';
   barra();
@@ -590,14 +590,14 @@ $("i-tabs").addEventListener("click",function(e){var b=e.target.closest("[data-t
 document.querySelectorAll("[data-merc]").forEach(function(b){b.addEventListener("click",function(){iMerc=b.dataset.merc;document.querySelectorAll("[data-merc]").forEach(function(o){o.classList.toggle("on",o===b);});pintarInventario();});});
 $("moto").addEventListener("input",function(){MOTO=num(this.value);pintarInventario();});
 $("i-tabla").addEventListener("change",function(e){var c=e.target.closest(".chk");if(!c)return;var k=c.dataset.k;
-  if(c.checked){var x=porClave(k);sel[k]=a10(x.costo+MOTO);}else delete sel[k];barra();});
+  if(c.checked){sel[k]=0;}else delete sel[k];barra();});
 function porClave(k){for(var i=0;i<INV.length;i++)if(INV[i].clave===k)return INV[i];return null;}
 
 /* ============ REMATE ============ */
 function seleccion(){return Object.keys(sel).map(porClave).filter(function(x){return x&&x.stock>0;});}
 function barra(){
   var S=seleccion(),lib=0,pzs=0,cost=0;
-  S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;cost+=x.capital;});
+  S.forEach(function(x){lib+=sel[x.clave]>0?(sel[x.clave]-MOTO)*x.stock:0;pzs+=x.stock;cost+=x.capital;});
   $("flot").classList.toggle("on",S.length>0&&pantalla==="inventario");
   $("flot-v").textContent=mx(lib);
   $("flot-n").textContent=S.length?pzs+" piezas · "+S.length+(S.length===1?" producto":" productos")+" · pagaste "+mx(cost):"";
@@ -609,21 +609,22 @@ function pillas(x){
   return u.map(function(o){return '<button class="po'+(sel[x.clave]===o[1]?" on":"")+'" data-po="'+o[1]+'"><span>'+o[0]+'</span><b>'+mx(o[1])+'</b></button>';}).join("");
 }
 function cuentaRem(x){
+  if(!(sel[x.clave]>0))return 'Elige uno de los tres precios o escribe el tuyo.';
   var p=sel[x.clave]||0,porPza=p-MOTO-x.costo,neto=(p-MOTO)*x.stock,dif=neto-x.capital;
   return 'Cada una: '+mx(p)+' − moto '+mx(MOTO)+' − costo '+mx(x.costo)+' = <b class="'+(porPza>=0?"mas":"menos")+'">'+mx(porPza)+'</b>. '+
     'Las '+x.stock+': recuperas <b>'+mx(neto)+'</b> de '+mx(x.capital)+(dif>=0?' <b class="mas">(+'+mx(dif)+')</b>':' <b class="menos">(faltan '+mx(-dif)+')</b>');
 }
 function renglonRem(x){
   return '<div class="rem" data-k="'+esc(x.clave)+'"><div class="nom"><b>'+esc(x.descripcion)+'</b><small>'+pz(x.stock)+' · te costó '+mx(x.costo)+' por pieza · parado '+dias(x.dias)+' · hoy a '+mx(x.precio)+'</small></div>'+
-    '<div class="ops">'+pillas(x)+'<span class="chip">$<input class="mono" data-libre="1" type="number" step="10" min="0" value="'+(sel[x.clave]||0)+'"></span></div>'+
+    '<div class="ops">'+pillas(x)+'<span class="chip">$<input class="mono" data-libre="1" type="number" step="10" min="0" value="'+(sel[x.clave]||'')+'" placeholder="Precio" style="width:7.5em"></span></div>'+
     '<div class="cuenta">'+cuentaRem(x)+'</div></div>';
 }
 function planTexto(S){
-  var lib=0,pzs=0;S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;});
-  return "REMATE KIOSKO\n"+pzs+" piezas · recuperas "+mx(lib)+" ya con el envío descontado\n\n"+S.map(function(x){return "• "+x.descripcion+" — "+x.stock+" pza · REMATE "+mx(sel[x.clave])+" (antes "+mx(x.precio)+")";}).join("\n");
+  var lib=0,pzs=0;S.forEach(function(x){lib+=sel[x.clave]>0?(sel[x.clave]-MOTO)*x.stock:0;pzs+=x.stock;});
+  return "REMATE KIOSKO\n"+pzs+" piezas · recuperas "+mx(lib)+" ya con el envío descontado\n\n"+S.map(function(x){return "• "+x.descripcion+" — "+x.stock+" pza · "+(sel[x.clave]>0?"REMATE "+mx(sel[x.clave])+" (antes "+mx(x.precio)+")":"sin precio elegido");}).join("\n");
 }
 function resumenRem(S){
-  var lib=0,pzs=0,cost=0;S.forEach(function(x){lib+=(sel[x.clave]-MOTO)*x.stock;pzs+=x.stock;cost+=x.capital;});
+  var lib=0,pzs=0,cost=0;S.forEach(function(x){lib+=sel[x.clave]>0?(sel[x.clave]-MOTO)*x.stock:0;pzs+=x.stock;cost+=x.capital;});
   return 'Mueves <b>'+pzs+' piezas</b> y recuperas <b>'+mx(lib)+'</b> limpios, ya sin el moto de '+mx(MOTO)+' por pieza. Te costaron '+mx(cost)+'.'+
     (lib<cost?' Recuperas menos de lo que pagaste: <b>está bien</b> si llevan meses sin moverse, un billete dormido no vale más por esperar.':'')+
     ' Ofrécelas en paquete: el moto cuesta lo mismo lleve una o tres.';
@@ -634,19 +635,20 @@ $("b-plan").addEventListener("click",function(){
     '<div id="rem-lista">'+S.map(renglonRem).join("")+'</div>'+
     '<p style="margin-top:14px">Los tres precios: <b>Sin perder</b> es costo + moto, tu piso. <b>Ganas $50</b> es el piso más $50 limpios. <b>Mitad</b> es la mitad de lo que pides hoy: "50% de descuento" se entiende sin pensar.</p>'+
     '<textarea readonly id="plan-txt">'+esc(planTexto(S))+'</textarea>'+
-    '<p>Aplicar el remate cambia el precio en tu hoja en todas las piezas sin vender de esos productos y se refleja en la app y el catálogo. El precio anterior queda guardado: se puede deshacer.</p>'+
-    '<div class="acciones"><button class="btn pri" id="aplicar">Aplicar remate a mi hoja</button><button class="btn claro" id="cp">Copiar lista</button><button class="btn claro" data-cerrar="1">Cerrar</button></div>'+
+    '<p>Aplicar el remate cambia el precio de esos productos en la app, el catálogo y el enlace de Muse. El precio normal queda guardado: para volver a él, abre el producto y toca "Quitar rebaja".</p>'+
+    '<div class="acciones"><button class="btn pri" id="aplicar">Aplicar remate</button><button class="btn claro" id="cp">Copiar lista</button><button class="btn claro" data-cerrar="1">Cerrar</button></div>'+
     '<div id="res-remate" style="margin-top:12px"></div>');
   $("aplicar").addEventListener("click",function(){
+    if(seleccion().some(function(x){return !(sel[x.clave]>0);})){$("res-remate").innerHTML='<b class="menos">Falta elegir el precio de algún producto.</b>';return;}
     var b=this;b.disabled=true;b.textContent="Aplicando…";
-    var items=seleccion().map(function(x){return {descripcion:x.descripcion,categoria:x.categoria,precio:sel[x.clave]};});
+    var items=seleccion().map(function(x){return {pid:x.pid||"",descripcion:x.descripcion,categoria:x.categoria,precio:sel[x.clave]};});
     api("aplicarRemate",null,{remate:{usuario:"Alex",items:items}},45000).then(function(r){
       if(!r||!r.success)throw new Error((r&&r.error)||"No se pudo aplicar");
       $("res-remate").innerHTML="<b>Listo: "+r.piezas+(r.piezas===1?" pieza":" piezas")+" con precio nuevo.</b><br>"+
         (r.productos||[]).map(function(p){return esc(p.descripcion)+" · "+p.piezas+" pza · "+mx(p.antes)+" → <b>"+mx(p.ahora)+"</b>";}).join("<br>")+(r.verificado?"":"<br>"+esc(r.aviso||""));
       b.textContent="Aplicado";
-      seleccion().forEach(function(x){x.precio=sel[x.clave];});sel={};pintarInventario();
-    }).catch(function(e){$("res-remate").innerHTML='<b class="menos">'+esc(e.message)+"</b>";b.disabled=false;b.textContent="Aplicar remate a mi hoja";});
+      seleccion().forEach(function(x){if(!(x.antes>x.precio))x.antes=x.precio;x.precio=sel[x.clave];});sel={};pintarInventario();
+    }).catch(function(e){$("res-remate").innerHTML='<b class="menos">'+esc(e.message)+"</b>";b.disabled=false;b.textContent="Aplicar remate";});
   });
   $("cp").addEventListener("click",function(){var t=$("plan-txt");t.removeAttribute("readonly");t.select();try{document.execCommand("copy");}catch(e){}t.setAttribute("readonly","readonly");this.textContent="Copiado";});
 });
@@ -702,7 +704,7 @@ function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")$("mo").classList.remove("on");});
 
-window.KIOSKO={rotacion:function(){return (D&&D.rotacion)||[];},api:api,abrirHTML:abrirHTML,desglose:desglose,catalogo:function(){return CAT;},ventas:function(){return VEN;},recargarDespues:function(){sucio=true;}};
+window.KIOSKO={rotacion:function(){return (D&&D.rotacion)||[];},recargar:function(){cargar();},api:api,abrirHTML:abrirHTML,desglose:desglose,catalogo:function(){return CAT;},ventas:function(){return VEN;},recargarDespues:function(){sucio=true;}};
 if(sesionViva())entrar();
 })();
 </script>
@@ -1048,7 +1050,8 @@ function explicarFila(f){
 })();
 </script>
 <script src="cuenta.js?v=1"></script>
-<script src="calcular.js?v=14.4"></script>
+<script src="calcular.js?v=14.5"></script>
+<script src="producto-pc.js?v=14.5"></script>
 <script src="alta-claro.js?v=1"></script>
 <script src="colores.js?v=1"></script>
 <script src="alta-colores.js?v=1"></script>

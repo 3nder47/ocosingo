@@ -345,3 +345,7 @@ body{background:var(--kn-bg);color:var(--kn-text);font-family:system-ui,-apple-s
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}
 }
+
+/* ---------- Rebajas de temporada (14.5) ---------- */
+.kn-antes{text-decoration:line-through;color:var(--kn-muted);font-weight:500;font-size:.85em;margin-left:4px}
+.kn-pill-rebaja{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:999px;background:var(--kn-warning-bg);color:var(--kn-warning);font-size:.75rem;font-weight:700;vertical-align:middle;letter-spacing:.02em}

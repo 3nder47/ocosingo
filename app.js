@@ -1,4 +1,4 @@
-const APP_VERSION='14.4';const APP_BUILD='14/11/2026 20:37';
+const APP_VERSION='14.5';const APP_BUILD='14/11/2026 22:25';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -961,7 +961,7 @@ function elegirCat(c){cerrarCats();setCat(c);window.scrollTo({top:0,behavior:'sm
 function setCat(c){buzz();state.cat=c;renderCats();renderCatalogo();document.querySelector('.cat.on')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
 function stockDots(n,sinNum){const m=Math.min(n,5);return`<div class="stock">${Array.from({length:5},(_,i)=>`<i class="${i<m?'':'off'}"></i>`).join('')}${sinNum?'':`<small>${n}</small>`}</div>`;}
 function miniCard(p,tag){
-  return`<button class="mini" data-d="${esc(p.descripcion)}" data-pid="${esc(p.pid||'')}" data-o="${esc(p.origen||'')}" onclick="venderProducto(this.dataset.d,this.dataset.pid,this.dataset.o)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>$${precio(p.precio)}</small></div></button>`;
+  return`<button class="mini" data-d="${esc(p.descripcion)}" data-pid="${esc(p.pid||'')}" data-o="${esc(p.origen||'')}" onclick="venderProducto(this.dataset.d,this.dataset.pid,this.dataset.o)">${thumb(p)}${tag||''}<div class="mi"><b>${esc(p.descripcion)}</b><small>${knPrecioHTML(p)}</small></div></button>`;
 }
 function renderStrips(q){
   const w=document.getElementById('cat-strips');if(!w)return;
@@ -999,7 +999,7 @@ function renderCatalogo(){
     l.innerHTML=`<div class="grid stagger">${state.filtrado.map((p,i)=>`
       <button class="tile" onclick="elegir(${i})" style="text-align:left">
         ${thumb(p)}${Number(p.stock)===1?'<span class="low">Última</span>':''}${tagIrene(p)}
-        <div class="info"><b>${esc(p.descripcion)}</b><span class="p num">$${precio(p.precio)}</span>${stockDots(p.stock)}</div>
+        <div class="info"><b>${esc(p.descripcion)}</b><span class="p num">${knPrecioHTML(p)}</span>${stockDots(p.stock)}</div>
       </button>`).join('')}</div>`;
     return;
   }
@@ -1009,7 +1009,7 @@ function renderCatalogo(){
     <div class="group stagger">${cats[cat].map(i=>{const p=state.filtrado[i];return`
       <div class="row plain tap" onclick="elegir(${i})">
         ${thumb(p)}<div class="t"><b>${esc(p.descripcion)}${tagIrene(p)}</b>${stockDots(p.stock)}</div>
-        <div class="v pos num">$${precio(p.precio)}</div>
+        <div class="v pos num">${knPrecioHTML(p)}</div>
       </div>`}).join('')}</div>`).join('');
 }
 function elegir(i,lista){buzz(12);const p=(lista||state.filtrado)[i];state.producto=p;state.vendedor=state.usuario;state.metodo=null;state.paso=1;cerrarQuick();abrirVenta();}
@@ -1027,7 +1027,7 @@ function renderQuick(){
   const l=document.getElementById('quick-list');
   const fila=(p,i)=>`<div class="row plain tap" onclick="elegir(${i},quickLista)">
       ${thumb(p)}<div class="t"><b>${esc(p.descripcion)}${tagIrene(p)}</b><small>${esc(p.categoria)} · ${p.stock} disp.</small></div>
-      <div class="v pos num">$${precio(p.precio)}</div></div>`;
+      <div class="v pos num">${knPrecioHTML(p)}</div></div>`;
   if(q){
     quickLista=state.catalogo.filter(p=>(p.descripcion.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q))).sort((a,b)=>b.stock-a.stock).slice(0,30);
     if(!quickLista.length){l.innerHTML=vacio('search','No se encontraron productos');return;}
@@ -1078,14 +1078,14 @@ function pintarVentaBase(){
     outer.style.display=fotos.length?'none':'';outer.previousElementSibling.style.display=fotos.length?'none':'';
     body.innerHTML=`
       ${fotos.length?`<div class="gal-wrap" id="gal-wrap"><div class="gal-bg" id="gal-bg" style="background-image:url('${esc(fotos[0])}')"></div><div class="gal-tint"></div><div class="gal-fade"></div><div class="handle"></div><h3>Registrar venta</h3>${gal}</div>`:gal}
-      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto(this)">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">$${money(p.precio)}</span></div>
+      <div class="prod compact"><div style="min-width:0;flex:1"><b>${esc(p.descripcion)}</b><small style="display:block;color:var(--muted);font-weight:600;font-size:0.8125rem;margin-top:2px">Costo $${money(p.costoFinal)}</small>${stockLinea(p)}<div class="prod-actions"><button class="edit-link" onclick="compartirProducto(this)">↗ Compartir con foto</button>${esDeIrene(p)&&state.usuario==='Irene'?`<button class="edit-link" onclick="abrirEdicion()">✎ Editar o eliminar</button>`:''}</div></div><span class="p num">${knPrecioHTML(p,money)}${knConRebaja(p)?'<span class="kn-pill-rebaja">Rebaja</span>':''}</span></div>
       <div class="field"><label>Vendedor</label><div class="opts">${[state.usuario].map(v=>`<button class="opt ${state.vendedor===v?'on':''}" onclick="setVend('${v}')">${v}</button>`).join('')}</div></div>
       <div class="field"><label>Método de pago</label><div class="opts">
         <button class="opt ${state.metodo==='Efectivo a Irene'?'on':''}" onclick="setMetodo('Efectivo a Irene')">${esDeIrene(p)?'Efectivo':'Efectivo a Irene'}</button>
         <button class="opt ${state.metodo===(esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex')?'on':''}" onclick="setMetodo('${esDeIrene(p)?'Transferencia a Irene':'Transferencia directa a Alex'}')">Transferencia</button>
       </div></div>
       ${Number(p.costoFinal)<p.precio?`<div class="field"><label>Precio</label><div class="opts" data-p="1">
-        <button class="opt ${state.precioTipo!=='costo'?'on':''}" id="pt-n" onclick="setPrecioTipo('normal')">Normal · $${precio(p.precio)}</button>
+        <button class="opt ${state.precioTipo!=='costo'?'on':''}" id="pt-n" onclick="setPrecioTipo('normal')">${knConRebaja(p)?'Precio vigente':'Normal'} · $${precio(p.precio)}</button>
         <button class="opt ${state.precioTipo==='costo'?'on':''}" id="pt-c" onclick="setPrecioTipo('costo')">Al costo · $${precio(p.costoFinal)}</button>
       </div></div>`:''}
       <div class="field"><label>Cobro extra al cliente</label><div class="money"><span>$</span><input id="cobro" type="text" inputmode="decimal" placeholder="0.00" value="${state.cobro||''}" oninput="guardarInputs();pintarCalc()"></div></div>
@@ -1163,7 +1163,7 @@ function confirmarVenta(){
   if(state._knReg)return;state._knReg=true;
   const b=document.getElementById('hold');b.querySelector('span').textContent='Registrando…';
   const resumen={precio:precioVenta()+(Number(state.cobro)||0),ganancia:gananciaEst()};resumen.hito=hitoVenta(resumen.ganancia);
-  const venta={ventaID:uuid(),descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):'',vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
+  const venta={ventaID:uuid(),descripcion:state.producto.descripcion,pid:state.producto.pid||'',precioVenta:state.precioTipo==='costo'?(Number(state.producto.costoFinal)||0):(Number(state.producto.precio)||''),vendedor:state.vendedor,metodoPago:state.metodo,cobroExtra:state.cobro||'',gastosExt:state.gastos||'',origen:state.producto.origen||'Alex'};
   const galImg=document.querySelector('#gal .thumb img.ok')||document.querySelector('#venta-body .thumb img.ok');
   const origen=galImg?{rect:galImg.getBoundingClientRect(),src:galImg.src}:null;
   const restaurar=()=>{state._knReg=false;b.disabled=false;b.classList.remove('go');b.querySelector('span').textContent='Registrar venta';};
@@ -1880,6 +1880,8 @@ function cambiarUsuario(u){if(u!==state.usuario){cerrarUsuarios();return;}buzz()
 function cerrarUsuarios(){document.getElementById('sheet-usuario').classList.add('hidden');}
 
 /* ---------- UTILS ---------- */
+function knConRebaja(p){return Number(p&&p.antes)>Number(p&&p.precio);}
+function knPrecioHTML(p,fmt){fmt=fmt||precio;return '$'+fmt(p.precio)+(knConRebaja(p)?' <s class="kn-antes">$'+fmt(p.antes)+'</s>':'');}
 function money(n){return(Number(n)||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
 /* Resúmenes sin centavos: menos dígitos, lectura más rápida. Los centavos quedan solo en el detalle de cada venta. */
 function pesos(n){return Math.round(Number(n)||0).toLocaleString('es-MX',{maximumFractionDigits:0});}

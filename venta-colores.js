@@ -82,7 +82,13 @@
       return '<span>' + punto(v.color) + esc(v.color || '') + ' ' + v.stock + '</span>';
     }).join('') + '</div>';
   }
-  function precioTarjeta(t) { return (t.desde ? '<span class="vc-desde">desde</span>' : '') + '$' + precio(t.precio); }
+  // Rebaja (14.5): producto suelto con el normal tachado; modelo con el normal tachado si algún color está en rebaja.
+  function precioSuelto(p) { return typeof knPrecioHTML === 'function' ? knPrecioHTML(p) : '$' + precio(p.precio); }
+  function precioTarjeta(t) {
+    var normal = Math.max.apply(null, t.vars.map(function (v) { return Number(v.antes) || Number(v.precio); }));
+    return (t.desde ? '<span class="vc-desde">desde</span>' : '') + '$' + precio(t.precio) +
+      (normal > t.precio ? ' <s class="kn-antes">$' + precio(normal) + '</s>' : '');
+  }
   function toque(t) {
     return t.tipo === 'm' ? 'vcTocar(this.dataset.k)" data-k="' + esc(t.k)
       : 'vcVariante(this.dataset.pid,this.dataset.o)" data-pid="' + esc(t.p.pid || '') + '" data-o="' + esc(t.p.origen || '');
@@ -99,7 +105,7 @@
         return '<button class="tile" onclick="' + toque(t) + '" style="text-align:left">' + thumb(p) +
           (n === 1 ? '<span class="low">Última</span>' : '') + tagIrene(p) +
           '<div class="info"><b>' + esc(t.tipo === 'm' ? t.nombre : p.descripcion) + '</b><span class="p num">' +
-          (t.tipo === 'm' ? precioTarjeta(t) : '$' + precio(p.precio)) + '</span>' +
+          (t.tipo === 'm' ? precioTarjeta(t) : precioSuelto(p)) + '</span>' +
           (t.tipo === 'm' ? lineaColores(t) : stockDots(n)) + '</div></button>';
       }).join('') + '</div>';
       return true;
@@ -113,7 +119,7 @@
           return '<div class="row plain tap" onclick="' + toque(t) + '">' + thumb(p) +
             '<div class="t"><b>' + esc(t.tipo === 'm' ? t.nombre : p.descripcion) + tagIrene(p) + '</b>' +
             (t.tipo === 'm' ? lineaColores(t) : stockDots(p.stock)) + '</div>' +
-            '<div class="v pos num">' + (t.tipo === 'm' ? precioTarjeta(t) : '$' + precio(p.precio)) + '</div></div>';
+            '<div class="v pos num">' + (t.tipo === 'm' ? precioTarjeta(t) : precioSuelto(p)) + '</div></div>';
         }).join('') + '</div>';
     }).join('');
     return true;
