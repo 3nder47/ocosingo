@@ -1,4 +1,4 @@
-const APP_VERSION='14.5';const APP_BUILD='14/11/2026 22:25';
+const APP_VERSION='14.5.1';const APP_BUILD='14/11/2026 22:31';
 /* Kiosko · lógica de la app. El markup vive en index.html y los estilos en styles.css.
    Este archivo debe cargarse después de config.js (OC_CONFIG). */
 
@@ -974,7 +974,7 @@ function renderStrips(q){
   const LIM=45*864e5, ahora=Date.now();
   const nuevos=baseD.filter(p=>p.agregado&&(ahora-p.agregado)<LIM).sort((a,b)=>b.agregado-a.agregado).slice(0,10);
   const diasDe=t=>{const d=Math.max(0,Math.round((ahora-t)/864e5));return d<=1?'Hoy':d<7?d+' días':d<14?'1 semana':Math.round(d/7)+' semanas';};
-  const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock),rapidos.map(p=>p.descripcion+p.stock),nuevos.map(p=>p.descripcion+p.stock)]);
+  const firma=JSON.stringify([bajos.map(p=>p.descripcion+p.stock+'|'+p.precio+'|'+(p.antes||0)),rapidos.map(p=>p.descripcion+p.stock+'|'+p.precio+'|'+(p.antes||0)),nuevos.map(p=>p.descripcion+p.stock+'|'+p.precio+'|'+(p.antes||0))]);
   if(w.dataset.firma===firma)return;w.dataset.firma=firma;
   w.innerHTML=(nuevos.length?`<div class="section-title">Recién llegados <span class="hint">${nuevos.length} producto${nuevos.length===1?'':'s'} nuevo${nuevos.length===1?'':'s'}</span></div>
     <div class="strip-h stagger">${nuevos.map(p=>miniCard(p,`<span class="tag n">${diasDe(p.agregado)}</span>`)).join('')}</div>`:'')+
