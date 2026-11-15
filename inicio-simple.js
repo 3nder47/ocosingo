@@ -322,6 +322,7 @@ function knAbrir(tipo, titulo, html) {
   var hoja = document.getElementById('sheet-exp'), yaAbierta = state._knDes === tipo && !hoja.classList.contains('hidden');
   if (!yaAbierta) buzz(8);
   state._knDes = tipo;
+  state._knHojaN = (state._knHojaN || 0) + 1;   // cada apertura con su número: una respuesta vieja no pisa otra hoja (Codex)
   document.getElementById('exp-titulo').textContent = titulo;
   // Marca propia: si otra explicación sustituye la hoja, el refresco ya no la pisa (Codex).
   document.getElementById('exp-body').innerHTML = '<i hidden data-kn="1"></i>' + html;
@@ -341,7 +342,7 @@ function knRefrescarDesglose() {
   if (state._knDes === 'ganancia') knDesgloseGanancia(); else if (state._knDes === 'cuenta') knDesgloseCuenta();
 }
 var knCerrarExpBase = cerrarExp;
-cerrarExp = function () { state._knDes = ''; knCerrarExpBase(); };
+cerrarExp = function () { state._knDes = ''; state._knHojaN = (state._knHojaN || 0) + 1; knCerrarExpBase(); };
 var knRenderVentasBase = renderVentas;
 renderVentas = function () { knRenderVentasBase(); knRefrescarDesglose(); };
 var knListoBase = listo;
@@ -548,9 +549,16 @@ function knEstadoVenta(v) {
 }
 function knVerVenta(folio) {
   var v = knBuscarVenta(folio);
-  if (!v) return;
-  var propia = state.usuario === 'Alex' || v.vendedor === state.usuario;
-  var reciente = v.fechaTimestamp && Date.now() - v.fechaTimestamp < KN_DESHACER_MS;
+  if (v) knTicketVenta(v);
+}
+function knTicketVenta(v) {
+  state._knVentaAbierta = v;
+  var alex = state.usuario === 'Alex';
+  var propia = alex || v.vendedor === state.usuario;
+  // Los 30 minutos cuentan desde que la venta llegó al servidor (registrada); una venta que esperó sin conexión
+  // conserva su hora de venta, pero su plazo empieza al llegar (2026-11-14). Las respuestas viejas no traen registrada.
+  var desde = v.registrada || v.fechaTimestamp;
+  var reciente = desde && Date.now() - desde < KN_DESHACER_MS;
   var dato = function (et, val) { return '<div><span>' + et + '</span><b>' + val + '</b></div>'; };
   var linea = function (et, val, cls) { return '<div class="kn-tk-l' + (cls ? ' ' + cls : '') + '"><span>' + et + '</span><b class="num">' + val + '</b></div>'; };
   var g = Number(v.ganancia) || 0;
@@ -577,36 +585,176 @@ function knVerVenta(folio) {
   if (propia && reciente && !v.corte) {
     html += '<button class="btn kn-tk-deshacer" onclick="knDeshacerVenta(\'' + knEsc(v.id) + '\',this)"><span>Deshacer venta</span></button>' +
       '<div class="kn-des-txt kn-tk-nota">Disponible durante los primeros 30 minutos. La pieza regresa al inventario.</div>';
+  } else if (alex) {
+    // Pasados los 30 minutos (o ya en un corte), solo Alex anula, con motivo (Alex, 2026-11-14). Corregir = anular y
+    // que quien vendió la registre de nuevo. Un corte con pagos no se modifica: el servidor lo rechaza.
+    html += '<div class="kn-anular"><div class="field"><label for="kn-motivo">Motivo de la anulación</label>' +
+      '<input id="kn-motivo" class="kn-in" type="text" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="Ej. Método de pago incorrecto"></div>' +
+      '<button class="btn kn-tk-deshacer" onclick="knAnularVenta(this)"><span>Anular venta</span></button>' +
+      '<div class="kn-des-txt kn-tk-nota">' + (v.corte ? 'Incluida en el corte ' + knEsc(v.corte) + '. Si el corte tiene pagos, no se puede anular. ' : '') +
+      'La pieza regresa al inventario. Para corregirla, quien la vendió la registra de nuevo.</div></div>';
   } else if (propia) {
     html += '<div class="kn-des-txt kn-tk-nota">' + (v.corte ? 'Esta venta ya está en el corte ' + knEsc(v.corte) + '.' : 'Pasaron más de 30 minutos desde la venta.') +
-      ' Ya no se puede deshacer desde la app.</div>';
+      ' Para anularla, solicítalo a Alex.</div>';
   }
   knAbrir('venta', 'Detalle de la venta', html);
 }
 function knDeshacerVenta(folio, b) {
-  var v = knBuscarVenta(folio), et = b && b.querySelector('span');
-  if (!v || !b || b.disabled) return;
+  var v = knBuscarVenta(folio) || state._knVentaAbierta, et = b && b.querySelector('span');
+  if (!v || v.id !== folio || !b || b.disabled) return;
   if (!b.dataset.ok) { b.dataset.ok = '1'; et.textContent = 'Toca otra vez para deshacer'; buzz(12); return; }
-  b.disabled = true; et.textContent = 'Deshaciendo…';
-  var gen = state._knGen;
-  var regresar = function () { b.disabled = false; delete b.dataset.ok; et.textContent = 'Deshacer venta'; };
-  apiPost('anularVenta', { id: v.id, ventaID: v.ventaID || '' }).then(function (r) {
-    if (gen !== state._knGen) return;
-    if (!r || !r.success) { toast((r && r.error) || 'No se pudo deshacer la venta', 'err'); regresar(); cargarDinero(); return; }
-    state.ventas = (state.ventas || []).filter(function (x) { return x.id !== folio; });
+  knMandarAnulacion(v, {}, b, 'Deshacer venta', 'Deshaciendo…', 'Venta deshecha. La pieza regresó al inventario.');
+}
+function knAnularVenta(b) {
+  var v = state._knVentaAbierta, et = b && b.querySelector('span'), inp = document.getElementById('kn-motivo');
+  if (!v || !b || b.disabled) return;
+  var motivo = ((inp && inp.value) || '').trim().replace(/\s+/g, ' ');
+  if (motivo.length < 3) {
+    if (inp) { inp.classList.add('kn-falta'); inp.focus(); inp.oninput = function () { inp.classList.remove('kn-falta'); }; }
+    toast('Escribe el motivo de la anulación', 'err'); delete b.dataset.ok; et.textContent = 'Anular venta'; return;
+  }
+  if (!b.dataset.ok) { b.dataset.ok = '1'; et.textContent = 'Toca otra vez para anular'; buzz(12); return; }
+  knMandarAnulacion(v, { motivo: motivo }, b, 'Anular venta', 'Anulando…', 'Venta anulada. La pieza regresó al inventario.');
+}
+// anularVenta nunca se reintenta (reglas del proyecto). Si se pierde la respuesta, se vuelve a leer todo antes de
+// afirmar nada (Codex).
+function knMandarAnulacion(v, extra, b, textoBoton, textoEnvio, textoOk) {
+  var et = b.querySelector('span'), folio = v.id, gen = state._knGen, hoja = state._knHojaN;
+  b.disabled = true; et.textContent = textoEnvio;
+  var inp = document.getElementById('kn-motivo'); if (inp) inp.disabled = true;
+  var regresar = function () { b.disabled = false; delete b.dataset.ok; et.textContent = textoBoton; if (inp) inp.disabled = false; };
+  // Lo guardado en el teléfono de TODAS las personas (Codex: Irene podía entrar después y ver la deuda de antes).
+  var olvidar = function () {
     state.dirty = true; state.catFirma = ''; state.ventFirma = '';
-    cerrarExp(); renderVentas();
-    toast('Venta deshecha. La pieza regresó al inventario.', 'ok');
+    var DATOS = /^kn:(inicio|inicioExtras|miMes|misVentas|catalogo|ventas|ventasAnalisis|cuenta|cortes|historialCortes|dashboard|analisis):/;
+    try { Object.keys(localStorage).filter(function (k) { return DATOS.test(k); }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+  };
+  var cuerpo = { id: v.id, ventaID: v.ventaID || '' };
+  for (var k in extra) cuerpo[k] = extra[k];
+  apiPost('anularVenta', cuerpo).then(function (r) {
+    if (gen !== state._knGen) return;
+    if (!r || !r.success) { toast((r && r.error) || 'No se pudo anular la venta', 'err'); regresar(); cargarDinero(); return; }
+    state.ventas = (state.ventas || []).filter(function (x) { return x.id !== folio; });
+    state._knVentaAbierta = null;
+    olvidar();
+    if (state._knHojaN === hoja) cerrarExp();
+    renderVentas();
+    toast(textoOk, 'ok');
     cargarDinero();
   }).catch(function (err) {
     if (gen !== state._knGen) return;
-    // Respuesta perdida: el servidor pudo haberla deshecho. Se vuelve a leer todo antes de afirmar nada (Codex).
     toast(err && err.api ? err.message : 'No se pudo confirmar. Revisa la lista cuando vuelva la señal.', 'err'); regresar();
-    state.dirty = true; state.catFirma = ''; state.ventFirma = '';
-    try { Object.keys(localStorage).filter(function (k) { return k.indexOf('kn:misVentas:') === 0 || k.indexOf('kn:catalogo:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+    olvidar();
     cargarDinero();
   });
 }
+
+/* Anular una venta por folio (solo Alex, 2026-11-14): para las ventas de otra persona, que no salen en Mis ventas.
+   Acepta "701", "0701" u "OC-0701". Abre el mismo detalle de la venta, con el motivo. */
+function knFolio(txt) {
+  var d = String(txt || '').replace(/\D/g, '');
+  return d ? 'OC-' + (d.length < 4 ? ('0000' + d).slice(-4) : d) : '';
+}
+function knBuscarFolioAbrir() {
+  knAbrir('folio', 'Anular una venta',
+    '<div class="field"><label for="kn-folio">Folio de la venta</label>' +
+    '<input id="kn-folio" class="kn-in" type="text" inputmode="numeric" maxlength="12" autocomplete="off" enterkeyhint="search" placeholder="Ej. OC-0701" onkeydown="if(event.key===\'Enter\')knBuscarFolio()"></div>' +
+    '<button class="btn primary kn-acc" id="kn-folio-btn" onclick="knBuscarFolio()"><span>Buscar</span></button>' +
+    '<div class="kn-des-txt kn-tk-nota">El folio aparece en el detalle de cada venta.</div>');
+  setTimeout(function () { var i = document.getElementById('kn-folio'); if (i) i.focus(); }, 320);
+}
+function knBuscarFolio() {
+  var inp = document.getElementById('kn-folio'), b = document.getElementById('kn-folio-btn');
+  if (!inp || !b || b.disabled) return;
+  var folio = knFolio(inp.value);
+  if (!folio) { inp.classList.add('kn-falta'); inp.focus(); return; }
+  var gen = state._knGen, hoja = state._knHojaN, et = b.querySelector('span');
+  b.disabled = true; et.textContent = 'Buscando…';
+  api('ventas', { folio: folio, limite: 1 }).then(function (L) {
+    if (gen !== state._knGen || hoja !== state._knHojaN) return;
+    b.disabled = false; et.textContent = 'Buscar';
+    var v = Array.isArray(L) && L[0];
+    if (!v) { toast('No hay una venta vigente con el folio ' + folio, 'err'); inp.classList.add('kn-falta'); return; }
+    knTicketVenta(v);
+  }).catch(function (err) {
+    if (gen !== state._knGen || hoja !== state._knHojaN) return;
+    b.disabled = false; et.textContent = 'Buscar';
+    toast(err && err.api ? err.message : 'Sin conexión. Intenta de nuevo.', 'err');
+  });
+}
+
+/* Cambiar el propio PIN (Alex, 2026-11-14). El servidor no dice si el PIN nuevo ya es de otra persona: responde
+   igual que un PIN actual incorrecto y bloquea tras 5 intentos fallidos. Nunca se reintenta. */
+function knPinAbrir() {
+  var campo = function (id, et) {
+    return '<div class="field"><label for="' + id + '">' + et + '</label><input id="' + id + '" class="kn-in kn-in-pin" type="password" ' +
+      'inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>';
+  };
+  knAbrir('pin', 'Cambiar PIN', campo('kn-pin-a', 'PIN actual') + campo('kn-pin-n', 'PIN nuevo') + campo('kn-pin-c', 'Confirma el PIN nuevo') +
+    '<button class="btn primary kn-acc" id="kn-pin-btn" onclick="knPinGuardar()"><span>Guardar PIN</span></button>' +
+    '<div class="kn-des-txt kn-tk-nota">El PIN es de 4 dígitos. La sesión en este teléfono continúa abierta.</div>');
+  // Al completar 4 dígitos pasa solo al siguiente campo; en el último, Enter guarda.
+  var ids = ['kn-pin-a', 'kn-pin-n', 'kn-pin-c'];
+  ids.forEach(function (id, k) {
+    var i = document.getElementById(id);
+    if (!i) return;
+    i.addEventListener('input', function () {
+      i.value = i.value.replace(/\D/g, '').slice(0, 4);
+      i.classList.remove('kn-falta');
+      if (i.value.length === 4 && k < ids.length - 1) document.getElementById(ids[k + 1]).focus();
+    });
+    i.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      if (k < ids.length - 1) document.getElementById(ids[k + 1]).focus(); else knPinGuardar();
+    });
+  });
+  setTimeout(function () { var i = document.getElementById('kn-pin-a'); if (i) i.focus(); }, 320);
+}
+function knPinGuardar() {
+  var a = document.getElementById('kn-pin-a'), n = document.getElementById('kn-pin-n'), c = document.getElementById('kn-pin-c'),
+    b = document.getElementById('kn-pin-btn');
+  if (!a || !n || !c || !b || b.disabled) return;
+  [a, n, c].forEach(function (i) { i.classList.remove('kn-falta'); });
+  var mal = function (i, txt) { i.classList.add('kn-falta'); i.focus(); toast(txt, 'err'); };
+  var cuatro = /^\d{4}$/;
+  if (!cuatro.test(a.value)) return mal(a, 'Escribe tu PIN actual de 4 dígitos');
+  if (!cuatro.test(n.value)) return mal(n, 'El PIN nuevo es de 4 dígitos');
+  if (n.value === a.value) return mal(n, 'El PIN nuevo debe ser distinto del actual');
+  if (c.value !== n.value) return mal(c, 'La confirmación no coincide con el PIN nuevo');
+  var gen = state._knGen, hoja = state._knHojaN, et = b.querySelector('span');
+  b.disabled = true; et.textContent = 'Guardando…';
+  apiPost('cambiarPin', { actual: a.value, nuevo: n.value }).then(function (r) {
+    if (gen !== state._knGen) return;
+    var misma = hoja === state._knHojaN;
+    if (!r || !r.success) {
+      if (!misma) { toast((r && r.error) || 'No se pudo cambiar el PIN', 'err'); return; }
+      b.disabled = false; et.textContent = 'Guardar PIN';
+      a.value = ''; n.value = ''; c.value = '';
+      return mal(a, (r && r.error) || 'No se pudo cambiar el PIN');
+    }
+    buzz([20, 40, 20]);
+    if (misma) cerrarExp();
+    toast('PIN actualizado. Úsalo la próxima vez que entres.', 'ok');
+  }).catch(function (err) {
+    if (gen !== state._knGen) return;
+    if (hoja === state._knHojaN) { b.disabled = false; et.textContent = 'Guardar PIN'; }
+    toast(err && err.api ? err.message : 'No se pudo confirmar el cambio. Si el PIN nuevo no funciona, usa el anterior.', 'err');
+  });
+}
+
+/* El círculo: "Cambiar PIN" para todos y "Anular una venta" para Alex, arriba de "Cerrar sesión". */
+var knAbrirUsuariosBase = abrirUsuarios;
+abrirUsuarios = function () {
+  knAbrirUsuariosBase();
+  var L = document.getElementById('user-list'), salir = L && L.querySelector('button[onclick="cerrarSesion()"]');
+  if (!salir || L.querySelector('.kn-u-acc')) return;
+  salir.insertAdjacentHTML('beforebegin',
+    '<div class="kn-u-acc">' +
+      '<button class="kn-u-btn" onclick="cerrarUsuarios();knPinAbrir()">' + knIcono('key-round') + '<span>Cambiar PIN</span>' + KN_CHEV + '</button>' +
+      (state.usuario === 'Alex' ? '<button class="kn-u-btn" onclick="cerrarUsuarios();knBuscarFolioAbrir()">' + knIcono('receipt-text') + '<span>Anular una venta</span>' + KN_CHEV + '</button>' : '') +
+    '</div>');
+};
 
 /* Tienda (sistema visual v3 de Codex, entrega 1): la bienvenida en lima es la única tarjeta de color de la pantalla y
    lleva dentro la búsqueda. El encabezado grande dice "Tienda", como "Dinero" en su pestaña. */
