@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1D9E75">
 <title>Kiosko · Resumen</title>
-<script src="definitiva.js?v=14.3"></script>
+<script src="definitiva.js?v=14.4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ui.css?v=6">
-<link rel="stylesheet" href="panel-v3.css?v=14.3">
+<link rel="stylesheet" href="panel-v3.css?v=14.4">
 <script>(function(){try{var t=localStorage.getItem("kn-kiosko:tema");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 </head>
 <body>
@@ -124,7 +124,7 @@
 
   <!-- ===== CALCULAR ===== -->
   <section class="pant" id="p-conviene">
-    <div class="top"><div><h1>Calcular</h1><p>Escribe lo que ves en la plataforma antes de pagar. Te digo cuánto te cuesta puesto en Ocosingo y a cuánto venderlo.</p></div></div>
+    <div class="top"><div><h1>Calcular</h1><p>Costo aproximado de un producto y su rentabilidad al precio de la competencia, antes de comprarlo.</p></div></div>
     <div class="card">
       <div class="form">
         <label class="campo"><span>Precio en la plataforma, por pieza</span><span class="money"><i>$</i><input id="sim-precio" type="number" min="0" step="1" placeholder="200" inputmode="decimal"></span></label>
@@ -162,7 +162,7 @@
 
 <div class="modal" id="mo"><div class="modal-box" id="mo-in"></div></div>
 
-<script src="config-worker.js?v=14.3"></script>
+<script src="config-worker.js?v=14.4"></script>
 <script>
 (function(){
 "use strict";
@@ -702,7 +702,7 @@ function abrirHTML(html){$("mo-in").innerHTML=html;$("mo").classList.add("on");}
 $("mo").addEventListener("click",function(e){if(e.target===this||e.target.closest("[data-cerrar]"))this.classList.remove("on");});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")$("mo").classList.remove("on");});
 
-window.KIOSKO={api:api,abrirHTML:abrirHTML,desglose:desglose,catalogo:function(){return CAT;},ventas:function(){return VEN;},recargarDespues:function(){sucio=true;}};
+window.KIOSKO={rotacion:function(){return (D&&D.rotacion)||[];},api:api,abrirHTML:abrirHTML,desglose:desglose,catalogo:function(){return CAT;},ventas:function(){return VEN;},recargarDespues:function(){sucio=true;}};
 if(sesionViva())entrar();
 })();
 </script>
@@ -1048,6 +1048,7 @@ function explicarFila(f){
 })();
 </script>
 <script src="cuenta.js?v=1"></script>
+<script src="calcular.js?v=14.4"></script>
 <script src="alta-claro.js?v=1"></script>
 <script src="colores.js?v=1"></script>
 <script src="alta-colores.js?v=1"></script>

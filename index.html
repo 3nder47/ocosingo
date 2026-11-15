@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#F2F3F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0D13" media="(prefers-color-scheme: dark)">
 <title>Kiosko</title>
-<script src="definitiva.js?v=14.3"></script>
+<script src="definitiva.js?v=14.4"></script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,8 +16,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kiosko">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="styles.css?v=14.3">
-<link rel="stylesheet" href="diseno.css?v=14.3">
+<link rel="stylesheet" href="styles.css?v=14.4">
+<link rel="stylesheet" href="diseno.css?v=14.4">
 </head>
 <body>
 
@@ -59,7 +59,7 @@
     <div id="view-calc" class="view hidden">
       <div class="calc-head"><h3>¿Me conviene?</h3><p>Escribe el precio antes de comprar.</p></div>
       <div class="calc-campos">
-        <label><span>¿De dónde?</span><select id="c-origen"><option value="1.33">Viene de China (Temu, AliExpress, TikTok)</option><option value="1.00">Ya está en México (local, Mercado Libre)</option></select></label>
+        <label><span>Origen</span><select id="c-origen"><option value="1.33">China (Temu, AliExpress, TikTok)</option><option value="1.00">México (local, Mercado Libre)</option></select></label>
       </div>
       <div id="c-lista"></div>
       <div class="calc-acciones"><button class="calc-mas" id="c-mas">+ Otro producto</button><button class="calc-limpiar" id="c-limpiar">Limpiar todo</button></div>
@@ -218,10 +218,11 @@
   <button class="x" onclick="cerrarInstall()" aria-label="Ahora no">✕</button>
 </div>
 
-<script src="config-worker.js?v=14.3"></script>
-<script src="app.js?v=14.3"></script>
-<script src="venta-colores.js?v=14.3"></script>
-<script src="iconos.js?v=14.3"></script>
-<script src="inicio-simple.js?v=14.3"></script>
+<script src="config-worker.js?v=14.4"></script>
+<script src="app.js?v=14.4"></script>
+<script src="venta-colores.js?v=14.4"></script>
+<script src="iconos.js?v=14.4"></script>
+<script src="inicio-simple.js?v=14.4"></script>
+<script src="calcular.js?v=14.4"></script>
 </body>
 </html>
